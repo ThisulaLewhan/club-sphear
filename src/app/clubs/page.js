@@ -1,0 +1,137 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { useState } from "react";
+
+export default function ClubsPage() {
+    const dummyClubs = [
+        { id: "ieee", name: "IEEE", category: "Technology & Innovation", image: "/images/logo-bar/IEEE.png", cover: "bg-gradient-to-tr from-blue-600 to-indigo-600", description: "The Institute of Electrical and Electronics Engineers is the world's largest technical professional organization dedicated to advancing technology for the benefit of humanity. Join us for workshops, hackathons, and networking with tech leaders." },
+        { id: "aiesec", name: "AIESEC", category: "Community & Social", image: "/images/logo-bar/aiesec.png", cover: "bg-gradient-to-tr from-blue-400 to-blue-600", description: "AIESEC is a globally recognized youth-led organization focusing on developing leadership through global exchanges and internships." },
+        { id: "architecture-club", name: "Architecture Club", category: "Arts & Humanities", image: "/images/logo-bar/architecture.png", cover: "bg-gradient-to-tr from-stone-500 to-stone-700", description: "A creative space for students passionate about building design, urban planning, and architectural heritage." },
+        { id: "engineering-society", name: "Engineering Society", category: "Academic & Professional", image: "/images/logo-bar/engineering.png", cover: "bg-gradient-to-tr from-emerald-500 to-teal-700", description: "Connecting engineering students across disciplines to collaborate on innovative projects and foster professional growth." },
+        { id: "fcsc", name: "FCSC", category: "Technology & Innovation", image: "/images/logo-bar/fcsc.png", cover: "bg-gradient-to-tr from-indigo-500 to-purple-600", description: "Faculty of Computing Student Community. Organizing the biggest tech events, code camps, and career fairs for computing students." },
+        { id: "gaming-club", name: "Gaming Club", category: "Recreation & Esports", image: "/images/logo-bar/gaming.png", cover: "bg-gradient-to-tr from-violet-500 to-fuchsia-600", description: "For casual and competitive gamers alike! Join our tournaments, game dev workshops, and community game nights." },
+        { id: "gavel-club", name: "Gavel Club", category: "Business & Leadership", image: "/images/logo-bar/gavel.png", cover: "bg-gradient-to-tr from-red-500 to-rose-700", description: "An affiliate of Toastmasters International. We help students develop exceptional public speaking and leadership abilities." },
+        { id: "humanities-society", name: "Humanities Society", category: "Arts & Humanities", image: "/images/logo-bar/humanities.png", cover: "bg-gradient-to-tr from-amber-500 to-orange-600", description: "Connecting thinkers, writers, and artists. We host open mics, debates, and cultural showcases." },
+        { id: "leo-club", name: "Leo Club", category: "Community & Social", image: "/images/logo-bar/leo.png", cover: "bg-gradient-to-tr from-yellow-400 to-yellow-600", description: "Leadership, Experience, Opportunity. Leos discover how they can lead positive change in their communities whilst making new friends and developing skills." },
+        { id: "media-unit", name: "Media Unit", category: "Media & Communications", image: "/images/logo-bar/mediaunit.png", cover: "bg-gradient-to-tr from-sky-400 to-blue-600", description: "The official broadcasting and media coverage team. Join us to learn photography, videography, and event coverage." },
+        { id: "rotaract", name: "Rotaract", category: "Community & Social", image: "/images/logo-bar/rotract.png", cover: "bg-gradient-to-tr from-pink-500 to-rose-600", description: "Rotaract brings together people to exchange ideas with leaders in the community, develop leadership and professional skills, and have fun through service." },
+        { id: "sbsc", name: "SBSC", category: "Business & Leadership", image: "/images/logo-bar/sbsc.png", cover: "bg-gradient-to-tr from-cyan-500 to-cyan-700", description: "SLIIT Business School Student Community. Empowering future entrepreneurs and corporate leaders through networking and workshops." },
+        { id: "seds", name: "SEDS", category: "Technology & Innovation", image: "/images/logo-bar/seds.PNG", cover: "bg-gradient-to-tr from-slate-700 to-slate-900", description: "Students for the Exploration and Development of Space. Reach for the stars with our astronomy camps and aerospace projects." },
+        { id: "student-interactive", name: "Student Interactive", category: "Community & Social", image: "/images/logo-bar/student interactive.png", cover: "bg-gradient-to-tr from-purple-500 to-indigo-600", description: "The central student interactive society focused on orienting new students and organizing massive university-wide social events." },
+    ];
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("All Categories");
+
+    const filteredClubs = dummyClubs.filter(club => {
+        const matchesSearch = club.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = categoryFilter === "All Categories" || club.category === categoryFilter;
+        return matchesSearch && matchesCategory;
+    });
+
+    return (
+        <div className="flex flex-col min-h-screen bg-[#f8f9fc] dark:bg-black font-sans text-zinc-900 dark:text-zinc-50">
+            {/* Setup a simple header similar to the home page so they can navigate back */}
+            <header className="w-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 p-4 sticky top-0 z-40 transition-all">
+                <div className="max-w-screen-2xl mx-auto flex items-center justify-between gap-4">
+                    <Link href="/" className="flex items-center gap-3 font-bold text-xl group cursor-pointer shrink-0">
+                        <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-fuchsia-500 shadow-lg transform transition-all duration-300 group-hover:scale-105 overflow-hidden">
+                            {/* Simplified SVg logo for the other pages */}
+                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-white mix-blend-overlay opacity-90"><circle cx="20" cy="20" r="5" fill="currentColor" /><ellipse cx="20" cy="20" rx="14" ry="5" transform="rotate(45 20 20)" stroke="currentColor" strokeWidth="1.5" /><ellipse cx="20" cy="20" rx="14" ry="5" transform="rotate(-45 20 20)" stroke="currentColor" strokeWidth="1.5" /><circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="1" strokeDasharray="2 4" /></svg>
+                        </div>
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-[length:200%_auto] font-extrabold tracking-tight hidden sm:block">
+                            Club Sphear
+                        </span>
+                    </Link>
+
+                    <nav className="text-sm font-semibold hidden lg:flex items-center gap-6 mr-2">
+                        <Link href="/" className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">Home</Link>
+                        <span className="text-indigo-600 dark:text-indigo-400 relative after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-0.5 after:bg-indigo-600 dark:after:bg-indigo-400">Clubs & Societies</span>
+                    </nav>
+                </div>
+            </header>
+
+            <main className="flex-1 w-full max-w-screen-2xl mx-auto py-10 px-4 sm:px-6">
+                <div className="mb-10 text-center sm:text-left">
+                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Explore Clubs & Societies</h1>
+                    <p className="text-zinc-600 dark:text-zinc-400 text-lg">Discover and join student organizations that match your interests.</p>
+                </div>
+
+                {/* Search and Filter */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                    <input
+                        type="text"
+                        placeholder="Search clubs by name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="flex-1 max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    />
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    >
+                        <option>All Categories</option>
+                        <option>Technology & Innovation</option>
+                        <option>Academic & Professional</option>
+                        <option>Arts & Humanities</option>
+                        <option>Business & Leadership</option>
+                        <option>Community & Social</option>
+                        <option>Media & Communications</option>
+                        <option>Recreation & Esports</option>
+                    </select>
+                </div>
+
+                {/* Clubs Grid */}
+                {filteredClubs.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {filteredClubs.map((club, idx) => (
+                            <Link href={`/clubs/${club.id}`} key={idx} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:shadow-lg transition-all group cursor-pointer flex flex-col">
+                                <div className={`h-32 w-full ${club.cover} opacity-80 group-hover:opacity-100 transition-opacity`}></div>
+                                <div className="p-6 flex flex-col flex-1">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="text-xl font-bold">{club.name}</h3>
+                                            <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                                                {club.category}
+                                            </span>
+                                        </div>
+                                        <div className="w-16 h-16 rounded-full border-4 border-white dark:border-zinc-900 -mt-10 bg-white dark:bg-zinc-800 flex items-center justify-center font-bold text-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden relative">
+                                            {club.image ? (
+                                                <Image src={club.image} alt={club.name} fill className="object-contain p-2" sizes="64px" />
+                                            ) : (
+                                                <span className="text-zinc-400">{club.name.charAt(0)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 flex-1">
+                                        A community of students interested in {club.category.toLowerCase()} activities and events.
+                                    </p>
+                                    <div className="flex items-center justify-end pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                                        <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 transition-colors">
+                                            View Details &rarr;
+                                        </span>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="w-full py-16 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-zinc-300 dark:text-zinc-700 mb-4"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                        <h3 className="text-xl font-bold text-zinc-700 dark:text-zinc-300 mb-2">No clubs found</h3>
+                        <p className="text-zinc-500">We couldn't find any clubs matching your search criteria.</p>
+                        <button
+                            onClick={() => { setSearchQuery(""); setCategoryFilter("All Categories"); }}
+                            className="mt-4 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 transition-colors"
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
+                )}
+            </main>
+        </div>
+    );
+}
