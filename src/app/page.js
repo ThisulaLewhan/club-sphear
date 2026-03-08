@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import FeedContainer from "@/components/feed/FeedContainer";
 import NotificationDropdown from "@/components/common/NotificationDropdown";
+import EventCalendar from "@/components/events/EventCalendar";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,8 +117,14 @@ export default function Home() {
         </section>
 
         {/* Feed Section */}
-        <div id="feed-section">
+        <div id="feed-section" className="mb-12">
           <FeedContainer searchQuery={searchQuery} />
+        </div>
+
+        {/* Unified Event Calendar Section */}
+        <div id="calendar-section" className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-12">
+          <h2 className="text-2xl font-black tracking-tight mb-6">Upcoming Campus Events</h2>
+          <EventCalendar />
         </div>
       </main>
 

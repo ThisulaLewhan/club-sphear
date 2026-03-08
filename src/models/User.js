@@ -9,6 +9,10 @@ const UserSchema = new mongoose.Schema({
     enum: ["student", "club", "admin", "mainAdmin"], 
     default: "student" 
   },
+  // Student profile fields (used by auth module)
+  university: { type: String, default: "" },
+  studentId: { type: String, default: "" },
+  bio: { type: String, default: "" },
   clubId: { type: mongoose.Schema.Types.ObjectId, ref: "Club" }
 }, { timestamps: true });
 
