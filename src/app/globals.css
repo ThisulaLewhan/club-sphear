@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
+/* Disable dark mode: remap dark variant to an impossible class selector */
+@variant dark (&:where(.dark-disabled, .dark-disabled *));
+
+
 :root {
-  --background: #f8fafc;
+  --background: #ffffff;
   --foreground: #171717;
+  color-scheme: light only;
 }
 
 @theme inline {
@@ -12,12 +17,16 @@
   --font-mono: var(--font-geist-mono);
 }
 
+
+/* Force light theme — override any OS-level dark mode preference */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #09090b;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #171717;
+    color-scheme: light only;
   }
 }
+
 
 body {
   background: var(--background);
@@ -52,8 +61,10 @@ input:-webkit-autofill:focus {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 @keyframes fade-in-up {
