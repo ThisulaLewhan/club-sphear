@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Student Experience & Public Content
+
+
 import Link from "next/link";
 
 export default function HeroSection() {

@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Club Management & Operations
+
+
 import { useState } from "react";
 
 export default function ClubCreatePostPage() {
@@ -52,6 +55,12 @@ export default function ClubCreatePostPage() {
 
         if (!content.trim()) {
             setError("Content is required.");
+            return;
+        }
+
+        // frontend constraint for post length
+        if (content.length > 1000) {
+            setError("Post content must be under 1000 characters.");
             return;
         }
 

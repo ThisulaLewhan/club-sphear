@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: The Global Admin System
+
+
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 

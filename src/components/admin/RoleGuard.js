@@ -1,3 +1,5 @@
+// Feature Domain: The Global Admin System
+
 import { hasRole } from "@/lib/auth-utils";
 import { redirect } from "next/navigation";
 

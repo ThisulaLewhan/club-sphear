@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Club Management & Operations
+
+
 import { useState, useRef, useEffect } from "react";
 
 // --- Custom Time Picker ---

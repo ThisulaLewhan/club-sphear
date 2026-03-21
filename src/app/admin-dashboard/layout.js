@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: The Global Admin System
+
+
 import AuthGuard from "@/components/auth/AuthGuard";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { useAuth } from "@/components/auth/AuthProvider";

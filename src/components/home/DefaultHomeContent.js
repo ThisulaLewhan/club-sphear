@@ -1,3 +1,5 @@
+// Feature Domain: Student Experience & Public Content
+
 import Image from "next/image";
 
 export default function DefaultHomeContent() {

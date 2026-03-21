@@ -1,3 +1,5 @@
+// Feature Domain: Student Experience & Public Content
+
 // loading skeleton for student profile
 
 export default function StudentProfileLoading() {

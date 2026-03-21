@@ -1,11 +1,14 @@
 "use client";
 
+// Feature Domain: Student Experience & Public Content
+
+
 import Link from "next/link";
 import Image from "next/image";
 import { use, useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import Modal from "@/components/common/Modal";
-import JoinClubForm from "@/components/clubs/JoinClubForm";
+import JoinClubForm from "@/components/club/JoinClubForm";
 
 export default function ClubDetailsPage({ params }) {
     // Unwrap params using React.use() as per Next.js 15+ warnings for dynamic route params

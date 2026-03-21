@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // client-side wrapper to protect pages from unauthenticated access
 
 "use client";

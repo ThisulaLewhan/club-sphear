@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // student login component
 
 "use client";

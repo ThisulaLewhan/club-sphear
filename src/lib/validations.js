@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // shared validation logic for inputs
 
 const STUDENT_EMAIL_DOMAIN = "my.sliit.lk";

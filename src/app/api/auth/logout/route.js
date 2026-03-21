@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // api route for destroying session
 
 import { removeAuthCookie } from "@/lib/auth";

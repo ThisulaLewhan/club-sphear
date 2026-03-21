@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // login page layout
 // note: LoginForm uses useSearchParams so it needs Suspense
 

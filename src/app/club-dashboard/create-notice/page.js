@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Club Management & Operations
+
+
 import { useState } from "react";
 
 export default function ClubCreateNoticePage() {
@@ -15,6 +18,16 @@ export default function ClubCreateNoticePage() {
 
         if (!title.trim() || !content.trim()) {
             setError("Title and content are required.");
+            return;
+        }
+
+        // frontend constraint for notice length
+        if (title.length > 100) {
+            setError("Title must be under 100 characters.");
+            return;
+        }
+        if (content.length > 1000) {
+            setError("Content must be under 1000 characters.");
             return;
         }
 

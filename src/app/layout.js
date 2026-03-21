@@ -1,3 +1,5 @@
+// Feature Domain: Student Experience & Public Content
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";

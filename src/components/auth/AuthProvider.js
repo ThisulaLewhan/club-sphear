@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // holds auth state for entire app
 
 "use client";

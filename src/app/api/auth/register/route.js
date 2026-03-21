@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // api route for student registration
 
 import connectDB from "@/lib/mongodb";

@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Student Experience & Public Content
+
+
 import { useState } from "react";
 
 export default function JoinClubForm({ club, onSuccess, onCancel }) {

@@ -1,3 +1,5 @@
+// Feature Domain: Club Management & Operations
+
 import connectDB from "@/lib/mongodb";
 import Event from "@/models/Event";
 import { NextResponse } from "next/server";

@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // sends a 6-digit verification code to the student
 
 import { NextResponse } from "next/server";

@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // sign up page layout
 
 import RegisterForm from "@/components/auth/RegisterForm";

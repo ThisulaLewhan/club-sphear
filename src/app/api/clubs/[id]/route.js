@@ -1,3 +1,5 @@
+// Feature Domain: Student Experience & Public Content
+
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Club from "@/models/Club";

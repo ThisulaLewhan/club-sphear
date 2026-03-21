@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Club Management & Operations
+
+
 import AuthGuard from "@/components/auth/AuthGuard";
 import ClubSidebar from "@/components/club/ClubSidebar";
 import { useAuth } from "@/components/auth/AuthProvider";

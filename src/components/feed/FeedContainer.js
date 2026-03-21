@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Student Experience & Public Content
+
+
 import { useState, useEffect } from "react";
 import NoticeBoard from "../notices/NoticeBoard";
 import ClubMarquee from "../common/ClubMarquee";

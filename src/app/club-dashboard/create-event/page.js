@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Club Management & Operations
+
+
 import EventForm from "@/components/events/EventForm";
 
 export default function ClubCreateEventPage() {

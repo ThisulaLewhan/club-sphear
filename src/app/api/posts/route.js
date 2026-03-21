@@ -1,3 +1,5 @@
+// Feature Domain: Club Management & Operations
+
 import connectDB from "@/lib/mongodb";
 import Post from "@/models/Post";
 import Club from "@/models/Club";

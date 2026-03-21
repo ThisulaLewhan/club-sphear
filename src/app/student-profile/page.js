@@ -1,3 +1,5 @@
+// Feature Domain: Student Experience & Public Content
+
 // view student profile
 
 "use client";

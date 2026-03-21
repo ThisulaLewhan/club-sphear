@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: The Global Admin System
+
+
 import { useState } from "react";
 
 export default function AdminProfileForm({ initialData }) {

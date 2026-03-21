@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // multi-step student registration form
 // handles email validation, otp verification, and final account creation
 

@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Club Management & Operations
+
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

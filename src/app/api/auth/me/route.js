@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // fetches or updates current logged in user profile
 
 import connectDB from "@/lib/mongodb";

@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // login api route
 
 import connectDB from "@/lib/mongodb";

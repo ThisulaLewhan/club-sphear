@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Club Management & Operations
+
+
 import { useState, useEffect } from "react";
 
 export default function ManageNoticesPage() {

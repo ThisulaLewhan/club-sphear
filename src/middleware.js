@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // locks down routes so only logged in users can see them
 
 import { NextResponse } from "next/server";

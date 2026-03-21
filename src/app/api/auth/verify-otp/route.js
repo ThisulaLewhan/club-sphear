@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // verifies the 6-digit code user enters
 
 import { NextResponse } from "next/server";

@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Club Management & Operations
+
+
 import { useAuth } from "@/components/auth/AuthProvider";
 
 export default function ClubProfilePage() {

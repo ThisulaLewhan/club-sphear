@@ -1,3 +1,5 @@
+// Feature Domain: Student Experience & Public Content
+
 import HeroSection from "@/components/home/HeroSection";
 import HomeFeed from "@/components/home/HomeFeed";
 import EventCalendar from "@/components/events/EventCalendar";

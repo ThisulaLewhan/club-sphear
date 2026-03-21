@@ -1,5 +1,8 @@
 "use client";
 
+// Feature Domain: Club Management & Operations
+
+
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 

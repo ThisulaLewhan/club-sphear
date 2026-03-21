@@ -1,3 +1,5 @@
+// Feature Domain: Authentication & Access Control
+
 // auth utils for tokens and cookies
 
 import jwt from "jsonwebtoken";
