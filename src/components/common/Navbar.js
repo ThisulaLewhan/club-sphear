@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import NotificationDropdown from "@/components/common/NotificationDropdown";
@@ -8,6 +8,11 @@ import NotificationDropdown from "@/components/common/NotificationDropdown";
 export default function Navbar({ searchQuery, setSearchQuery }) {
     const { user, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Navigation links based on user role
     const getNavLinks = () => {
@@ -17,11 +22,7 @@ export default function Navbar({ searchQuery, setSearchQuery }) {
         ];
 
         if (!user) {
-            return [
-                ...baseLinks,
-                { name: "Login", href: "/auth/login" },
-                { name: "Register", href: "/auth/register" },
-            ];
+            return baseLinks;
         }
 
         switch (user.role) {
@@ -50,7 +51,7 @@ export default function Navbar({ searchQuery, setSearchQuery }) {
     const navLinks = getNavLinks();
 
     return (
-        <header className="w-full bg-white/80 backdrop-blur-md border-b border-zinc-200 p-4 sticky top-0 z-40 transition-all">
+        <header className="w-full bg-white/80 backdrop-blur-md border-b border-zinc-200 p-4 sticky top-0 z-[100] transition-all">
             <div className="max-w-screen-2xl mx-auto flex items-center justify-between gap-4">
 
                 {/* Left: Logo */}
@@ -114,29 +115,39 @@ export default function Navbar({ searchQuery, setSearchQuery }) {
 
                         {/* User Profile / Action Button */}
                         <div className="flex items-center gap-3 pl-2 sm:pl-4 sm:border-l border-zinc-200">
-                            {user ? (
-                                <div className="flex items-center gap-3">
-                                    <Link href={(user.role === 'admin' || user.role === 'mainAdmin') ? '/admin-profile' : '/profile'} className="flex items-center justify-center p-0.5 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 hover:shadow-md hover:shadow-indigo-500/20 transition-all">
-                                        <div className="w-9 h-9 rounded-full bg-white border-2 border-transparent overflow-hidden flex items-center justify-center">
-                                            <span className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-tr from-indigo-500 to-purple-500">
-                                                {user.name?.substring(0, 2).toUpperCase() || "US"}
-                                            </span>
-                                        </div>
-                                    </Link>
-                                    <button
-                                        onClick={() => logout()}
-                                        className="hidden md:block text-xs font-bold text-zinc-500 hover:text-red-500 transition-colors"
-                                    >
-                                        LOGOUT
-                                    </button>
-                                </div>
-                            ) : (
-                                <Link
-                                    href="/auth/login"
-                                    className="hidden sm:block text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
-                                >
-                                    SIGN IN
-                                </Link>
+                            {mounted && (
+                                user ? (
+                                    <div className="flex items-center gap-3">
+                                        <Link href={(user.role === 'admin' || user.role === 'mainAdmin') ? '/admin-profile' : '/profile'} className="flex items-center justify-center p-0.5 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 hover:shadow-md hover:shadow-indigo-500/20 transition-all">
+                                            <div className="w-9 h-9 rounded-full bg-white border-2 border-transparent overflow-hidden flex items-center justify-center">
+                                                <span className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-tr from-indigo-500 to-purple-500">
+                                                    {user.name?.substring(0, 2).toUpperCase() || "US"}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                        <button
+                                            onClick={() => logout()}
+                                            className="hidden md:block text-xs font-bold text-zinc-500 hover:text-red-500 transition-colors"
+                                        >
+                                            LOGOUT
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <Link
+                                            href="/auth/register"
+                                            className="hidden sm:block text-sm font-bold text-zinc-500 hover:text-indigo-600 transition-colors border-r border-zinc-200 pr-4 mr-2"
+                                        >
+                                            JOIN
+                                        </Link>
+                                        <Link
+                                            href="/auth/login"
+                                            className="hidden sm:block text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                                        >
+                                            SIGN IN
+                                        </Link>
+                                    </div>
+                                )
                             )}
 
                             {/* Mobile Menu Button */}
@@ -157,8 +168,23 @@ export default function Navbar({ searchQuery, setSearchQuery }) {
 
             {/* Mobile Navigation Drawer */}
             {isMenuOpen && (
-                <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-zinc-200 shadow-xl animate-fade-in-down">
+                <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-zinc-200 shadow-xl animate-fade-in-down overflow-hidden">
                     <nav className="flex flex-col p-4 gap-2">
+                        {/* Mobile Search */}
+                        {setSearchQuery && (
+                            <div className="mb-4 relative group/search">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={searchQuery || ""}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search..."
+                                    className="w-full bg-zinc-100 border border-transparent text-zinc-900 text-sm rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                />
+                            </div>
+                        )}
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
@@ -169,7 +195,25 @@ export default function Navbar({ searchQuery, setSearchQuery }) {
                                 {link.name}
                             </Link>
                         ))}
-                        {user && (
+                        {mounted && !user && (
+                            <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-zinc-100">
+                                <Link
+                                    href="/auth/register"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="p-3 text-center text-zinc-600 font-bold hover:bg-zinc-50 border border-zinc-200 rounded-xl transition-all"
+                                >
+                                    Join
+                                </Link>
+                                <Link
+                                    href="/auth/login"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="p-3 text-center bg-indigo-600 text-white font-bold hover:bg-indigo-700 rounded-xl transition-all"
+                                >
+                                    Sign In
+                                </Link>
+                            </div>
+                        )}
+                        {mounted && user && (
                             <button
                                 onClick={() => {
                                     logout();

@@ -177,7 +177,7 @@ export default function EventCalendar() {
     return (
         <div className="flex flex-col flex-1 min-h-[800px] w-full bg-white dark:bg-black text-zinc-900 dark:text-zinc-50">
             {/* Header Area */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex-wrap gap-4 relative z-50">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex-wrap gap-4 relative z-30">
                 <div className="flex items-center gap-2">
                     {/* Month Dropdown */}
                     <div className="relative" ref={monthDropdownRef}>
