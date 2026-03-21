@@ -51,7 +51,7 @@ export default function ProfileForm() {
       const result = await updateProfile(formData);
       if (result.success) {
         setServerMessage({ type: "success", text: "Profile updated successfully!" });
-        setTimeout(() => router.push("/profile"), 1500);
+        setTimeout(() => router.push("/student-profile"), 1500);
       } else {
         if (result.errors) setErrors(result.errors);
         setServerMessage({ type: "error", text: result.message || "Update failed." });
@@ -107,10 +107,6 @@ export default function ProfileForm() {
                 <div>
                   <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Email</label>
                   <div className="px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/50 text-gray-500 dark:text-gray-400 text-sm truncate">{user?.email || "—"}</div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Role</label>
-                  <div className="px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/50 text-gray-500 dark:text-gray-400 text-sm capitalize">{user?.role || "student"}</div>
                 </div>
               </div>
             </div>
@@ -189,7 +185,7 @@ export default function ProfileForm() {
                   </span>
                 )}
               </button>
-              <button type="button" onClick={() => router.push("/profile")} className="py-3.5 px-6 border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 font-semibold rounded-xl transition-all duration-200 active:scale-[0.98]">
+              <button type="button" onClick={() => router.push("/student-profile")} className="py-3.5 px-6 border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 font-semibold rounded-xl transition-all duration-200 active:scale-[0.98]">
                 Cancel
               </button>
             </div>

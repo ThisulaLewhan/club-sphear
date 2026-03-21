@@ -54,7 +54,7 @@ export default function Navbar() {
             default:
                 return [
                     ...baseLinks,
-                    { name: "My Profile", href: "/profile" },
+                    { name: "My Profile", href: "/student-profile" },
                 ];
         }
     };
@@ -117,9 +117,9 @@ export default function Navbar() {
                             user ? (
                                 <div className="flex items-center gap-2">
                                     <Link
-                                        href={isAdmin ? "/admin-profile" : "/profile"}
+                                        href={isAdmin ? "/admin-profile" : "/student-profile"}
                                         className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200 group ${
-                                            (pathname === "/profile" || pathname === "/admin-profile")
+                                            (pathname === "/student-profile" || pathname === "/admin-profile")
                                                 ? "bg-indigo-50"
                                                 : "hover:bg-zinc-100"
                                         }`}
@@ -208,7 +208,7 @@ export default function Navbar() {
                             {mounted && user ? (
                                 <div className="flex flex-col gap-1">
                                     <Link
-                                        href={isAdmin ? "/admin-profile" : "/profile"}
+                                        href={isAdmin ? "/admin-profile" : "/student-profile"}
                                         className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
                                     >
                                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">

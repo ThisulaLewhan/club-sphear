@@ -5,6 +5,18 @@
  * Owner: Lisura (Authentication & Student Profile Module)
  */
 
+const STUDENT_EMAIL_DOMAIN = "my.sliit.lk";
+const STUDENT_EMAIL_PREFIX = (process.env.NEXT_PUBLIC_STUDENT_EMAIL_PREFIX || "it").toLowerCase();
+const STUDENT_EMAIL_DIGITS = 8;
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function getStudentEmailFormatMessage() {
+  return `Email must match this format: ${STUDENT_EMAIL_PREFIX}12345678@${STUDENT_EMAIL_DOMAIN}`;
+}
+
 /**
  * Validate email format (accepts university-style emails)
  * Accepts: name@university.ac.lk, name@uni.edu, etc.
@@ -14,6 +26,19 @@
 export function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
+}
+
+/**
+ * Validate student registration email format
+ * Required format: <prefix><9-digits>@my.sliit.lk
+ * Example: it123456789@my.sliit.lk
+ * @param {string} email
+ * @returns {boolean}
+ */
+export function isValidStudentEmail(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const emailRegex = new RegExp(`^${escapeRegex(STUDENT_EMAIL_PREFIX)}\\d{${STUDENT_EMAIL_DIGITS}}@${escapeRegex(STUDENT_EMAIL_DOMAIN)}$`);
+  return emailRegex.test(normalizedEmail);
 }
 
 /**
@@ -52,8 +77,8 @@ export function validateRegistration(data) {
 
   if (!data.email) {
     errors.email = "Email is required";
-  } else if (!isValidEmail(data.email)) {
-    errors.email = "Please enter a valid email address";
+  } else if (!isValidStudentEmail(data.email)) {
+    errors.email = getStudentEmailFormatMessage();
   }
 
   if (!data.password) {

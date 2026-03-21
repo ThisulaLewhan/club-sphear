@@ -85,17 +85,35 @@ export function AuthProvider({ children }) {
 
   // Update profile
   const updateProfile = async (updateData) => {
-    const res = await fetch("/api/auth/me", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updateData),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updateData),
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        return {
+          success: false,
+          message: errorData.message || "Update failed",
+          errors: errorData.errors || {},
+        };
+      }
 
-    if (data.success) {
-      setUser(data.user);
+      const data = await res.json();
+
+      if (data.success && data.user) {
+        setUser(data.user);
+      }
+      return data;
+    } catch (error) {
+      console.error("Update profile error:", error);
+      return {
+        success: false,
+        message: "Network error. Please try again.",
+      };
     }
-    return data;
   };
 
   return (

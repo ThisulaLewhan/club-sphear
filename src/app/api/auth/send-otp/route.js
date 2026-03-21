@@ -5,14 +5,67 @@
  */
 
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import EmailVerification from "@/models/EmailVerification";
-import { isValidEmail } from "@/lib/validations";
+import { getStudentEmailFormatMessage, isValidStudentEmail } from "@/lib/validations";
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
+
+function getEmailTransportConfig() {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || 587);
+  const secure = String(process.env.SMTP_SECURE || "false").toLowerCase() === "true";
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const from = process.env.SMTP_FROM || user;
+
+  if (!host || !user || !pass || !from || Number.isNaN(port)) {
+    return null;
+  }
+
+  return {
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    from,
+  };
+}
+
+async function sendOtpEmail({ to, otp }) {
+  const config = getEmailTransportConfig();
+
+  if (!config) {
+    throw new Error("Email service is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, SMTP_FROM.");
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    auth: config.auth,
+  });
+
+  await transporter.sendMail({
+    from: config.from,
+    to,
+    subject: "Club Sphear - Email Verification Code",
+    text: `Your Club Sphear verification code is ${otp}. It expires in 10 minutes.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+        <h2 style="margin-bottom: 8px;">Verify Your Email</h2>
+        <p style="margin: 0 0 12px;">Use this OTP to complete your Club Sphear registration:</p>
+        <p style="font-size: 24px; font-weight: 700; letter-spacing: 4px; margin: 0 0 12px;">${otp}</p>
+        <p style="margin: 0 0 12px;">This code expires in <strong>10 minutes</strong>.</p>
+        <p style="margin: 0; color: #6b7280; font-size: 13px;">If you did not request this code, you can ignore this email.</p>
+      </div>
+    `,
+  });
+}
 
 /**
  * POST /api/auth/send-otp
@@ -28,9 +81,9 @@ export async function POST(req) {
     const { email } = await req.json();
 
     // Validate email format
-    if (!email || !isValidEmail(email)) {
+    if (!email || !isValidStudentEmail(email)) {
       return NextResponse.json(
-        { success: false, message: "Invalid email format" },
+        { success: false, message: getStudentEmailFormatMessage() },
         { status: 400 }
       );
     }
@@ -51,11 +104,15 @@ export async function POST(req) {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    // Store/update OTP in database
+    const normalizedEmail = email.toLowerCase().trim();
+
+    await sendOtpEmail({ to: normalizedEmail, otp });
+
+    // Store/update OTP in database only after successful send
     await EmailVerification.findOneAndUpdate(
-      { email: email.toLowerCase().trim() },
+      { email: normalizedEmail },
       {
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         otp,
         verified: false,
         attempts: 0,
@@ -63,20 +120,6 @@ export async function POST(req) {
       },
       { upsert: true, new: true }
     );
-
-    // In production, send OTP via email service (SendGrid, Nodemailer, etc.)
-    // For now, log it to console (NOT SECURE - only for development)
-    console.log(`🔐 OTP for ${email}: ${otp} (Expires in 10 minutes)`);
-
-    // TODO: Send email with OTP using nodemailer or SendGrid
-    // Example implementation:
-    // const transporter = nodemailer.createTransport({...});
-    // await transporter.sendMail({
-    //   from: process.env.EMAIL_FROM,
-    //   to: email,
-    //   subject: 'Club Sphear - Email Verification Code',
-    //   html: `Your verification code is: <strong>${otp}</strong>. It expires in 10 minutes.`
-    // });
 
     return NextResponse.json(
       {
@@ -88,7 +131,7 @@ export async function POST(req) {
   } catch (error) {
     console.error("Send OTP error:", error);
     return NextResponse.json(
-      { success: false, message: "Internal server error" },
+      { success: false, message: error.message || "Internal server error" },
       { status: 500 }
     );
   }

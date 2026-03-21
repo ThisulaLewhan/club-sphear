@@ -14,7 +14,12 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "./AuthProvider";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { validateRegistration, validatePassword, isValidEmail } from "@/lib/validations";
+import {
+  getStudentEmailFormatMessage,
+  isValidStudentEmail,
+  validatePassword,
+  validateRegistration,
+} from "@/lib/validations";
 
 /* ── SVG Icon Components ── */
 const EyeIcon = () => (
@@ -129,8 +134,8 @@ export default function RegisterForm() {
     setServerSuccess("");
     setErrors({});
 
-    if (!email || !isValidEmail(email)) {
-      setErrors({ email: "Please enter a valid email address" });
+    if (!email || !isValidStudentEmail(email)) {
+      setErrors({ email: getStudentEmailFormatMessage() });
       return;
     }
 
@@ -269,7 +274,7 @@ export default function RegisterForm() {
     try {
       const result = await register(fullData);
       if (result.success) {
-        router.push("/profile");
+        router.push("/student-profile");
       } else {
         if (result.errors) setErrors(result.errors);
         setServerError(result.message || "Registration failed.");
@@ -320,13 +325,14 @@ export default function RegisterForm() {
         {step === 1 && (
           <form onSubmit={handleSendOTP} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">University Email</label>
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">SLIIT Email</label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                 </span>
-                <input type="email" id="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrors({}); setServerError(""); }} placeholder="you@university.ac.lk" className={`${inputBase} ${errors.email ? inputErr : inputOk}`} />
+                <input type="email" id="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrors({}); setServerError(""); }} placeholder="it12345678@my.sliit.lk" className={`${inputBase} ${errors.email ? inputErr : inputOk}`} />
               </div>
+              {!errors.email && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">Use format: it12345678@my.sliit.lk</p>}
               {errors.email && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.email}</p>}
             </div>
 

@@ -49,7 +49,7 @@ export async function GET() {
       {
         success: true,
         user: {
-          id: user._id,
+          id: user._id.toString(),
           name: user.name,
           email: user.email,
           role: user.role,
@@ -83,7 +83,15 @@ export async function PUT(request) {
     }
 
     // Parse request body
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return Response.json(
+        { success: false, message: "Invalid request body" },
+        { status: 400 }
+      );
+    }
 
     // Validate profile update fields
     const validation = validateProfileUpdate(body);
@@ -120,12 +128,13 @@ export async function PUT(request) {
       );
     }
 
+    // Return fresh user data
     return Response.json(
       {
         success: true,
         message: "Profile updated successfully!",
         user: {
-          id: updatedUser._id,
+          id: updatedUser._id.toString(),
           name: updatedUser.name,
           email: updatedUser.email,
           role: updatedUser.role,
@@ -141,7 +150,7 @@ export async function PUT(request) {
   } catch (error) {
     console.error("Update profile error:", error);
     return Response.json(
-      { success: false, message: "Internal server error" },
+      { success: false, message: "Internal server error: " + error.message },
       { status: 500 }
     );
   }

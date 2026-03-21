@@ -4,8 +4,8 @@
  * Protects routes based on authentication status.
  * 
  * Rules:
- * - /profile/* → Requires authentication → redirects to /auth/login if not logged in
- * - /auth/login, /auth/register → Only for unauthenticated users → redirects to /profile if logged in
+ * - /student-profile/* → Requires authentication → redirects to /auth/login if not logged in
+ * - /auth/login, /auth/register → Only for unauthenticated users → redirects to /student-profile if logged in
  * 
  * Owner: Lisura (Authentication & Student Profile Module)
  */
@@ -17,7 +17,7 @@ export function middleware(request) {
   const token = request.cookies.get("auth_token")?.value;
 
   // Protected routes — require authentication
-  const protectedPaths = ["/profile"];
+  const protectedPaths = ["/student-profile"];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
   // Auth routes — only for unauthenticated users
@@ -33,7 +33,7 @@ export function middleware(request) {
 
   // If accessing auth pages with token → redirect to profile
   if (isAuthPage && token) {
-    return NextResponse.redirect(new URL("/profile", request.url));
+    return NextResponse.redirect(new URL("/student-profile", request.url));
   }
 
   return NextResponse.next();
@@ -41,5 +41,5 @@ export function middleware(request) {
 
 // Only run middleware on these paths
 export const config = {
-  matcher: ["/profile/:path*", "/auth/:path*"],
+  matcher: ["/student-profile/:path*", "/auth/:path*"],
 };

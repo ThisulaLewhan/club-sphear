@@ -57,7 +57,7 @@ export default function LoginForm() {
     try {
       const result = await login(formData.email, formData.password);
       if (result.success) {
-        router.push(searchParams.get("redirect") || "/profile");
+        router.push(searchParams.get("redirect") || "/student-profile");
       } else {
         setServerError(result.message || "Login failed.");
       }
