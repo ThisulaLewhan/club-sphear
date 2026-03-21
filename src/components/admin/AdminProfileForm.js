@@ -12,6 +12,13 @@ export default function AdminProfileForm({ initialData }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // check name length on frontend
+    if (formData.name.trim().length < 2) {
+      setStatus({ type: "error", message: "Name must be at least 2 characters long." });
+      return;
+    }
+
     setIsLoading(true);
     setStatus({ type: "", message: "" });
 

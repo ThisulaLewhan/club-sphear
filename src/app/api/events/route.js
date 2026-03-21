@@ -45,6 +45,19 @@ export async function POST(req) {
         const venue = formData.get("venue");
         const registrationLink = formData.get("registrationLink");
 
+        // required basic fields
+        if (!title || !title.trim() || !date || !startTime || !endTime || !venue) {
+            return NextResponse.json({ success: false, error: "Title, date, start time, end time, and venue are required." }, { status: 400 });
+        }
+        
+        // constrain field lengths
+        if (title.length > 100) {
+            return NextResponse.json({ success: false, error: "Title cannot exceed 100 characters." }, { status: 400 });
+        }
+        if (description && description.length > 2000) {
+            return NextResponse.json({ success: false, error: "Description cannot exceed 2000 characters." }, { status: 400 });
+        }
+
         // Securely use the authenticated session's clubId instead of trusting frontend input
         const clubId = caller.clubId;
 

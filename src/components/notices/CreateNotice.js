@@ -17,6 +17,16 @@ export default function CreateNotice({ onNoticeCreated }) {
             return;
         }
 
+        // frontend constraint for notice length
+        if (title.length > 100) {
+            setError("Title must be under 100 characters.");
+            return;
+        }
+        if (content.length > 1000) {
+            setError("Content must be under 1000 characters.");
+            return;
+        }
+
         setIsSubmitting(true);
         setError("");
 

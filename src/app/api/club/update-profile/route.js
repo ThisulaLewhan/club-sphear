@@ -3,6 +3,8 @@ import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import Club from "@/models/Club";
 import { getCurrentUser, hasRole } from "@/lib/auth-utils";
+import { validatePassword } from "@/lib/validations";
+import bcrypt from "bcryptjs";
 
 export async function PUT(req) {
   try {
@@ -19,11 +21,28 @@ export async function PUT(req) {
     const body = await req.json();
     const { name, password, description, logo } = body;
 
+    // name and description lengths
+    if (name && name.trim().length < 2) {
+      return NextResponse.json({ error: "Club Name must be at least 2 characters." }, { status: 400 });
+    }
+    if (description && description.length > 500) {
+      return NextResponse.json({ error: "Description must be under 500 characters." }, { status: 400 });
+    }
+    if (password) {
+      const pwCheck = validatePassword(password);
+      if (!pwCheck.valid) {
+        return NextResponse.json({ error: pwCheck.message }, { status: 400 });
+      }
+    }
+
     await connectDB();
 
     // 1. Update User Details (Auth mapping)
     const userUpdateData = {};
-    if (password) userUpdateData.password = password; // Hashing expected in prod
+    if (password) {
+      const salt = await bcrypt.genSalt(12);
+      userUpdateData.password = await bcrypt.hash(password, salt);
+    }
 
     if (Object.keys(userUpdateData).length > 0) {
       await User.findByIdAndUpdate(user.id, userUpdateData);

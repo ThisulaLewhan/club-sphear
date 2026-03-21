@@ -7,6 +7,16 @@ export default function CreatePostForm({ clubName }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // frontend constraint for post length
+        if (content.trim().length === 0) {
+            alert("Post content cannot be empty.");
+            return;
+        }
+        if (content.length > 1000) {
+            alert("Post content must be under 1000 characters.");
+            return;
+        }
+
         const res = await fetch("/api/posts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

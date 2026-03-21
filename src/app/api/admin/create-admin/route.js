@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import { getCurrentUser } from "@/lib/auth";
+import { isValidEmail, validatePassword } from "@/lib/validations";
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {
@@ -22,8 +23,20 @@ export async function POST(req) {
       return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    // restrict name length on backend
+    if (name.trim().length < 2) {
+      return NextResponse.json({ error: "Name must be at least 2 characters" }, { status: 400 });
+    }
+
+    // valid email format
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: "Please enter a valid email address" }, { status: 400 });
+    }
+
+    // strict password validation
+    const pwCheck = validatePassword(password);
+    if (!pwCheck.valid) {
+      return NextResponse.json({ error: pwCheck.message }, { status: 400 });
     }
 
     await connectDB();

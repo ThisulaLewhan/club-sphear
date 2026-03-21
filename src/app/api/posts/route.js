@@ -38,8 +38,12 @@ export async function POST(req) {
 
         const { content, image } = await req.json();
 
-        if (!content) {
-            return NextResponse.json({ error: "Content is required" }, { status: 400 });
+        // check post content rules
+        if (!content || !content.trim()) {
+            return NextResponse.json({ error: "Post content is required." }, { status: 400 });
+        }
+        if (content.length > 1000) {
+            return NextResponse.json({ error: "Post content cannot exceed 1000 characters." }, { status: 400 });
         }
 
         let imageUrl = null;

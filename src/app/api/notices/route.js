@@ -33,6 +33,17 @@ export async function POST(request) {
 
         const body = await request.json();
 
+        // validate notice creation fields
+        if (!body.title || !body.title.trim() || !body.content || !body.content.trim()) {
+            return NextResponse.json({ error: "Title and content are required." }, { status: 400 });
+        }
+        if (body.title.length > 100) {
+            return NextResponse.json({ error: "Notice title cannot exceed 100 characters." }, { status: 400 });
+        }
+        if (body.content.length > 1000) {
+            return NextResponse.json({ error: "Notice content cannot exceed 1000 characters." }, { status: 400 });
+        }
+
         const doc = {
             title: body.title,
             content: body.content,

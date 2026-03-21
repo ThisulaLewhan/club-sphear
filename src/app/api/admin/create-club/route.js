@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import Club from "@/models/Club";
 import { getCurrentUser } from "@/lib/auth";
+import { isValidEmail, validatePassword } from "@/lib/validations";
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {
@@ -23,8 +24,16 @@ export async function POST(req) {
       return NextResponse.json({ error: "Club name, category, email, and password are required" }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    // backend length and format checks
+    if (clubName.trim().length < 2) {
+      return NextResponse.json({ error: "Club name must be at least 2 characters" }, { status: 400 });
+    }
+    if (!isValidEmail(clubEmail)) {
+      return NextResponse.json({ error: "Please enter a valid email address" }, { status: 400 });
+    }
+    const pwCheck = validatePassword(password);
+    if (!pwCheck.valid) {
+      return NextResponse.json({ error: pwCheck.message }, { status: 400 });
     }
 
     await connectDB();

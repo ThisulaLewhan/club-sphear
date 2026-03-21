@@ -14,6 +14,25 @@ export default function ClubProfileForm({ initialData }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // check club name length on frontend
+    if (formData.name.trim().length < 2) {
+      setStatus({ type: "error", message: "Club Name must be at least 2 characters long." });
+      return;
+    }
+    
+    // check description length on frontend (optional limit)
+    if (formData.description && formData.description.length > 500) {
+      setStatus({ type: "error", message: "Description must be under 500 characters." });
+      return;
+    }
+
+    // basic logo url check
+    if (formData.logo && !formData.logo.startsWith("http")) {
+      setStatus({ type: "error", message: "Logo URL must start with http or https." });
+      return;
+    }
+
     setIsLoading(true);
     setStatus({ type: "", message: "" });
 

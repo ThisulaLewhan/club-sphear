@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import { getCurrentUser, hasRole } from "@/lib/auth-utils";
+import { validatePassword } from "@/lib/validations";
+import bcrypt from "bcryptjs";
 
 export async function PUT(req) {
   try {
@@ -14,11 +16,27 @@ export async function PUT(req) {
     const body = await req.json();
     const { name, password } = body;
 
+    // name length validation
+    if (name && name.trim().length < 2) {
+      return NextResponse.json({ error: "Name must be at least 2 characters" }, { status: 400 });
+    }
+
+    // password strength validation
+    if (password) {
+      const pwCheck = validatePassword(password);
+      if (!pwCheck.valid) {
+        return NextResponse.json({ error: pwCheck.message }, { status: 400 });
+      }
+    }
+
     await connectDB();
 
     const updateData = {};
     if (name) updateData.name = name;
-    if (password) updateData.password = password; // Note: Ensure hashing in production auth system
+    if (password) {
+      const salt = await bcrypt.genSalt(12);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
 
     const updatedUser = await User.findByIdAndUpdate(user.id, updateData, { new: true });
     

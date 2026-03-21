@@ -240,6 +240,18 @@ export default function EventForm() {
             return;
         }
 
+        // frontend constraint for event lengths
+        if (formData.title.length < 3 || formData.title.length > 100) {
+            setMessage({ type: "error", text: "Title must be between 3 and 100 characters." });
+            setLoading(false);
+            return;
+        }
+        if (formData.description.length > 2000) {
+            setMessage({ type: "error", text: "Description must be under 2000 characters." });
+            setLoading(false);
+            return;
+        }
+
         try {
             const submitData = new FormData();
             Object.entries(formData).forEach(([key, value]) => {
