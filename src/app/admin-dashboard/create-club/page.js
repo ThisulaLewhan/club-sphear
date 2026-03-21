@@ -3,7 +3,10 @@
 // Feature Domain: The Global Admin System
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useRouter } from "next/navigation";
+import { isValidEmail, validatePassword } from "@/lib/validations";
 
 const CATEGORIES = [
   "Technology & Innovation",
@@ -16,13 +19,38 @@ const CATEGORIES = [
 ];
 
 export default function CreateClubPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [formData, setFormData] = useState({ clubName: "", category: "", description: "", clubEmail: "", password: "" });
   const [status, setStatus] = useState({ type: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState(null);
 
+  // Frontend Guard
+  useEffect(() => {
+    if (!authLoading && user && user.role !== "mainAdmin") {
+      router.push("/admin-dashboard");
+    }
+  }, [user, authLoading, router]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Frontend Validation
+    if (formData.clubName.trim().length < 2) {
+      setStatus({ type: "error", message: "Club name must be at least 2 characters" });
+      return;
+    }
+    if (!isValidEmail(formData.clubEmail)) {
+      setStatus({ type: "error", message: "Please enter a valid email address" });
+      return;
+    }
+    const pwCheck = validatePassword(formData.password);
+    if (!pwCheck.valid) {
+      setStatus({ type: "error", message: pwCheck.message });
+      return;
+    }
+
     setIsLoading(true);
     setStatus({ type: "", message: "" });
     setCreatedCredentials(null);
@@ -55,9 +83,9 @@ export default function CreateClubPage() {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-1">Create New Club</h1>
-      <p className="text-slate-500 text-sm mb-6">Register a club and generate login credentials for the committee.</p>
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-3xl font-bold text-slate-900 mb-1">Create New Club or Society</h1>
+      <p className="text-slate-500 text-sm mb-6">Register a club or society for the committee.</p>
 
       {/* Success: Show credentials card */}
       {createdCredentials && (
@@ -102,12 +130,7 @@ export default function CreateClubPage() {
         </div>
       )}
 
-      {/* Error */}
-      {status.type === "error" && (
-        <div className="p-4 mb-6 rounded-xl bg-red-50 text-red-700 border border-red-200 text-sm font-medium">
-          {status.message}
-        </div>
-      )}
+      {/* Removed Error block from top */}
 
       <div className="bg-white rounded-2xl border border-slate-200 p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -172,13 +195,20 @@ export default function CreateClubPage() {
                   required
                   minLength={6}
                   placeholder="Minimum 6 characters"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm font-mono"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
               </div>
             </div>
           </div>
+
+          {/* Error Message near password */}
+          {status.type === "error" && (
+            <div className="p-3 rounded-xl bg-red-50 text-red-700 border border-red-200 text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+              {status.message}
+            </div>
+          )}
 
           <button
             type="submit"

@@ -5,8 +5,12 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useToast } from "@/components/ui/ToastProvider";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 export default function ManageEventsPage() {
+    const toast = useToast();
+    const confirm = useConfirm();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
@@ -31,9 +35,11 @@ export default function ManageEventsPage() {
     }, []);
 
     const handleDelete = async (eventId, eventTitle) => {
-        if (!confirm(`Are you sure you want to permanently delete the event "${eventTitle}"? This action cannot be undone.`)) {
-            return;
-        }
+        const confirmed = await confirm(
+            `This will permanently delete the event "${eventTitle}". This action cannot be undone.`,
+            { title: "Delete Event?", confirmText: "Delete", variant: "danger" }
+        );
+        if (!confirmed) return;
 
         try {
             setDeletingId(eventId);
@@ -44,12 +50,13 @@ export default function ManageEventsPage() {
 
             if (data.success) {
                 setEvents(events.filter(e => e.id !== eventId));
+                toast.success(`Event "${eventTitle}" deleted successfully.`);
             } else {
-                alert(data.error || "Failed to delete event");
+                toast.error(data.error || "Failed to delete event");
             }
         } catch (error) {
             console.error("Error deleting event:", error);
-            alert("An error occurred while deleting the event.");
+            toast.error("An error occurred while deleting the event.");
         } finally {
             setDeletingId(null);
         }

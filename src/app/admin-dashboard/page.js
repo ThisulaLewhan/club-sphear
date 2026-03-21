@@ -4,15 +4,47 @@
 
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 export default function AdminDashboardOverview() {
   const { user } = useAuth();
+  const [stats, setStats] = useState({
+    pendingEvents: "—",
+    activeClubs: "—",
+    totalMembers: "—",
+  });
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/admin/dashboard-stats");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setStats({
+              pendingEvents: data.pendingEvents ?? 0,
+              activeClubs: data.activeClubs ?? 0,
+              totalMembers: data.totalMembers ?? 0,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats", error);
+      }
+    }
+    
+    if (user) {
+      fetchStats();
+    }
+  }, [user]);
 
   const statCards = [
-    { label: "Pending Events", value: "—", color: "from-amber-500 to-orange-500", href: "/admin-dashboard/pending-events" },
-    { label: "Active Clubs", value: "—", color: "from-emerald-500 to-teal-500", href: "#" },
-    { label: "Total Members", value: "—", color: "from-blue-500 to-indigo-500", href: "#" },
+    { label: "Pending Events", value: stats.pendingEvents, color: "from-amber-500 to-orange-500", href: "/admin-dashboard/pending-events" },
+    ...(user?.role === "mainAdmin" ? [
+      { label: "Active Clubs", value: stats.activeClubs, color: "from-emerald-500 to-teal-500", href: "/admin-dashboard/manage-clubs" },
+      { label: "Total Members", value: stats.totalMembers, color: "from-blue-500 to-indigo-500", href: "#" },
+    ] : []),
   ];
 
   return (

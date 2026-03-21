@@ -100,19 +100,18 @@ export default function ClubsPage() {
             ) : filteredClubs.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredClubs.map((club) => (
-                        <Link href={`/clubs/${club.id}`} key={club.id} className="bg-white rounded-2xl border border-zinc-200 overflow-hidden hover:shadow-lg transition-all group cursor-pointer flex flex-col">
-                            <div className={`h-32 w-full ${CATEGORY_COLORS[club.category] || "bg-gradient-to-tr from-slate-500 to-slate-700"} opacity-80 group-hover:opacity-100 transition-opacity`}></div>
-                            <div className="p-6 flex flex-col flex-1">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h3 className="text-xl font-bold">{club.name}</h3>
-                                        <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-zinc-100 text-xs font-medium text-zinc-600">
-                                            {club.category}
-                                        </span>
-                                    </div>
-                                    <div className="w-16 h-16 rounded-full border-4 border-white -mt-10 bg-white flex items-center justify-center font-bold text-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden">
-                                        <span className="text-indigo-500 text-xl font-extrabold">{club.name.charAt(0)}</span>
-                                    </div>
+                        <Link href={`/clubs/${club.id}`} key={club.id} className="relative bg-white rounded-2xl border border-zinc-200 hover:shadow-lg transition-all group cursor-pointer flex flex-col">
+                            <div className={`h-32 w-full rounded-t-2xl ${CATEGORY_COLORS[club.category] || "bg-gradient-to-tr from-slate-500 to-slate-700"} opacity-80 group-hover:opacity-100 transition-opacity`}></div>
+                            {/* Profile icon — positioned absolutely so it overlaps the banner */}
+                            <div className="absolute right-5 top-[104px] w-14 h-14 rounded-full border-4 border-white bg-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.1)] z-10">
+                                <span className="text-indigo-500 text-lg font-extrabold">{club.name.charAt(0)}</span>
+                            </div>
+                            <div className="p-6 pt-4 flex flex-col flex-1">
+                                <div className="mb-4">
+                                    <h3 className="text-xl font-bold">{club.name}</h3>
+                                    <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-zinc-100 text-xs font-medium text-zinc-600">
+                                        {club.category}
+                                    </span>
                                 </div>
                                 <p className="text-sm text-zinc-500 mb-6 flex-1">
                                     {club.description || `A community of students interested in ${club.category.toLowerCase()} activities and events.`}

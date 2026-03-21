@@ -128,3 +128,66 @@ export function validateProfileUpdate(data) {
     errors,
   };
 }
+
+// validate event creation/update data
+export function validateEvent(data) {
+  const errors = {};
+
+  // Title: Required, 3-100 chars
+  if (!data.title || data.title.trim().length < 3) {
+    errors.title = "Title must be at least 3 characters";
+  } else if (data.title.length > 100) {
+    errors.title = "Title cannot exceed 100 characters";
+  }
+
+  // Description: Optional, max 2000 chars
+  if (data.description && data.description.length > 2000) {
+    errors.description = "Description cannot exceed 2000 characters";
+  }
+
+  // Date: Required, must be today or future
+  if (!data.date) {
+    errors.date = "Event date is required";
+  } else {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const eventDate = new Date(data.date);
+    if (isNaN(eventDate.getTime())) {
+      errors.date = "Invalid date format";
+    } else if (eventDate < today) {
+      errors.date = "Event date cannot be in the past";
+    }
+  }
+
+  // Start Time: Required
+  if (!data.startTime) {
+    errors.startTime = "Start time is required";
+  }
+
+  // End Time: Required, must be after startTime
+  if (!data.endTime) {
+    errors.endTime = "End time is required";
+  } else if (data.startTime && data.startTime >= data.endTime) {
+    errors.endTime = "End time must be after start time";
+  }
+
+  // Venue: Required
+  if (!data.venue || !data.venue.trim()) {
+    errors.venue = "Venue is required";
+  }
+
+  // Registration Link: Optional, must be valid URL
+  if (data.registrationLink && data.registrationLink.trim()) {
+    try {
+      new URL(data.registrationLink);
+    } catch (e) {
+      errors.registrationLink = "Please enter a valid URL (e.g., https://example.com)";
+    }
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
+}
+

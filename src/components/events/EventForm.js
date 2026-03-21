@@ -4,6 +4,7 @@
 
 
 import { useState, useRef, useEffect } from "react";
+import { validateEvent } from "@/lib/validations";
 
 // --- Custom Time Picker ---
 function CustomTimePicker({ name, value, onChange, label, required }) {
@@ -206,6 +207,7 @@ function CustomDatePicker({ name, value, onChange, label, required }) {
     );
 }
 
+
 export default function EventForm() {
     const [formData, setFormData] = useState({
         title: "",
@@ -234,26 +236,18 @@ export default function EventForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setMessage({ type: "", text: "" });
 
-        if (!formData.date || !formData.startTime || !formData.endTime) {
-            setMessage({ type: "error", text: "Please carefully select a Date, Start Time, and End Time." });
-            setLoading(false);
+        // Comprehensive Frontend Validation
+        const validation = validateEvent(formData);
+        if (!validation.valid) {
+            const firstError = Object.values(validation.errors)[0];
+            setMessage({ type: "error", text: firstError });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
-        // frontend constraint for event lengths
-        if (formData.title.length < 3 || formData.title.length > 100) {
-            setMessage({ type: "error", text: "Title must be between 3 and 100 characters." });
-            setLoading(false);
-            return;
-        }
-        if (formData.description.length > 2000) {
-            setMessage({ type: "error", text: "Description must be under 2000 characters." });
-            setLoading(false);
-            return;
-        }
+        setLoading(true);
 
         try {
             const submitData = new FormData();

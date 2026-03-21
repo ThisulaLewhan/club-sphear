@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
-import { getCurrentUser, hasRole } from "@/lib/auth-utils";
+import { getCurrentUser, hasRole } from "@/lib/auth";
 import { validatePassword } from "@/lib/validations";
 import bcrypt from "bcryptjs";
 
@@ -40,7 +40,7 @@ export async function PUT(req) {
       updateData.password = await bcrypt.hash(password, salt);
     }
 
-    const updatedUser = await User.findByIdAndUpdate(user.id, updateData, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(user.userId, updateData, { new: true });
     
     if (!updatedUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

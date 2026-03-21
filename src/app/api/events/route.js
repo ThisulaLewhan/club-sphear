@@ -7,6 +7,8 @@ import { getCurrentUser } from "@/lib/auth";
 import fs from "fs/promises";
 import path from "path";
 
+import { validateEvent } from "@/lib/validations";
+
 export async function GET(req) {
     try {
         await connectDB();
@@ -38,27 +40,26 @@ export async function POST(req) {
         // Parse the incoming multipart/form-data
         const formData = await req.formData();
 
-        // Extract fields
-        const title = formData.get("title");
-        const description = formData.get("description");
-        const date = formData.get("date");
-        const startTime = formData.get("startTime");
-        const endTime = formData.get("endTime");
-        const venue = formData.get("venue");
-        const registrationLink = formData.get("registrationLink");
+        // Extract fields for validation
+        const eventData = {
+            title: formData.get("title"),
+            description: formData.get("description"),
+            date: formData.get("date"),
+            startTime: formData.get("startTime"),
+            endTime: formData.get("endTime"),
+            venue: formData.get("venue"),
+            registrationLink: formData.get("registrationLink"),
+        };
 
-        // required basic fields
-        if (!title || !title.trim() || !date || !startTime || !endTime || !venue) {
-            return NextResponse.json({ success: false, error: "Title, date, start time, end time, and venue are required." }, { status: 400 });
+        // Perform comprehensive validation
+        const validation = validateEvent(eventData);
+        if (!validation.valid) {
+            // Return the first error as the main message for now, or just send the object
+            const firstError = Object.values(validation.errors)[0];
+            return NextResponse.json({ success: false, error: firstError }, { status: 400 });
         }
         
-        // constrain field lengths
-        if (title.length > 100) {
-            return NextResponse.json({ success: false, error: "Title cannot exceed 100 characters." }, { status: 400 });
-        }
-        if (description && description.length > 2000) {
-            return NextResponse.json({ success: false, error: "Description cannot exceed 2000 characters." }, { status: 400 });
-        }
+        const { title, description, date, startTime, endTime, venue, registrationLink } = eventData;
 
         // Securely use the authenticated session's clubId instead of trusting frontend input
         const clubId = caller.clubId;
@@ -85,7 +86,7 @@ export async function POST(req) {
                 return NextResponse.json(
                     {
                         success: false,
-                        error: `Venue conflict detectd. Timeslot overlaps with an existing ${event.status} event: "${event.title}" (${event.startTime} - ${event.endTime}).`,
+                        error: `Venue conflict detected. Timeslot overlaps with an existing ${event.status} event: "${event.title}" (${event.startTime} - ${event.endTime}).`,
                     },
                     { status: 409 }
                 );

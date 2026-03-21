@@ -4,11 +4,26 @@
 
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/ToastProvider";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 export default function ManageAdminsPage() {
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
+    const toast = useToast();
+    const confirm = useConfirm();
     const [admins, setAdmins] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
+
+    // Frontend Guard
+    useEffect(() => {
+        if (!authLoading && user && user.role !== "mainAdmin") {
+            router.push("/admin-dashboard");
+        }
+    }, [user, authLoading, router]);
 
     const fetchAdmins = async () => {
         try {
@@ -30,9 +45,11 @@ export default function ManageAdminsPage() {
     }, []);
 
     const handleDelete = async (adminId, adminName) => {
-        if (!confirm(`Are you sure you want to permanently delete the sub-admin account for "${adminName}"? This action cannot be undone.`)) {
-            return;
-        }
+        const confirmed = await confirm(
+            `This will permanently delete the sub-admin account for "${adminName}". This action cannot be undone.`,
+            { title: "Delete Sub-Admin?", confirmText: "Delete", variant: "danger" }
+        );
+        if (!confirmed) return;
 
         try {
             setDeletingId(adminId);
@@ -43,12 +60,13 @@ export default function ManageAdminsPage() {
 
             if (data.success) {
                 setAdmins(admins.filter(a => a.id !== adminId));
+                toast.success(`Sub-admin "${adminName}" deleted successfully.`);
             } else {
-                alert(data.error || "Failed to delete admin");
+                toast.error(data.error || "Failed to delete admin");
             }
         } catch (error) {
             console.error("Error deleting admin:", error);
-            alert("An error occurred while deleting the admin.");
+            toast.error("An error occurred while deleting the admin.");
         } finally {
             setDeletingId(null);
         }

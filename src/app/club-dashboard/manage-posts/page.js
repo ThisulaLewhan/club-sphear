@@ -5,8 +5,12 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useToast } from "@/components/ui/ToastProvider";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 export default function ManagePostsPage() {
+    const toast = useToast();
+    const confirm = useConfirm();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
@@ -38,7 +42,11 @@ export default function ManagePostsPage() {
     }, []);
 
     const handleDelete = async (postId) => {
-        if (!confirm("Are you sure you want to permanently delete this post? This cannot be undone.")) return;
+        const confirmed = await confirm(
+            "This will permanently delete this post. This cannot be undone.",
+            { title: "Delete Post?", confirmText: "Delete", variant: "danger" }
+        );
+        if (!confirmed) return;
 
         try {
             setDeletingId(postId);
@@ -46,11 +54,12 @@ export default function ManagePostsPage() {
             const data = await res.json();
             if (data.success) {
                 setPosts(posts.filter(p => p.id !== postId));
+                toast.success("Post deleted successfully.");
             } else {
-                alert(data.error || "Failed to delete post");
+                toast.error(data.error || "Failed to delete post");
             }
         } catch (error) {
-            alert("An error occurred while deleting.");
+            toast.error("An error occurred while deleting.");
         } finally {
             setDeletingId(null);
         }

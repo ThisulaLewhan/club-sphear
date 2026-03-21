@@ -1,9 +1,15 @@
 import connectDB from "@/lib/mongodb";
 import Event from "@/models/Event";
 import { NextResponse } from "next/server";
+import { hasRole } from "@/lib/auth";
 
 export async function PATCH(req, { params }) {
     try {
+        const isAuthorized = await hasRole(["mainAdmin", "admin"]);
+        if (!isAuthorized) {
+            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
+        }
+
         await connectDB();
         const resolvedParams = await params;
         const id = resolvedParams.id;

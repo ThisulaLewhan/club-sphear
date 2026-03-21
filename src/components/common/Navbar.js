@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import NotificationDropdown from "@/components/common/NotificationDropdown";
@@ -32,6 +33,8 @@ export default function Navbar() {
         const baseLinks = [
             { name: "Home", href: "/" },
             { name: "Clubs & Societies", href: "/clubs" },
+            { name: "About Us", href: "/about" },
+            { name: "Contact Us", href: "/contact" },
         ];
 
         if (!mounted || !user) return baseLinks;
@@ -77,17 +80,15 @@ export default function Navbar() {
                 <div className="flex items-center justify-between h-16">
 
                     {/* logo */}
-                    <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md shadow-indigo-500/30 transition-transform group-hover:scale-105">
-                            <svg viewBox="0 0 24 24" fill="none" className="w-4.5 h-4.5 text-white" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="3" fill="currentColor" />
-                                <ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(45 12 12)" stroke="currentColor" strokeWidth="1.2" />
-                                <ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-45 12 12)" stroke="currentColor" strokeWidth="1.2" />
-                            </svg>
-                        </div>
-                        <span className="font-extrabold text-lg tracking-tight text-zinc-900 hidden sm:block">
-                            Club <span className="text-indigo-600">Sphear</span>
-                        </span>
+                    <Link href="/" className="shrink-0 group">
+                        <Image
+                            src="/logo.svg"
+                            alt="Club Sphear"
+                            width={120}
+                            height={48}
+                            className="h-10 w-auto transition-transform group-hover:scale-105"
+                            priority
+                        />
                     </Link>
 
                     {/* desktop nav links */}
@@ -125,11 +126,10 @@ export default function Navbar() {
                                             : "hover:bg-zinc-100"
                                             }`}
                                     >
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
-                                            <span className="text-xs font-bold text-white">
-                                                {user.name?.substring(0, 2).toUpperCase() || "US"}
-                                            </span>
-                                        </div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 group-hover:text-zinc-900 transition-colors">
+                                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                            <circle cx="12" cy="7" r="4" />
+                                        </svg>
                                         <span className="text-sm font-semibold text-zinc-700 hidden sm:block group-hover:text-zinc-900 max-w-[100px] truncate">
                                             {user.name?.split(" ")[0] || "Profile"}
                                         </span>
@@ -211,11 +211,10 @@ export default function Navbar() {
                                         href={profileHref}
                                         className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
                                     >
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                                            <span className="text-xs font-bold text-white">
-                                                {user.name?.substring(0, 2).toUpperCase() || "US"}
-                                            </span>
-                                        </div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500">
+                                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                            <circle cx="12" cy="7" r="4" />
+                                        </svg>
                                         {user.name || "My Profile"}
                                     </Link>
                                     <button

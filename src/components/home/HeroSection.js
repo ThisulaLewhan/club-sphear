@@ -4,31 +4,84 @@
 
 
 import Link from "next/link";
+import Image from "next/image";
 
 export default function HeroSection() {
     return (
-        <section className="w-full mb-10 mt-4 rounded-3xl bg-gradient-to-r from-indigo-50 via-white to-purple-50 border border-indigo-100 p-8 sm:p-12 text-center flex flex-col items-center justify-center relative overflow-hidden shadow-sm">
-            {/* Decorative background blobs */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none animate-float"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none animate-float" style={{ animationDelay: '2s' }}></div>
+        <section className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] -mt-8 mb-0">
+            {/* Two-column hero: Text on left, image on right */}
+            <div className="max-w-screen-2xl mx-auto px-6 sm:px-10 lg:px-14 py-16 sm:py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+                
+                {/* Left: Text Content */}
+                <div className="flex-1 text-center lg:text-left opacity-0-init animate-fade-in-up">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 mb-6">
+                        <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                        <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">SLIIT Club Management</span>
+                    </div>
 
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-4 relative z-10 opacity-0-init animate-fade-in-up">
-                Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Club Sphear</span>
-            </h1>
-            <p className="text-lg text-zinc-600 max-w-2xl mx-auto mb-8 relative z-10 opacity-0-init animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-                Your central hub to discover campus events, join exciting student societies, and stay updated with everything happening in the community.
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center relative z-10 opacity-0-init animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                <Link href="/clubs" className="px-6 py-2.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-md shadow-indigo-600/20 transition-all hover:scale-105 active:scale-95">
-                    Explore Clubs &amp; Societies
-                </Link>
-                <button
-                    onClick={() => document.getElementById('feed-section')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="px-6 py-2.5 rounded-full bg-white hover:bg-zinc-50 text-zinc-900 font-medium border border-zinc-200 shadow-sm transition-all hover:scale-105 active:scale-95"
-                >
-                    View Posts
-                </button>
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-zinc-900 leading-[1.1] mb-5">
+                        Welcome to{" "}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-500">
+                            Club Sphear
+                        </span>
+                    </h1>
+
+                    <p className="text-lg text-zinc-500 max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+                        Your central hub to discover campus events, join exciting student societies, and stay updated with everything happening in the community.
+                    </p>
+
+                    <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
+                        <Link
+                            href="/clubs"
+                            className="px-7 py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg shadow-indigo-600/20 transition-all hover:scale-105 active:scale-95"
+                        >
+                            Explore Clubs &amp; Societies
+                        </Link>
+                        <button
+                            onClick={() => document.getElementById('feed-section')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="px-7 py-3 rounded-full bg-white hover:bg-zinc-50 text-zinc-700 font-semibold border border-zinc-200 shadow-sm transition-all hover:scale-105 active:scale-95"
+                        >
+                            View Posts
+                        </button>
+                    </div>
+
+                    {/* Stats row */}
+                    <div className="flex items-center gap-8 mt-10 justify-center lg:justify-start opacity-0-init animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                        <div>
+                            <p className="text-2xl font-black text-zinc-900">20+</p>
+                            <p className="text-xs text-zinc-400 font-medium">Active Clubs</p>
+                        </div>
+                        <div className="w-px h-8 bg-zinc-200"></div>
+                        <div>
+                            <p className="text-2xl font-black text-zinc-900">50+</p>
+                            <p className="text-xs text-zinc-400 font-medium">Events/Year</p>
+                        </div>
+                        <div className="w-px h-8 bg-zinc-200"></div>
+                        <div>
+                            <p className="text-2xl font-black text-zinc-900">1000+</p>
+                            <p className="text-xs text-zinc-400 font-medium">Students</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right: Hero Image */}
+                <div className="flex-1 relative max-w-lg w-full opacity-0-init animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+                    <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl shadow-indigo-200/40 border border-zinc-200/50">
+                        <Image
+                            src="/hero-image.png"
+                            alt="Club Sphear Community"
+                            fill
+                            className="object-cover"
+                            priority
+                        />
+                    </div>
+                    {/* Decorative blob behind image */}
+                    <div className="absolute -z-10 -top-6 -right-6 w-full h-full rounded-3xl bg-gradient-to-br from-indigo-100 to-purple-100"></div>
+                </div>
             </div>
+
+            {/* Bottom subtle border */}
+            <div className="border-b border-zinc-100"></div>
         </section>
     );
 }

@@ -4,8 +4,10 @@
 
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
 
 export default function AdminPendingEventsPage() {
+    const toast = useToast();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -44,11 +46,12 @@ export default function AdminPendingEventsPage() {
 
             if (res.ok && json.success) {
                 setEvents(prev => prev.filter(e => e._id !== id));
+                toast.success(`Event ${status} successfully.`);
             } else {
-                alert(`Failed to ${status} event`);
+                toast.error(`Failed to ${status} event`);
             }
         } catch (err) {
-            alert("Network error updating status");
+            toast.error("Network error updating status");
         } finally {
             setActionLoading(null);
         }

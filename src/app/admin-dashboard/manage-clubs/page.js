@@ -4,11 +4,26 @@
 
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/ToastProvider";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 export default function ManageClubsPage() {
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
+    const toast = useToast();
+    const confirm = useConfirm();
     const [clubs, setClubs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
+
+    // Frontend Guard
+    useEffect(() => {
+        if (!authLoading && user && user.role !== "mainAdmin") {
+            router.push("/admin-dashboard");
+        }
+    }, [user, authLoading, router]);
 
     const fetchClubs = async () => {
         try {
@@ -30,9 +45,11 @@ export default function ManageClubsPage() {
     }, []);
 
     const handleDelete = async (clubId, clubName) => {
-        if (!confirm(`Are you sure you want to permanently delete the club "${clubName}" and its login account? This action cannot be undone.`)) {
-            return;
-        }
+        const confirmed = await confirm(
+            `This will permanently delete the club "${clubName}" and its login account. This action cannot be undone.`,
+            { title: "Delete Club?", confirmText: "Delete", variant: "danger" }
+        );
+        if (!confirmed) return;
 
         try {
             setDeletingId(clubId);
@@ -43,12 +60,13 @@ export default function ManageClubsPage() {
 
             if (data.success) {
                 setClubs(clubs.filter(c => c.id !== clubId));
+                toast.success(`Club "${clubName}" deleted successfully.`);
             } else {
-                alert(data.error || "Failed to delete club");
+                toast.error(data.error || "Failed to delete club");
             }
         } catch (error) {
             console.error("Error deleting club:", error);
-            alert("An error occurred while deleting the club.");
+            toast.error("An error occurred while deleting the club.");
         } finally {
             setDeletingId(null);
         }

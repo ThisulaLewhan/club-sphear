@@ -58,13 +58,6 @@ export default function AdminSidebar() {
       {/* Logo / Branding */}
       <div className="px-6 pt-7 pb-5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
-            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="3" fill="currentColor" />
-              <ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(45 12 12)" stroke="currentColor" strokeWidth="1.2" />
-              <ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-45 12 12)" stroke="currentColor" strokeWidth="1.2" />
-            </svg>
-          </div>
           <h2 className="text-base font-bold text-slate-800 tracking-tight">Admin Panel</h2>
         </div>
       </div>

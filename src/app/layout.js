@@ -5,6 +5,8 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
+import ToastProvider from "@/components/ui/ToastProvider";
+import ConfirmProvider from "@/components/ui/ConfirmModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,13 +26,17 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" data-theme="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-white`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-white overflow-x-hidden`}>
         <AuthProvider>
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
+          <ToastProvider>
+            <ConfirmProvider>
+              <Navbar />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </ConfirmProvider>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

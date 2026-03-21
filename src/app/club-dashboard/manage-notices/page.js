@@ -4,8 +4,12 @@
 
 
 import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 
 export default function ManageNoticesPage() {
+    const toast = useToast();
+    const confirm = useConfirm();
     const [notices, setNotices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
@@ -35,7 +39,11 @@ export default function ManageNoticesPage() {
     }, []);
 
     const handleDelete = async (noticeId, noticeTitle) => {
-        if (!confirm(`Are you sure you want to permanently delete the notice "${noticeTitle}"?`)) return;
+        const confirmed = await confirm(
+            `This will permanently delete the notice "${noticeTitle}".`,
+            { title: "Delete Notice?", confirmText: "Delete", variant: "danger" }
+        );
+        if (!confirmed) return;
 
         try {
             setDeletingId(noticeId);
@@ -43,11 +51,12 @@ export default function ManageNoticesPage() {
             const data = await res.json();
             if (data.success) {
                 setNotices(notices.filter(n => n.id !== noticeId));
+                toast.success(`Notice "${noticeTitle}" deleted successfully.`);
             } else {
-                alert(data.error || "Failed to delete notice");
+                toast.error(data.error || "Failed to delete notice");
             }
         } catch (error) {
-            alert("An error occurred while deleting.");
+            toast.error("An error occurred while deleting.");
         } finally {
             setDeletingId(null);
         }
@@ -79,11 +88,12 @@ export default function ManageNoticesPage() {
             if (data.success) {
                 setNotices(notices.map(n => n.id === noticeId ? { ...n, title: editTitle, content: editContent, priority: editPriority } : n));
                 cancelEdit();
+                toast.success("Notice updated successfully.");
             } else {
-                alert(data.error || "Failed to update notice");
+                toast.error(data.error || "Failed to update notice");
             }
         } catch (error) {
-            alert("An error occurred while saving.");
+            toast.error("An error occurred while saving.");
         } finally {
             setSavingId(null);
         }

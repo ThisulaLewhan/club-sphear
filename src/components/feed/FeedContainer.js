@@ -61,7 +61,7 @@ export default function FeedContainer({ searchQuery = "" }) {
                         onClick={() => setActiveTab("posts")}
                         className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
                             activeTab === "posts"
-                                ? "bg-[#7C5DFF] text-white shadow-md"
+                                ? "bg-indigo-600 text-white shadow-md"
                                 : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                         }`}
                     >
@@ -71,7 +71,7 @@ export default function FeedContainer({ searchQuery = "" }) {
                         onClick={() => setActiveTab("notices")}
                         className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
                             activeTab === "notices"
-                                ? "bg-[#7C5DFF] text-white shadow-md"
+                                ? "bg-indigo-600 text-white shadow-md"
                                 : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                         }`}
                     >
