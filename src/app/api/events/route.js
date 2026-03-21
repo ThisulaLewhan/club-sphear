@@ -1,6 +1,7 @@
 import connectDB from "@/lib/mongodb";
 import Event from "@/models/Event";
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 import fs from "fs/promises";
 import path from "path";
 
@@ -27,6 +28,11 @@ export async function POST(req) {
     try {
         await connectDB();
 
+        const caller = await getCurrentUser();
+        if (!caller || caller.role !== "club" || !caller.clubId) {
+            return NextResponse.json({ success: false, error: "Unauthorized: Only registered Clubs can create events." }, { status: 403 });
+        }
+
         // Parse the incoming multipart/form-data
         const formData = await req.formData();
 
@@ -38,7 +44,9 @@ export async function POST(req) {
         const endTime = formData.get("endTime");
         const venue = formData.get("venue");
         const registrationLink = formData.get("registrationLink");
-        const clubId = formData.get("clubId");
+
+        // Securely use the authenticated session's clubId instead of trusting frontend input
+        const clubId = caller.clubId;
 
         // Time Validation
         if (startTime >= endTime) {

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Notice from '@/models/Notice';
+import Club from '@/models/Club';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET() {
     try {
@@ -13,17 +15,29 @@ export async function GET() {
     }
 }
 
+// CREATE notice — only authenticated club accounts
 export async function POST(request) {
     try {
+        const caller = await getCurrentUser();
+        if (!caller || caller.role !== 'club' || !caller.clubId) {
+            return NextResponse.json({ error: 'Unauthorized: Only registered Clubs can create notices.' }, { status: 403 });
+        }
+
         await connectDB();
+
+        // Resolve the club's real name from the database
+        const club = await Club.findById(caller.clubId).lean();
+        if (!club) {
+            return NextResponse.json({ error: 'Club account not found.' }, { status: 404 });
+        }
+
         const body = await request.json();
 
-        // In a real app, author/club would come from the authenticated session
         const doc = {
             title: body.title,
             content: body.content,
-            author: body.author || 'Club Admin',
-            club: body.club || 'Computer Science Society',
+            author: caller.email, // Use authenticated email
+            club: club.name,      // Use the real club name from DB
             priority: body.priority || 'normal',
             expiresAt: body.expiresAt || null,
         };

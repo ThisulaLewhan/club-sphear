@@ -2,59 +2,71 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import Club from "@/models/Club";
-import { getCurrentUser, hasRole } from "@/lib/auth-utils";
+import { getCurrentUser } from "@/lib/auth";
+import bcrypt from "bcryptjs";
 
 export async function POST(req) {
   try {
-    const isMainAdmin = await hasRole("mainAdmin");
-    if (!isMainAdmin) {
-      return NextResponse.json({ error: "Unauthorized: Only Main Admin can perform this action" }, { status: 403 });
+    // Verify caller is mainAdmin using real JWT auth
+    const caller = await getCurrentUser();
+    if (!caller || caller.role !== "mainAdmin") {
+      return NextResponse.json(
+        { error: "Unauthorized: Only Main Admin can create clubs" },
+        { status: 403 }
+      );
     }
 
     const body = await req.json();
-    const { clubName, description, clubEmail, password } = body;
+    const { clubName, category, description, clubEmail, password } = body;
 
-    if (!clubName || !clubEmail || !password) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!clubName || !category || !clubEmail || !password) {
+      return NextResponse.json({ error: "Club name, category, email, and password are required" }, { status: 400 });
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
     await connectDB();
 
-    // Check if club name already exists
-    const existingClub = await Club.findOne({ name: clubName });
+    // Check for duplicate club name
+    const existingClub = await Club.findOne({ name: clubName.trim() });
     if (existingClub) {
-      return NextResponse.json({ error: "Club name already exists" }, { status: 400 });
+      return NextResponse.json({ error: "A club with this name already exists" }, { status: 409 });
     }
 
-    // Check if user email already exists
-    const existingUser = await User.findOne({ email: clubEmail });
+    // Check for duplicate email
+    const existingUser = await User.findOne({ email: clubEmail.toLowerCase().trim() });
     if (existingUser) {
-      return NextResponse.json({ error: "Email already exists" }, { status: 400 });
+      return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
     }
 
-    // Create Club Document First
-    const currentUser = await getCurrentUser();
-    
+    // Create Club document
     const newClub = await Club.create({
-      name: clubName,
+      name: clubName.trim(),
+      category,
       description: description || "",
-      createdBy: currentUser.id
+      createdBy: caller.userId,
     });
 
-    // Create User Document assigned to Club
-    // Note: Password should be hashed in production
+    // Hash password with bcrypt
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create User document linked to the club
     const newUser = await User.create({
-      name: clubName, // Club's user account name correlates to the club name
-      email: clubEmail,
-      password,
+      name: clubName.trim(),
+      email: clubEmail.toLowerCase().trim(),
+      password: hashedPassword,
       role: "club",
-      clubId: newClub._id
+      clubId: newClub._id,
     });
 
-    return NextResponse.json({ 
-      message: "Club and account created successfully", 
-      club: newClub,
-      user: { id: newUser._id, email: newUser.email, role: newUser.role }
+    return NextResponse.json({
+      success: true,
+      message: "Club account created successfully",
+      club: { id: newClub._id, name: newClub.name },
+      user: { id: newUser._id, email: newUser.email, role: newUser.role },
     }, { status: 201 });
 
   } catch (error) {

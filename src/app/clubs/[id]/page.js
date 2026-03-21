@@ -2,41 +2,44 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import Modal from "@/components/common/Modal";
 import JoinClubForm from "@/components/clubs/JoinClubForm";
-
-const dummyClubs = [
-    { id: "ieee", name: "IEEE", category: "Technology & Innovation", image: "/images/logo-bar/IEEE.png", cover: "bg-gradient-to-tr from-blue-600 to-indigo-600", description: "The Institute of Electrical and Electronics Engineers is the world's largest technical professional organization dedicated to advancing technology for the benefit of humanity. Join us for workshops, hackathons, and networking with tech leaders." },
-    { id: "aiesec", name: "AIESEC", category: "Community & Social", image: "/images/logo-bar/aiesec.png", cover: "bg-gradient-to-tr from-blue-400 to-blue-600", description: "AIESEC is a globally recognized youth-led organization focusing on developing leadership through global exchanges and internships." },
-    { id: "architecture-club", name: "Architecture Club", category: "Arts & Humanities", image: "/images/logo-bar/architecture.png", cover: "bg-gradient-to-tr from-stone-500 to-stone-700", description: "A creative space for students passionate about building design, urban planning, and architectural heritage." },
-    { id: "engineering-society", name: "Engineering Society", category: "Academic & Professional", image: "/images/logo-bar/engineering.png", cover: "bg-gradient-to-tr from-emerald-500 to-teal-700", description: "Connecting engineering students across disciplines to collaborate on innovative projects and foster professional growth." },
-    { id: "fcsc", name: "FCSC", category: "Technology & Innovation", image: "/images/logo-bar/fcsc.png", cover: "bg-gradient-to-tr from-indigo-500 to-purple-600", description: "Faculty of Computing Student Community. Organizing the biggest tech events, code camps, and career fairs for computing students." },
-    { id: "gaming-club", name: "Gaming Club", category: "Recreation & Esports", image: "/images/logo-bar/gaming.png", cover: "bg-gradient-to-tr from-violet-500 to-fuchsia-600", description: "For casual and competitive gamers alike! Join our tournaments, game dev workshops, and community game nights." },
-    { id: "gavel-club", name: "Gavel Club", category: "Business & Leadership", image: "/images/logo-bar/gavel.png", cover: "bg-gradient-to-tr from-red-500 to-rose-700", description: "An affiliate of Toastmasters International. We help students develop exceptional public speaking and leadership abilities." },
-    { id: "humanities-society", name: "Humanities Society", category: "Arts & Humanities", image: "/images/logo-bar/humanities.png", cover: "bg-gradient-to-tr from-amber-500 to-orange-600", description: "Connecting thinkers, writers, and artists. We host open mics, debates, and cultural showcases." },
-    { id: "leo-club", name: "Leo Club", category: "Community & Social", image: "/images/logo-bar/leo.png", cover: "bg-gradient-to-tr from-yellow-400 to-yellow-600", description: "Leadership, Experience, Opportunity. Leos discover how they can lead positive change in their communities whilst making new friends and developing skills." },
-    { id: "media-unit", name: "Media Unit", category: "Media & Communications", image: "/images/logo-bar/mediaunit.png", cover: "bg-gradient-to-tr from-sky-400 to-blue-600", description: "The official broadcasting and media coverage team. Join us to learn photography, videography, and event coverage." },
-    { id: "rotaract", name: "Rotaract", category: "Community & Social", image: "/images/logo-bar/rotract.png", cover: "bg-gradient-to-tr from-pink-500 to-rose-600", description: "Rotaract brings together people to exchange ideas with leaders in the community, develop leadership and professional skills, and have fun through service." },
-    { id: "sbsc", name: "SBSC", category: "Business & Leadership", image: "/images/logo-bar/sbsc.png", cover: "bg-gradient-to-tr from-cyan-500 to-cyan-700", description: "SLIIT Business School Student Community. Empowering future entrepreneurs and corporate leaders through networking and workshops." },
-    { id: "seds", name: "SEDS", category: "Technology & Innovation", image: "/images/logo-bar/seds.PNG", cover: "bg-gradient-to-tr from-slate-700 to-slate-900", description: "Students for the Exploration and Development of Space. Reach for the stars with our astronomy camps and aerospace projects." },
-    { id: "student-interactive", name: "Student Interactive", category: "Community & Social", image: "/images/logo-bar/student interactive.png", cover: "bg-gradient-to-tr from-purple-500 to-indigo-600", description: "The central student interactive society focused on orienting new students and organizing massive university-wide social events." },
-];
 
 export default function ClubDetailsPage({ params }) {
     // Unwrap params using React.use() as per Next.js 15+ warnings for dynamic route params
     const resolvedParams = use(params);
     const clubId = resolvedParams.id;
 
+    const [club, setClub] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
-    const club = dummyClubs.find(c => c.id === clubId);
+    useEffect(() => {
+        const fetchClubData = async () => {
+            try {
+                const res = await fetch(`/api/clubs/${clubId}`);
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        notFound();
+                    }
+                    throw new Error("Failed to fetch club data");
+                }
+                const data = await res.json();
+                if (data.success) {
+                    setClub(data.data);
+                }
+            } catch (error) {
+                console.error("Error loading club details:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    if (!club) {
-        notFound();
-    }
+        if (clubId) fetchClubData();
+    }, [clubId]);
 
     const handleJoinSuccess = () => {
         setIsModalOpen(false);
@@ -44,26 +47,21 @@ export default function ClubDetailsPage({ params }) {
         setTimeout(() => setShowSuccess(false), 3000);
     };
 
+    if (loading) {
+        return (
+            <div className="flex flex-col min-h-screen bg-[#f8f9fc] dark:bg-black font-sans pb-20 p-8 items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
+            </div>
+        );
+    }
+
+    if (!club) {
+        return notFound();
+    }
+
     return (
         <div className="flex flex-col min-h-screen bg-[#f8f9fc] dark:bg-black font-sans text-zinc-900 dark:text-zinc-50 pb-20">
-            {/* Header / Navbar */}
-            <header className="w-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 p-4 sticky top-0 z-40 transition-all">
-                <div className="max-w-screen-2xl mx-auto flex items-center justify-between gap-4">
-                    <Link href="/" className="flex items-center gap-3 font-bold text-xl group cursor-pointer shrink-0">
-                        <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-fuchsia-500 shadow-lg transform transition-all duration-300 group-hover:scale-105 overflow-hidden">
-                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-white mix-blend-overlay opacity-90"><circle cx="20" cy="20" r="5" fill="currentColor" /><ellipse cx="20" cy="20" rx="14" ry="5" transform="rotate(45 20 20)" stroke="currentColor" strokeWidth="1.5" /><ellipse cx="20" cy="20" rx="14" ry="5" transform="rotate(-45 20 20)" stroke="currentColor" strokeWidth="1.5" /><circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="1" strokeDasharray="2 4" /></svg>
-                        </div>
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-[length:200%_auto] font-extrabold tracking-tight hidden sm:block">
-                            Club Sphear
-                        </span>
-                    </Link>
 
-                    <nav className="text-sm font-semibold hidden lg:flex items-center gap-6 mr-2">
-                        <Link href="/" className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">Home</Link>
-                        <Link href="/clubs" className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">Clubs & Societies</Link>
-                    </nav>
-                </div>
-            </header>
 
             {/* Success Toast */}
             {showSuccess && (
@@ -96,11 +94,11 @@ export default function ClubDetailsPage({ params }) {
                         <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-start sm:items-end -mt-16 sm:-mt-20 mb-6">
 
                             {/* Profile Picture */}
-                            <div className="w-32 h-32 sm:w-40 sm:h-40 shrink-0 rounded-full border-8 border-white dark:border-zinc-900 bg-white dark:bg-zinc-800 flex items-center justify-center font-black text-5xl shadow-lg relative z-10 overflow-hidden">
-                                {club.image ? (
-                                    <Image src={club.image} alt={club.name} fill className="object-contain p-4" sizes="160px" />
+                            <div className="w-32 h-32 sm:w-40 sm:h-40 shrink-0 rounded-full border-8 border-white dark:border-zinc-900 bg-white dark:bg-zinc-800 flex items-center justify-center font-black text-5xl text-indigo-500 shadow-lg relative z-10 overflow-hidden">
+                                {club.logo ? (
+                                    <Image src={club.logo} alt={club.name} fill className="object-contain p-4" sizes="160px" />
                                 ) : (
-                                    <span className="text-zinc-400">{club.name.charAt(0)}</span>
+                                    <span className="opacity-80 drop-shadow-sm">{club.name.charAt(0)}</span>
                                 )}
                             </div>
 
@@ -129,24 +127,53 @@ export default function ClubDetailsPage({ params }) {
                         <div className="mt-2 max-w-3xl">
                             <h3 className="font-bold text-lg mb-2 text-zinc-900 dark:text-zinc-100">About</h3>
                             <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-lg">
-                                {club.description}
+                                {club.description || "No description provided."}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                {/* Content Tabs (Just a visual mockup for layout) */}
                 <div className="w-full mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 px-4 sm:px-0 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
 
                     {/* Left Col: Activity Feed */}
                     <div className="md:col-span-2 flex flex-col gap-6">
-                        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 flex flex-col items-center justify-center min-h-[300px] text-center shadow-sm">
-                            <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 text-zinc-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+                        {club.posts && club.posts.length > 0 ? (
+                            club.posts.map((post) => (
+                                <div key={post.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
+                                    <div className="p-5 flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-800">
+                                        <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                                            {club.logo ? (
+                                                <Image src={club.logo} alt={club.name} width={40} height={40} className="rounded-full object-cover" />
+                                            ) : (
+                                                club.name.charAt(0)
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-sm text-zinc-800 dark:text-zinc-100">{club.name}</p>
+                                            <p className="text-xs text-zinc-500">{new Date(post.createdAt).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-5 overflow-hidden">
+                                        <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-full break-words whitespace-pre-wrap">{post.content}</p>
+                                    </div>
+
+                                    {post.image && (
+                                        <div className="relative w-full h-80 bg-zinc-100 dark:bg-zinc-800 mt-2">
+                                            <Image src={post.image} alt="Post attachment" fill className="object-cover" />
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 flex flex-col items-center justify-center min-h-[300px] text-center shadow-sm">
+                                <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 text-zinc-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-zinc-700 dark:text-zinc-300 mb-2">No recent posts</h3>
+                                <p className="text-zinc-500 dark:text-zinc-500 max-w-xs">This club hasn't posted anything to their feed yet. Check back later!</p>
                             </div>
-                            <h3 className="text-xl font-bold text-zinc-700 dark:text-zinc-300 mb-2">No recent posts</h3>
-                            <p className="text-zinc-500 dark:text-zinc-500 max-w-xs">This club hasn't posted anything to their feed yet. Check back later!</p>
-                        </div>
+                        )}
                     </div>
 
                     {/* Right Col: widgets */}
@@ -165,7 +192,7 @@ export default function ClubDetailsPage({ params }) {
                                             EX
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Student Name</p>
+                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Member {i}</p>
                                             <p className="text-xs text-zinc-500">{['President', 'Secretary', 'Treasurer'][i - 1]}</p>
                                         </div>
                                     </div>

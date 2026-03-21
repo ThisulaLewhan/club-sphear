@@ -1,35 +1,87 @@
-import { getCurrentUser } from "@/lib/auth-utils";
+"use client";
 
-export default async function AdminDashboardOverview() {
-  const user = await getCurrentUser();
+import Link from "next/link";
+import { useAuth } from "@/components/auth/AuthProvider";
+
+export default function AdminDashboardOverview() {
+  const { user } = useAuth();
+
+  const statCards = [
+    { label: "Pending Events", value: "—", color: "from-amber-500 to-orange-500", href: "/admin-dashboard/pending-events" },
+    { label: "Active Clubs", value: "—", color: "from-emerald-500 to-teal-500", href: "#" },
+    { label: "Total Members", value: "—", color: "from-blue-500 to-indigo-500", href: "#" },
+  ];
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard Overview</h1>
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Welcome back, {user?.name || "Admin"}!</h2>
-        <p className="text-gray-600 mb-6">
-          This is the admin control panel. You are logged in as a <strong>{user?.role === "mainAdmin" ? "Main Admin" : "Admin"}</strong>.
+      {/* Page header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+        <p className="text-slate-500 mt-1">
+          Welcome back, <span className="font-semibold text-slate-700">{user?.name || "Admin"}</span>. You are logged in as{" "}
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-xs font-semibold">
+            {user?.role === "mainAdmin" ? "Main Admin" : "Admin"}
+          </span>
         </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {user?.role === "mainAdmin" && (
-            <>
-              <div className="bg-blue-50 p-5 rounded-lg border border-blue-100">
-                <h3 className="font-semibold text-blue-800 mb-2">Account Management</h3>
-                <p className="text-sm text-blue-600 mb-4">Create new administrator or club accounts for the platform.</p>
-                <div className="flex gap-3">
-                  <a href="/admin-dashboard/create-admin" className="text-sm bg-blue-600 text-white px-4 py-2 rounded shadow-sm hover:bg-blue-700 transition">Create Admin</a>
-                  <a href="/admin-dashboard/create-club" className="text-sm bg-white text-blue-600 border border-blue-200 px-4 py-2 rounded shadow-sm hover:bg-blue-50 transition">Create Club</a>
-                </div>
+      </div>
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+        {statCards.map((card) => (
+          <Link key={card.label} href={card.href} className="group relative overflow-hidden bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition-all duration-300">
+            <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${card.color} rounded-full -translate-y-8 translate-x-8 opacity-10 group-hover:opacity-20 transition-opacity`}></div>
+            <p className="text-sm font-medium text-slate-500">{card.label}</p>
+            <p className="text-3xl font-bold text-slate-900 mt-1">{card.value}</p>
+          </Link>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {user?.role === "mainAdmin" && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" x2="19" y1="8" y2="14" /><line x1="22" x2="16" y1="11" y2="11" /></svg>
               </div>
-            </>
-          )}
-          <div className="bg-purple-50 p-5 rounded-lg border border-purple-100">
-            <h3 className="font-semibold text-purple-800 mb-2">Profile</h3>
-            <p className="text-sm text-purple-600 mb-4">Manage your personal account settings and password.</p>
-            <a href="/admin-profile" className="inline-block text-sm bg-purple-600 text-white px-4 py-2 rounded shadow-sm hover:bg-purple-700 transition">Edit Profile</a>
+              <div>
+                <h3 className="font-bold text-slate-900">Account Management</h3>
+                <p className="text-sm text-slate-500">Create new administrator or club accounts</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href="/admin-dashboard/create-admin"
+                className="flex-1 text-center text-sm bg-slate-900 text-white px-4 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-colors"
+              >
+                Create Admin
+              </Link>
+              <Link
+                href="/admin-dashboard/create-club"
+                className="flex-1 text-center text-sm bg-white text-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Create Club
+              </Link>
+            </div>
           </div>
+        )}
+
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900">My Profile</h3>
+              <p className="text-sm text-slate-500">View and manage your account settings</p>
+            </div>
+          </div>
+          <Link
+            href="/admin-dashboard/profile"
+            className="block text-center text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2.5 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm"
+          >
+            View Profile
+          </Link>
         </div>
       </div>
     </div>
