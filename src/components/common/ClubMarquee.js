@@ -26,7 +26,7 @@ export default function ClubMarquee() {
     const marqueeItems = [...dummyClubs, ...dummyClubs];
 
     return (
-        <div className="w-full overflow-hidden bg-white border-y border-zinc-200 dark:border-zinc-800 py-4 mb-8">
+        <div className="w-full overflow-hidden bg-white border-y border-zinc-200 py-4 mb-8">
             <div className="flex w-[200%] animate-marquee">
                 {marqueeItems.map((club, idx) => (
                     <Link
