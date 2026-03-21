@@ -1,6 +1,4 @@
-import RoleGuard from "@/components/admin/RoleGuard";
-
+// Layout handled by parent admin-dashboard layout
 export default function CreateClubLayout({ children }) {
-  // Only mainAdmin can access the create-club page
-  return <RoleGuard allowedRoles={["mainAdmin"]}>{children}</RoleGuard>;
+  return <>{children}</>;
 }

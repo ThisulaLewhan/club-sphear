@@ -24,6 +24,7 @@ export function createToken(user) {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
+      ...(user.clubId && { clubId: user.clubId.toString() }),
     },
     JWT_SECRET,
     { expiresIn: TOKEN_EXPIRY }

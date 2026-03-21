@@ -1,40 +1,53 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
-import { hasRole } from "@/lib/auth-utils";
+import { getCurrentUser } from "@/lib/auth";
+import bcrypt from "bcryptjs";
 
 export async function POST(req) {
   try {
-    const isMainAdmin = await hasRole("mainAdmin");
-    if (!isMainAdmin) {
-      return NextResponse.json({ error: "Unauthorized: Only Main Admin can perform this action" }, { status: 403 });
+    // Verify caller is mainAdmin using real JWT auth
+    const caller = await getCurrentUser();
+    if (!caller || caller.role !== "mainAdmin") {
+      return NextResponse.json(
+        { error: "Unauthorized: Only Main Admin can create admin accounts" },
+        { status: 403 }
+      );
     }
 
     const body = await req.json();
     const { name, email, password } = body;
 
     if (!name || !email || !password) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 });
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
     await connectDB();
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
-      return NextResponse.json({ error: "Email already exists" }, { status: 400 });
+      return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
     }
 
-    // Note: In a production app, the password MUST be hashed before saving
+    // Hash password with bcrypt
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const newUser = await User.create({
-      name,
-      email,
-      password, // Assuming auth module might handle hashing on pre-save or it should be added here
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
       role: "admin",
     });
 
-    return NextResponse.json({ 
-      message: "Admin created successfully", 
-      user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role } 
+    return NextResponse.json({
+      success: true,
+      message: "Admin account created successfully",
+      user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role },
     }, { status: 201 });
 
   } catch (error) {

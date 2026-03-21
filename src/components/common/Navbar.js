@@ -41,14 +41,10 @@ export default function Navbar() {
             case "mainAdmin":
                 return [
                     ...baseLinks,
-                    { name: "Dashboard", href: "/admin-dashboard" },
-                    { name: "Pending Events", href: "/admin/events/pending" },
                 ];
             case "club":
                 return [
                     ...baseLinks,
-                    { name: "Create Event", href: "/events/new" },
-                    { name: "My Club", href: `/club-profile/${user.id || user.userId}` },
                 ];
             case "student":
             default:
@@ -61,14 +57,21 @@ export default function Navbar() {
 
     const navLinks = getNavLinks();
     const isAdmin = mounted && user && (user.role === "admin" || user.role === "mainAdmin");
+    const isClub = mounted && user && user.role === "club";
+
+    const getProfileHref = () => {
+        if (isAdmin) return "/admin-dashboard";
+        if (isClub) return "/club-dashboard";
+        return "/profile";
+    };
+    const profileHref = getProfileHref();
 
     return (
         <header
-            className={`w-full sticky top-0 z-[100] transition-all duration-300 ${
-                scrolled
-                    ? "bg-white/95 backdrop-blur-xl shadow-sm border-b border-zinc-100"
-                    : "bg-white border-b border-zinc-200"
-            }`}
+            className={`w-full sticky top-0 z-[100] transition-all duration-300 ${scrolled
+                ? "bg-white/95 backdrop-blur-xl shadow-sm border-b border-zinc-100"
+                : "bg-white border-b border-zinc-200"
+                }`}
         >
             <div className="max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-6">
                 <div className="flex items-center justify-between h-16">
@@ -95,11 +98,10 @@ export default function Navbar() {
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                                        isActive
-                                            ? "bg-indigo-50 text-indigo-700"
-                                            : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
-                                    }`}
+                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${isActive
+                                        ? "bg-indigo-50 text-indigo-700"
+                                        : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
+                                        }`}
                                 >
                                     {link.name}
                                 </Link>
@@ -117,12 +119,11 @@ export default function Navbar() {
                             user ? (
                                 <div className="flex items-center gap-2">
                                     <Link
-                                        href={isAdmin ? "/admin-profile" : "/profile"}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200 group ${
-                                            (pathname === "/profile" || pathname === "/admin-profile")
-                                                ? "bg-indigo-50"
-                                                : "hover:bg-zinc-100"
-                                        }`}
+                                        href={profileHref}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200 group ${(pathname === "/profile" || pathname.startsWith("/admin-dashboard") || pathname.startsWith("/club-dashboard"))
+                                            ? "bg-indigo-50"
+                                            : "hover:bg-zinc-100"
+                                            }`}
                                     >
                                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
                                             <span className="text-xs font-bold text-white">
@@ -193,11 +194,10 @@ export default function Navbar() {
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                                        isActive
-                                            ? "bg-indigo-50 text-indigo-700"
-                                            : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
-                                    }`}
+                                    className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${isActive
+                                        ? "bg-indigo-50 text-indigo-700"
+                                        : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+                                        }`}
                                 >
                                     {link.name}
                                 </Link>
@@ -208,7 +208,7 @@ export default function Navbar() {
                             {mounted && user ? (
                                 <div className="flex flex-col gap-1">
                                     <Link
-                                        href={isAdmin ? "/admin-profile" : "/profile"}
+                                        href={profileHref}
                                         className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
                                     >
                                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">

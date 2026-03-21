@@ -57,7 +57,9 @@ export default function LoginForm() {
     try {
       const result = await login(formData.email, formData.password);
       if (result.success) {
-        router.push(searchParams.get("redirect") || "/profile");
+        const role = result.user?.role;
+        const defaultPath = (role === "mainAdmin" || role === "admin") ? "/admin-dashboard" : (role === "club" ? "/club-dashboard" : "/profile");
+        router.push(searchParams.get("redirect") || defaultPath);
       } else {
         setServerError(result.message || "Login failed.");
       }

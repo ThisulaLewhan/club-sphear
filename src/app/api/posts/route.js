@@ -1,6 +1,8 @@
 import connectDB from "@/lib/mongodb";
 import Post from "@/models/Post";
+import Club from "@/models/Club";
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
@@ -17,13 +19,27 @@ export async function GET() {
     }
 }
 
-// CREATE post
+// CREATE post — only authenticated club accounts
 export async function POST(req) {
     try {
-        const { content, clubName, image } = await req.json();
+        const caller = await getCurrentUser();
+        if (!caller || caller.role !== "club" || !caller.clubId) {
+            return NextResponse.json({ error: "Unauthorized: Only registered Clubs can create posts." }, { status: 403 });
+        }
 
-        if (!content || !clubName || !image) {
-            return NextResponse.json({ error: "All fields including an image are required" }, { status: 400 });
+        await connectDB();
+
+        // Resolve the club's name from the database
+        const club = await Club.findById(caller.clubId).lean();
+        if (!club) {
+            return NextResponse.json({ error: "Club account not found." }, { status: 404 });
+        }
+        const clubName = club.name;
+
+        const { content, image } = await req.json();
+
+        if (!content) {
+            return NextResponse.json({ error: "Content is required" }, { status: 400 });
         }
 
         let imageUrl = null;
@@ -57,11 +73,10 @@ export async function POST(req) {
             }
         }
 
-        await connectDB();
         const newPost = await Post.create({
             content,
             clubName,
-            image: imageUrl // Now this is a lean URL path instead of a massive Base64 string!
+            image: imageUrl
         });
 
         return NextResponse.json(newPost);
