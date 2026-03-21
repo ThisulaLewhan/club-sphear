@@ -1,9 +1,6 @@
 import { cookies } from "next/headers";
 
-/**
- * MOCK FUNCTION: This will be replaced by Lisura's actual auth implementation.
- * Currently, it reads a simulated 'mock-role' cookie for testing purposes.
- */
+// mock function for testing local dev without real auth
 export async function getCurrentUser() {
   const cookieStore = await cookies();
   const mockRole = cookieStore.get("mock-role")?.value; // e.g., 'mainAdmin', 'admin', 'club'

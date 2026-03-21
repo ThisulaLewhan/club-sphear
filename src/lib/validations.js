@@ -1,9 +1,4 @@
-/**
- * Validation Utilities
- * ====================
- * Input validation functions for auth forms and API routes.
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// shared validation logic for inputs
 
 const STUDENT_EMAIL_DOMAIN = "my.sliit.lk";
 const STUDENT_EMAIL_PREFIX = (process.env.NEXT_PUBLIC_STUDENT_EMAIL_PREFIX || "it").toLowerCase();
@@ -17,36 +12,20 @@ export function getStudentEmailFormatMessage() {
   return `Email must match this format: ${STUDENT_EMAIL_PREFIX}12345678@${STUDENT_EMAIL_DOMAIN}`;
 }
 
-/**
- * Validate email format (accepts university-style emails)
- * Accepts: name@university.ac.lk, name@uni.edu, etc.
- * @param {string} email
- * @returns {boolean}
- */
+// checks if an email looks mostly valid
 export function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-/**
- * Validate student registration email format
- * Required format: <prefix><9-digits>@my.sliit.lk
- * Example: it123456789@my.sliit.lk
- * @param {string} email
- * @returns {boolean}
- */
+// checks if it matches my.sliit.lk student email format
 export function isValidStudentEmail(email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
   const emailRegex = new RegExp(`^${escapeRegex(STUDENT_EMAIL_PREFIX)}\\d{${STUDENT_EMAIL_DIGITS}}@${escapeRegex(STUDENT_EMAIL_DOMAIN)}$`);
   return emailRegex.test(normalizedEmail);
 }
 
-/**
- * Validate password strength
- * Requirements: min 6 chars, at least 1 uppercase, 1 lowercase, 1 number
- * @param {string} password
- * @returns {{ valid: boolean, message: string }}
- */
+// checks if the password meets security requirements
 export function validatePassword(password) {
   if (!password || password.length < 6) {
     return { valid: false, message: "Password must be at least 6 characters long" };
@@ -63,11 +42,7 @@ export function validatePassword(password) {
   return { valid: true, message: "" };
 }
 
-/**
- * Validate registration form fields
- * @param {Object} data - { name, email, password, confirmPassword }
- * @returns {{ valid: boolean, errors: Object }}
- */
+// validate full signup data
 export function validateRegistration(data) {
   const errors = {};
 
@@ -100,11 +75,7 @@ export function validateRegistration(data) {
   };
 }
 
-/**
- * Validate login form fields
- * @param {Object} data - { email, password }
- * @returns {{ valid: boolean, errors: Object }}
- */
+// validate login attempt
 export function validateLogin(data) {
   const errors = {};
 
@@ -124,11 +95,7 @@ export function validateLogin(data) {
   };
 }
 
-/**
- * Validate profile update fields
- * @param {Object} data - fields to update
- * @returns {{ valid: boolean, errors: Object }}
- */
+// make sure profile updates are safe
 export function validateProfileUpdate(data) {
   const errors = {};
 
@@ -144,12 +111,12 @@ export function validateProfileUpdate(data) {
     errors.studentId = "Student ID must be under 20 characters";
   }
 
-  // Prevent role modification by students
+  // cant change role
   if (data.role !== undefined) {
     errors.role = "You cannot modify your role";
   }
 
-  // Prevent email modification (for data consistency)
+  // cant change email
   if (data.email !== undefined) {
     errors.email = "Email cannot be changed";
   }

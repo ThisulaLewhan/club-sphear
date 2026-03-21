@@ -1,8 +1,4 @@
-/**
- * Send OTP API Route
- * Sends a 6-digit OTP to the provided email address
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// sends a 6-digit verification code to the student
 
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
@@ -67,15 +63,7 @@ async function sendOtpEmail({ to, otp }) {
   });
 }
 
-/**
- * POST /api/auth/send-otp
- * Sends OTP to email address
- * Requirements:
- * - Email must be valid format
- * - Email must not already be registered
- * - OTP expires after 10 minutes
- * - Previous OTP records are replaced
- */
+// api route to handle sending the code
 export async function POST(req) {
   try {
     const { email } = await req.json();

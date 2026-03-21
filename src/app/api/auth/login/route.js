@@ -1,19 +1,4 @@
-/**
- * POST /api/auth/login
- * ====================
- * Student Login Endpoint
- * 
- * Business Rules:
- * - Email and password are required
- * - Email format must be valid
- * - Credentials are verified against database
- * - Password comparison uses bcrypt (secure)
- * - JWT token is set as HTTP-only cookie on success
- * - Generic error message on invalid credentials (security best practice)
- * - Returns user info (without password) on success
- * 
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// login api route
 
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";

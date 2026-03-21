@@ -1,21 +1,4 @@
-/**
- * GET  /api/auth/me  — Get current authenticated user profile
- * PUT  /api/auth/me  — Update current authenticated user profile
- * ============================================================
- * 
- * Business Rules (GET):
- * - Only authenticated users can access
- * - Returns user profile without password
- * 
- * Business Rules (PUT):
- * - Only authenticated students can update their own profile
- * - Students CANNOT modify: role, email, password (through this endpoint)
- * - Allowed fields: name, university, studentId, bio
- * - Validates all fields before saving
- * - Returns updated user data
- * 
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// fetches or updates current logged in user profile
 
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";

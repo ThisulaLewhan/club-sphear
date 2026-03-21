@@ -1,7 +1,4 @@
-/**
- * Register Page
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// sign up page layout
 
 import RegisterForm from "@/components/auth/RegisterForm";
 

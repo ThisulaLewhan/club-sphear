@@ -1,8 +1,4 @@
-/**
- * Email Verification Model
- * Tracks OTP verification status for registration
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// db model for tracking otp verification
 
 import mongoose from "mongoose";
 
@@ -17,7 +13,7 @@ const EmailVerificationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Auto-delete expired OTP records after 1 hour
+// auto-delete expired otp records after 1 hour
 EmailVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 3600 });
 
 export default mongoose.models.EmailVerification ||

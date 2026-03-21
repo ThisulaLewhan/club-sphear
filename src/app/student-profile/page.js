@@ -1,7 +1,4 @@
-/**
- * Student Profile View Page
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// view student profile
 
 "use client";
 
@@ -10,12 +7,7 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import Link from "next/link";
 
 function ProfileContent() {
-  const { user, logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = "/auth/login";
-  };
+  const { user } = useAuth();
 
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -29,26 +21,9 @@ function ProfileContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border-b border-gray-100 dark:border-zinc-800">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Club Sphear
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/student-profile/edit" className="text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 font-medium transition-colors">
-              Edit Profile
-            </Link>
-            <button onClick={handleLogout} className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors cursor-pointer">
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </nav>
-
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
         <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-indigo-500/5 border border-gray-100 dark:border-zinc-800 overflow-hidden">
-          {/* Header */}
+          {/* profile header */}
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-10 text-center">
             <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-white/20 backdrop-blur text-white text-3xl font-bold shadow-xl ring-4 ring-white/20 mb-4">
               {initials}
@@ -57,7 +32,7 @@ function ProfileContent() {
           </div>
 
           <div className="p-8 space-y-6">
-            {/* Detail Grid */}
+            {/* grid for details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {details.map(({ label, value, icon }) => (
                 <div key={label} className="flex items-start gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/50">
@@ -70,7 +45,7 @@ function ProfileContent() {
               ))}
             </div>
 
-            {/* Bio */}
+            {/* bio section */}
             <div className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/50">
               <div className="flex items-center gap-2 mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-indigo-500"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" /></svg>
@@ -81,7 +56,7 @@ function ProfileContent() {
               </p>
             </div>
 
-            {/* Edit Button */}
+            {/* link to edit page */}
             <Link href="/student-profile/edit" className="flex items-center justify-center gap-2 w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30 active:scale-[0.98]">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
               Edit Profile

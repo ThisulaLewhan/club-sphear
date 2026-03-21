@@ -23,7 +23,7 @@ export default function Navbar() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // Close mobile menu on route change
+    // close mobile menu on route change
     useEffect(() => {
         setIsMenuOpen(false);
     }, [pathname]);
@@ -76,7 +76,7 @@ export default function Navbar() {
             <div className="max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-6">
                 <div className="flex items-center justify-between h-16">
 
-                    {/* Logo */}
+                    {/* logo */}
                     <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md shadow-indigo-500/30 transition-transform group-hover:scale-105">
                             <svg viewBox="0 0 24 24" fill="none" className="w-4.5 h-4.5 text-white" xmlns="http://www.w3.org/2000/svg">
@@ -90,7 +90,7 @@ export default function Navbar() {
                         </span>
                     </Link>
 
-                    {/* Desktop Nav Links */}
+                    {/* desktop nav links */}
                     <nav className="hidden md:flex items-center gap-1">
                         {navLinks.map((link) => {
                             const isActive = pathname === link.href;
@@ -109,12 +109,12 @@ export default function Navbar() {
                         })}
                     </nav>
 
-                    {/* Right Actions */}
+                    {/* right actions */}
                     <div className="flex items-center gap-2">
-                        {/* Notification Bell (logged in only) */}
+                        {/* notification bell */}
                         {mounted && user && <NotificationDropdown />}
 
-                        {/* Auth/Profile Area */}
+                        {/* auth/profile area */}
                         {mounted && (
                             user ? (
                                 <div className="flex items-center gap-2">
@@ -164,7 +164,7 @@ export default function Navbar() {
                             )
                         )}
 
-                        {/* Hamburger */}
+                        {/* hamburger menu */}
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             aria-label="Toggle menu"
@@ -184,7 +184,7 @@ export default function Navbar() {
                 </div>
             </div>
 
-            {/* Mobile Drawer */}
+            {/* mobile drawer */}
             {isMenuOpen && (
                 <div className="md:hidden border-t border-zinc-100 bg-white shadow-xl">
                     <nav className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">

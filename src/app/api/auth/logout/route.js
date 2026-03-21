@@ -1,15 +1,4 @@
-/**
- * POST /api/auth/logout
- * =====================
- * Logout Endpoint
- * 
- * Business Rules:
- * - Removes the auth cookie (destroys session)
- * - Returns success message
- * - Client should redirect to login page
- * 
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// api route for destroying session
 
 import { removeAuthCookie } from "@/lib/auth";
 

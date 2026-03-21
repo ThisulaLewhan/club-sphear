@@ -1,14 +1,4 @@
-/**
- * AuthGuard — Client-Side Route Protection
- * ==========================================
- * Wraps protected page content. Shows loading state while checking auth.
- * Redirects to login if not authenticated.
- * 
- * Note: The middleware handles server-side redirects. This component
- * provides client-side protection and loading states.
- * 
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// client-side wrapper to protect pages from unauthenticated access
 
 "use client";
 

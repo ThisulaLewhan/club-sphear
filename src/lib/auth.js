@@ -1,10 +1,4 @@
-/**
- * Authentication Utilities
- * ========================
- * JWT token creation, verification, and cookie management.
- * Used by: auth API routes (register, login, logout, me)
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// auth utils for tokens and cookies
 
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
@@ -13,11 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "fallback-dev-secret-change-in-prod
 const TOKEN_NAME = "auth_token";
 const TOKEN_EXPIRY = "7d"; // Token valid for 7 days
 
-/**
- * Create a signed JWT token for a user
- * @param {Object} user - User document from MongoDB
- * @returns {string} Signed JWT token
- */
+// create a new token when user logs in or registers
 export function createToken(user) {
   return jwt.sign(
     {
@@ -31,11 +21,7 @@ export function createToken(user) {
   );
 }
 
-/**
- * Verify and decode a JWT token
- * @param {string} token - JWT token string
- * @returns {Object|null} Decoded payload or null if invalid
- */
+// check if token is valid
 export function verifyToken(token) {
   try {
     return jwt.verify(token, JWT_SECRET);
@@ -44,10 +30,7 @@ export function verifyToken(token) {
   }
 }
 
-/**
- * Set the auth token as an HTTP-only cookie
- * @param {string} token - JWT token to store
- */
+// save token to cookie securely
 export async function setAuthCookie(token) {
   const cookieStore = await cookies();
   cookieStore.set(TOKEN_NAME, token, {
@@ -59,19 +42,14 @@ export async function setAuthCookie(token) {
   });
 }
 
-/**
- * Get the auth token from cookies
- * @returns {string|null} Token string or null
- */
+// grab the token from cookie
 export async function getAuthCookie() {
   const cookieStore = await cookies();
   const cookie = cookieStore.get(TOKEN_NAME);
   return cookie?.value || null;
 }
 
-/**
- * Remove the auth cookie (logout)
- */
+// delete cookie on logout
 export async function removeAuthCookie() {
   const cookieStore = await cookies();
   cookieStore.set(TOKEN_NAME, "", {
@@ -83,12 +61,19 @@ export async function removeAuthCookie() {
   });
 }
 
-/**
- * Get current authenticated user payload from cookie
- * @returns {Object|null} User payload { userId, email, role } or null
- */
+// get the currently logged in user info
 export async function getCurrentUser() {
   const token = await getAuthCookie();
   if (!token) return null;
   return verifyToken(token);
+}
+
+// check user role for permissions
+export async function hasRole(requiredRoles) {
+  const user = await getCurrentUser();
+  if (!user) return false;
+  if (!Array.isArray(requiredRoles)) {
+    return user.role === requiredRoles;
+  }
+  return requiredRoles.includes(user.role);
 }

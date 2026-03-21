@@ -1,14 +1,4 @@
-/**
- * Next.js Middleware — Route Protection
- * ======================================
- * Protects routes based on authentication status.
- * 
- * Rules:
- * - /student-profile/* → Requires authentication → redirects to /auth/login if not logged in
- * - /auth/login, /auth/register → Only for unauthenticated users → redirects to /student-profile if logged in
- * 
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// locks down routes so only logged in users can see them
 
 import { NextResponse } from "next/server";
 
@@ -16,22 +6,22 @@ export function middleware(request) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("auth_token")?.value;
 
-  // Protected routes — require authentication
+  // paths that require login
   const protectedPaths = ["/student-profile"];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
-  // Auth routes — only for unauthenticated users
+  // paths only for logged out users
   const authPaths = ["/auth/login", "/auth/register"];
   const isAuthPage = authPaths.some((path) => pathname.startsWith(path));
 
-  // If accessing protected route without token → redirect to login
+  // kick them out to login if they try to access protected stuff without token
   if (isProtected && !token) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // If accessing auth pages with token → redirect to profile
+  // send them away from auth page if already logged in
   if (isAuthPage && token) {
     return NextResponse.redirect(new URL("/student-profile", request.url));
   }
@@ -39,7 +29,7 @@ export function middleware(request) {
   return NextResponse.next();
 }
 
-// Only run middleware on these paths
+// match these paths
 export const config = {
   matcher: ["/student-profile/:path*", "/auth/:path*"],
 };

@@ -1,8 +1,5 @@
-/**
- * Login Page
- * Owner: Lisura (Authentication & Student Profile Module)
- * NOTE: LoginForm uses useSearchParams(), must be wrapped in <Suspense>.
- */
+// login page layout
+// note: LoginForm uses useSearchParams so it needs Suspense
 
 import { Suspense } from "react";
 import LoginForm from "@/components/auth/LoginForm";

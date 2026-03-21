@@ -1,13 +1,4 @@
-/**
- * AuthProvider — Client-Side Auth Context
- * ========================================
- * Provides authentication state to all client components.
- * Fetches current user from /api/auth/me on mount.
- * 
- * Usage: Wrap in root layout or auth-related pages.
- * 
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// holds auth state for entire app
 
 "use client";
 
@@ -21,7 +12,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Fetch current user session
+  // check if user is already logged in
   const fetchUser = useCallback(async () => {
     try {
       const res = await fetch("/api/auth/me");
@@ -42,7 +33,7 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, [fetchUser]);
 
-  // Login function
+  // wrapper for logging in
   const login = async (email, password) => {
     const res = await fetch("/api/auth/login", {
       method: "POST",
@@ -57,7 +48,7 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  // Register function
+  // wrapper for signing up
   const register = async (formData) => {
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -72,7 +63,7 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  // Logout function
+  // wrapper for logging out
   const logout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -83,7 +74,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Update profile
+  // save profile changes
   const updateProfile = async (updateData) => {
     try {
       const res = await fetch("/api/auth/me", {
@@ -133,10 +124,7 @@ export function AuthProvider({ children }) {
   );
 }
 
-/**
- * Custom hook to access auth context
- * @returns {{ user, loading, login, register, logout, updateProfile, refreshUser }}
- */
+// hook to use auth everywhere
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

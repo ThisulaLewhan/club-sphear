@@ -1,7 +1,4 @@
-/**
- * Profile Edit Page
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// old profile edit page
 
 "use client";
 

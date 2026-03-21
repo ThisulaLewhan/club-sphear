@@ -29,9 +29,9 @@ export default function CreateNotice({ onNoticeCreated }) {
                 body: JSON.stringify({
                     title,
                     content,
-                    club: "Club Sphear", // hardcoded until auth is added
+                    club: "Club Sphear", // TODO: hook up to real club data
                     priority,
-                    author: "Club Admin" // hardcoded until auth is added
+                    author: "Club Admin" // TODO: hook up to real user data
                 }),
             });
 
@@ -40,7 +40,7 @@ export default function CreateNotice({ onNoticeCreated }) {
                 try {
                     const errData = await res.json();
                     if (errData.error) errMsg = errData.error;
-                } catch { /* ignore parse error */ }
+                } catch { /* couldn't parse json, just ignore it */ }
                 throw new Error(errMsg);
             }
 

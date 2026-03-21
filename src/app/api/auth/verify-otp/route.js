@@ -1,22 +1,10 @@
-/**
- * Verify OTP API Route
- * Verifies the OTP sent to email address
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// verifies the 6-digit code user enters
 
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import EmailVerification from "@/models/EmailVerification";
 
-/**
- * POST /api/auth/verify-otp
- * Verifies OTP and marks email as verified
- * Requirements:
- * - Email must exist in verification records
- * - OTP must not be expired
- * - OTP must match exactly
- * - Maximum 3 failed attempts allowed
- */
+// api route to handle code verification
 export async function POST(req) {
   try {
     const { email, otp } = await req.json();

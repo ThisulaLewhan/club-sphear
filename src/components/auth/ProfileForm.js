@@ -1,16 +1,11 @@
-/**
- * ProfileForm — Student Profile Edit Form Component
- * ===================================================
- * Polished form with grouped sections, icons, and smooth UX.
- * 
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// student profile edit form
 
 "use client";
 
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { useRouter } from "next/navigation";
+import { inputBase, inputOk, inputErr } from "@/lib/form-styles";
 
 export default function ProfileForm() {
   const { user, updateProfile } = useAuth();
@@ -60,10 +55,6 @@ export default function ProfileForm() {
     finally { setLoading(false); }
   };
 
-  const inputBase = "w-full pl-11 pr-4 py-3 rounded-xl border bg-white dark:bg-zinc-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-200";
-  const inputOk = "border-gray-200 dark:border-zinc-700 focus:ring-indigo-500/30 focus:border-indigo-500";
-  const inputErr = "border-red-400 focus:ring-red-400/30 focus:border-red-400";
-
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-indigo-500/5 border border-gray-100 dark:border-zinc-800 overflow-hidden">
@@ -97,7 +88,7 @@ export default function ProfileForm() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Read-only Section */}
+            {/* stuff user cant edit */}
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
@@ -113,7 +104,7 @@ export default function ProfileForm() {
 
             <div className="border-t border-gray-100 dark:border-zinc-800"></div>
 
-            {/* Editable Section */}
+            {/* stuff user can edit */}
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>

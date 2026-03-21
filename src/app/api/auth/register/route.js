@@ -1,21 +1,4 @@
-/**
- * POST /api/auth/register
- * =======================
- * Student Registration Endpoint
- * 
- * Business Rules:
- * - All required fields must be provided (name, email, password)
- * - Email must be valid format
- * - Email must be verified via OTP before registration
- * - Email must be unique (no duplicate accounts)
- * - Password must meet strength requirements (6+ chars, upper, lower, number)
- * - Password and confirmPassword must match
- * - Password is hashed before storage (bcryptjs)
- * - Role is always set to "student" (cannot be overridden)
- * - Returns success message on successful registration
- * 
- * Owner: Lisura (Authentication & Student Profile Module)
- */
+// api route for student registration
 
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
