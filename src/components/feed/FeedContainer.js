@@ -12,6 +12,7 @@ export default function FeedContainer({ searchQuery = "" }) {
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
+    const [activeTab, setActiveTab] = useState("posts");
 
     const fetchPosts = async () => {
         try {
@@ -53,15 +54,41 @@ export default function FeedContainer({ searchQuery = "" }) {
         <section className="w-full py-8 px-4 sm:px-6 lg:px-8">
             <ClubMarquee />
 
-            <div className="mt-4 border-t border-zinc-200 dark:border-zinc-800 pt-8 w-full flex flex-col gap-10">
-                {/* Notice Board Top Section */}
-                <div className="w-full">
-                    <NoticeBoard searchQuery={searchQuery} />
+            <div className="mt-4 border-t border-zinc-200 dark:border-zinc-800 pt-8 w-full flex flex-col gap-6">
+                {/* Tab Buttons */}
+                <div className="flex justify-center gap-2">
+                    <button
+                        onClick={() => setActiveTab("posts")}
+                        className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                            activeTab === "posts"
+                                ? "bg-[#7C5DFF] text-white shadow-md"
+                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                        }`}
+                    >
+                        Posts
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("notices")}
+                        className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                            activeTab === "notices"
+                                ? "bg-[#7C5DFF] text-white shadow-md"
+                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                        }`}
+                    >
+                        Notices
+                    </button>
                 </div>
 
-                <div className="w-full">
-                    <FeedList posts={filteredPosts} isLoading={isLoading} error={error} />
-                </div>
+                {/* Conditional Content */}
+                {activeTab === "notices" ? (
+                    <div className="w-full">
+                        <NoticeBoard searchQuery={searchQuery} />
+                    </div>
+                ) : (
+                    <div className="w-full">
+                        <FeedList posts={filteredPosts} isLoading={isLoading} error={error} />
+                    </div>
+                )}
             </div>
         </section>
     );

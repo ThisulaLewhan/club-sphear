@@ -28,9 +28,51 @@ export async function PUT(req, context) {
             return NextResponse.json({ error: "Not authorized to edit this post" }, { status: 403 });
         }
 
-        const { content } = await req.json();
-        if (content !== undefined) {
+        const formData = await req.formData();
+        const content = formData.get("content");
+        const newImage = formData.get("image"); // File or null
+        const removeImage = formData.get("removeImage"); // "true" if user deleted image
+
+        // Update caption
+        if (content !== null && content !== undefined) {
             post.content = content;
+        }
+
+        // Handle image removal or replacement
+        if (removeImage === "true" || (newImage && newImage.size > 0)) {
+            // Delete old image file from disk
+            if (post.image && post.image.startsWith('/uploads/posts/')) {
+                try {
+                    const oldPath = path.join(process.cwd(), "public", post.image);
+                    await fs.unlink(oldPath);
+                } catch (err) {
+                    console.error("Could not delete old post image:", err);
+                }
+            }
+
+            if (newImage && newImage.size > 0) {
+                // Save new image
+                const bytes = await newImage.arrayBuffer();
+                const buffer = Buffer.from(bytes);
+                const ext = newImage.name.split(".").pop();
+                const fileName = `post-${params.id}-${Date.now()}.${ext}`;
+                const uploadDir = path.join(process.cwd(), "public", "uploads", "posts");
+                await fs.mkdir(uploadDir, { recursive: true });
+                const filePath = path.join(uploadDir, fileName);
+                await fs.writeFile(filePath, buffer);
+                post.image = `/uploads/posts/${fileName}`;
+            } else {
+                // Image was removed without replacement
+                post.image = "";
+            }
+        }
+
+        // Validation: both content and image are required
+        if (!post.content || !post.content.trim()) {
+            return NextResponse.json({ error: "Caption is required" }, { status: 400 });
+        }
+        if (!post.image) {
+            return NextResponse.json({ error: "Image is required. Please upload a photo." }, { status: 400 });
         }
 
         await post.save();

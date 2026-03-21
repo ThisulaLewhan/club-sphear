@@ -25,10 +25,13 @@ const NoticeSchema = new mongoose.Schema({
     },
     expiresAt: {
         type: Date,
-        // Optional: add a TTL index if you want MongoDB to automatically delete expired notices
+        required: [true, 'Please provide an expiration date for the notice'],
     }
 }, {
     timestamps: true,
 });
+
+// TTL index: MongoDB will automatically delete documents once expiresAt has passed
+NoticeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.models.Notice || mongoose.model('Notice', NoticeSchema);

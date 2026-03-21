@@ -9,7 +9,7 @@ import { getCurrentUser } from '@/lib/auth';
 export async function GET() {
     try {
         await connectDB();
-        const notices = await Notice.find({}).sort({ createdAt: -1 });
+        const notices = await Notice.find({ expiresAt: { $gt: new Date() } }).sort({ createdAt: -1 });
         return NextResponse.json(notices);
     } catch (error) {
         console.error('Error fetching notices:', error);
@@ -45,6 +45,13 @@ export async function POST(request) {
         if (body.content.length > 1000) {
             return NextResponse.json({ error: "Notice content cannot exceed 1000 characters." }, { status: 400 });
         }
+        if (!body.expiresAt) {
+            return NextResponse.json({ error: "Expiration date is required." }, { status: 400 });
+        }
+        const expirationDate = new Date(body.expiresAt);
+        if (isNaN(expirationDate.getTime()) || expirationDate <= new Date()) {
+            return NextResponse.json({ error: "Expiration date must be a valid future date." }, { status: 400 });
+        }
 
         const doc = {
             title: body.title,
@@ -52,7 +59,7 @@ export async function POST(request) {
             author: caller.email, // Use authenticated email
             club: club.name,      // Use the real club name from DB
             priority: body.priority || 'normal',
-            expiresAt: body.expiresAt || null,
+            expiresAt: expirationDate,
         };
 
         const newNotice = await Notice.create(doc);

@@ -12,6 +12,10 @@ export default function ManagePostsPage() {
     const [deletingId, setDeletingId] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [editContent, setEditContent] = useState("");
+    const [editImage, setEditImage] = useState(null);       // existing image URL or null
+    const [editNewFile, setEditNewFile] = useState(null);    // new File to upload
+    const [editImageRemoved, setEditImageRemoved] = useState(false);
+    const [editError, setEditError] = useState("");
     const [savingId, setSavingId] = useState(null);
 
     const fetchPosts = async () => {
@@ -55,34 +59,88 @@ export default function ManagePostsPage() {
     const startEdit = (post) => {
         setEditingId(post.id);
         setEditContent(post.content);
+        setEditImage(post.image || null);
+        setEditNewFile(null);
+        setEditImageRemoved(false);
+        setEditError("");
     };
 
     const cancelEdit = () => {
         setEditingId(null);
         setEditContent("");
+        setEditImage(null);
+        setEditNewFile(null);
+        setEditImageRemoved(false);
+        setEditError("");
+    };
+
+    const handleRemoveImage = () => {
+        setEditImage(null);
+        setEditNewFile(null);
+        setEditImageRemoved(true);
+    };
+
+    const handleNewImage = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setEditNewFile(file);
+            setEditImageRemoved(false);
+            setEditError("");
+        }
     };
 
     const saveEdit = async (postId) => {
+        // Client-side validation
+        if (!editContent || !editContent.trim()) {
+            setEditError("Caption is required.");
+            return;
+        }
+        const hasImage = editNewFile || (editImage && !editImageRemoved);
+        if (!hasImage) {
+            setEditError("Image is required. Please upload a photo.");
+            return;
+        }
+
         try {
             setSavingId(postId);
+            setEditError("");
+
+            const formData = new FormData();
+            formData.append("content", editContent);
+            if (editImageRemoved) {
+                formData.append("removeImage", "true");
+            }
+            if (editNewFile) {
+                formData.append("image", editNewFile);
+            }
+
             const res = await fetch(`/api/posts/${postId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ content: editContent }),
+                body: formData,
             });
             const data = await res.json();
             if (data.success) {
-                setPosts(posts.map(p => p.id === postId ? { ...p, content: editContent } : p));
-                setEditingId(null);
-                setEditContent("");
+                setPosts(posts.map(p => p.id === postId ? {
+                    ...p,
+                    content: data.data.content,
+                    image: data.data.image
+                } : p));
+                cancelEdit();
             } else {
-                alert(data.error || "Failed to update post");
+                setEditError(data.error || "Failed to update post");
             }
         } catch (error) {
-            alert("An error occurred while saving.");
+            setEditError("An error occurred while saving.");
         } finally {
             setSavingId(null);
         }
+    };
+
+    // Determine what image to show in edit mode
+    const getEditPreview = () => {
+        if (editNewFile) return URL.createObjectURL(editNewFile);
+        if (editImage && !editImageRemoved) return editImage;
+        return null;
     };
 
     return (
@@ -109,24 +167,72 @@ export default function ManagePostsPage() {
                     posts.map((post) => (
                         <div key={post.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                             <div className="flex flex-col sm:flex-row">
-                                {/* Image thumbnail */}
-                                {post.image && (
-                                    <div className="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-slate-100">
-                                        <Image src={post.image} alt="Post" fill className="object-cover" />
+                                {/* Image thumbnail / Edit preview */}
+                                {editingId === post.id ? (
+                                    <div className="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-slate-100 flex flex-col items-center justify-center">
+                                        {getEditPreview() ? (
+                                            <>
+                                                <Image src={getEditPreview()} alt="Post" fill className="object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRemoveImage}
+                                                    className="absolute top-2 right-2 z-10 bg-red-500 text-white rounded-full p-1.5 shadow hover:bg-red-600 transition-colors"
+                                                    title="Remove image"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center h-full w-full p-4 text-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 mb-2">
+                                                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                                                </svg>
+                                                <p className="text-xs text-slate-400">No image</p>
+                                            </div>
+                                        )}
                                     </div>
+                                ) : (
+                                    post.image && (
+                                        <div className="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-slate-100">
+                                            <Image src={post.image} alt="Post" fill className="object-cover" />
+                                        </div>
+                                    )
                                 )}
 
                                 {/* Content */}
                                 <div className="flex-1 p-5 flex flex-col justify-between">
                                     <div>
                                         {editingId === post.id ? (
-                                            <textarea
-                                                value={editContent}
-                                                onChange={(e) => setEditContent(e.target.value)}
-                                                rows={3}
-                                                maxLength={500}
-                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none text-sm"
-                                            />
+                                            <>
+                                                <textarea
+                                                    value={editContent}
+                                                    onChange={(e) => { setEditContent(e.target.value); setEditError(""); }}
+                                                    rows={3}
+                                                    maxLength={500}
+                                                    placeholder="Write a caption..."
+                                                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none text-sm"
+                                                />
+
+                                                {/* Image upload input */}
+                                                <label className="mt-3 flex items-center gap-2 cursor-pointer text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="3" y2="15" /></svg>
+                                                    {editNewFile ? "Change image" : "Upload new image"}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={handleNewImage}
+                                                    />
+                                                </label>
+                                                {editNewFile && (
+                                                    <p className="text-xs text-slate-500 mt-1 truncate">Selected: {editNewFile.name}</p>
+                                                )}
+
+                                                {/* Validation error */}
+                                                {editError && (
+                                                    <p className="text-sm text-red-500 mt-2 font-medium">{editError}</p>
+                                                )}
+                                            </>
                                         ) : (
                                             <p className="text-slate-700 text-sm leading-relaxed line-clamp-3">{post.content}</p>
                                         )}
@@ -183,3 +289,4 @@ export default function ManagePostsPage() {
         </div>
     );
 }
+

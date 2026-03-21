@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Club from "@/models/Club";
 import Post from "@/models/Post";
+import Notice from "@/models/Notice";
 
 export async function GET(req, context) {
     try {
@@ -24,6 +25,12 @@ export async function GET(req, context) {
         // Fetch posts for this club
         const posts = await Post.find({ clubName: club.name }).sort({ createdAt: -1 }).lean();
 
+        // Fetch active notices for this club
+        const notices = await Notice.find({ 
+            club: club.name,
+            expiresAt: { $gt: new Date() }
+        }).sort({ createdAt: -1 }).lean();
+
         // Format the club data
         return NextResponse.json({
             success: true,
@@ -35,10 +42,20 @@ export async function GET(req, context) {
                 logo: club.logo || null,
                 cover: "bg-gradient-to-tr from-indigo-500 to-purple-600", // Default gradient if none
                 posts: posts.map(post => ({
-                    id: post._id.toString(),
+                    _id: post._id.toString(),
+                    clubName: post.clubName,
                     content: post.content,
                     image: post.image,
                     createdAt: post.createdAt,
+                })),
+                notices: notices.map(notice => ({
+                    _id: notice._id.toString(),
+                    title: notice.title,
+                    content: notice.content,
+                    club: notice.club,
+                    priority: notice.priority,
+                    createdAt: notice.createdAt,
+                    expiresAt: notice.expiresAt
                 }))
             }
         });

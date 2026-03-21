@@ -9,6 +9,7 @@ export default function ClubCreateNoticePage() {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [priority, setPriority] = useState("normal");
+    const [expiresAt, setExpiresAt] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
@@ -30,6 +31,14 @@ export default function ClubCreateNoticePage() {
             setError("Content must be under 1000 characters.");
             return;
         }
+        if (!expiresAt) {
+            setError("Expiration date is required.");
+            return;
+        }
+        if (new Date(expiresAt) <= new Date()) {
+            setError("Expiration date must be in the future.");
+            return;
+        }
 
         setIsSubmitting(true);
         setError("");
@@ -39,7 +48,7 @@ export default function ClubCreateNoticePage() {
             const res = await fetch("/api/notices", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, content, priority }),
+                body: JSON.stringify({ title, content, priority, expiresAt }),
             });
 
             if (!res.ok) {
@@ -55,6 +64,7 @@ export default function ClubCreateNoticePage() {
             setTitle("");
             setContent("");
             setPriority("normal");
+            setExpiresAt("");
         } catch (err) {
             setError(err.message);
         } finally {
@@ -136,6 +146,20 @@ export default function ClubCreateNoticePage() {
                                 🔴 Urgent
                             </button>
                         </div>
+                    </div>
+
+                    {/* Expiration Date Picker */}
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Expiration Date *</label>
+                        <input
+                            type="date"
+                            value={expiresAt}
+                            onChange={(e) => setExpiresAt(e.target.value)}
+                            min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all"
+                            disabled={isSubmitting}
+                        />
+                        <p className="text-xs text-slate-400 mt-1.5">The notice will be automatically removed after this date.</p>
                     </div>
 
                     <button

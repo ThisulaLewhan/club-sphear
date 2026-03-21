@@ -9,6 +9,7 @@ import { use, useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import Modal from "@/components/common/Modal";
 import JoinClubForm from "@/components/club/JoinClubForm";
+import FeedList from "@/components/feed/FeedList";
 
 export default function ClubDetailsPage({ params }) {
     // Unwrap params using React.use() as per Next.js 15+ warnings for dynamic route params
@@ -19,6 +20,7 @@ export default function ClubDetailsPage({ params }) {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [activeTab, setActiveTab] = useState("posts");
 
     useEffect(() => {
         const fetchClubData = async () => {
@@ -138,43 +140,77 @@ export default function ClubDetailsPage({ params }) {
 
                 <div className="w-full mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 px-4 sm:px-0 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
 
-                    {/* Left Col: Activity Feed */}
-                    <div className="md:col-span-2 flex flex-col gap-6">
-                        {club.posts && club.posts.length > 0 ? (
-                            club.posts.map((post) => (
-                                <div key={post.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
-                                    <div className="p-5 flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-800">
-                                        <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                                            {club.logo ? (
-                                                <Image src={club.logo} alt={club.name} width={40} height={40} className="rounded-full object-cover" />
-                                            ) : (
-                                                club.name.charAt(0)
+                    {/* Left Col: Activity Feed & Notices */}
+                    <div className="md:col-span-2 flex flex-col gap-8">
+                        
+                        {/* Tab Buttons */}
+                        <div className="flex justify-center sm:justify-start gap-2 mb-2">
+                            <button
+                                onClick={() => setActiveTab("posts")}
+                                className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                                    activeTab === "posts"
+                                        ? "bg-[#7C5DFF] text-white shadow-md"
+                                        : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                                }`}
+                            >
+                                Posts
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("notices")}
+                                className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                                    activeTab === "notices"
+                                        ? "bg-[#7C5DFF] text-white shadow-md"
+                                        : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                                }`}
+                            >
+                                Notices {club.notices && club.notices.length > 0 && `(${club.notices.length})`}
+                            </button>
+                        </div>
+
+                        {/* Conditional Content */}
+                        {activeTab === "notices" ? (
+                            <div className="flex flex-col gap-3">
+                                {club.notices && club.notices.length > 0 ? (
+                                    club.notices.map((notice) => (
+                                        <div
+                                            key={notice._id}
+                                            className={`relative w-full border p-6 transition-all hover:shadow-lg hover:-translate-y-0.5 duration-200 rounded-r-2xl rounded-l-md border-l-[8px]
+                                                ${notice.priority === 'urgent'
+                                                    ? 'bg-gradient-to-r from-red-50 to-white dark:from-red-950/30 dark:to-zinc-900 border-red-200 dark:border-red-900/50 border-l-red-500'
+                                                    : 'bg-gradient-to-r from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-indigo-500'
+                                                }`}
+                                        >
+                                            {notice.priority === 'urgent' && (
+                                                <div className="absolute -top-2.5 -right-2.5 flex h-5 w-5">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 border-2 border-white dark:border-zinc-900"></span>
+                                                </div>
                                             )}
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h4 className={`font-extrabold text-xl tracking-tight ${notice.priority === 'urgent' ? 'text-red-700 dark:text-red-400' : 'text-zinc-900 dark:text-zinc-50'}`}>
+                                                    {notice.title}
+                                                </h4>
+                                                <span className="shrink-0 text-xs font-semibold text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-2.5 py-1 rounded-md">
+                                                    {new Date(notice.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                </span>
+                                            </div>
+                                            <p className={`text-base leading-relaxed ${notice.priority === 'urgent' ? 'text-red-900/80 dark:text-red-200/80' : 'text-zinc-600 dark:text-zinc-400'}`}>
+                                                {notice.content}
+                                            </p>
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-sm text-zinc-800 dark:text-zinc-100">{club.name}</p>
-                                            <p className="text-xs text-zinc-500">{new Date(post.createdAt).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                    ))
+                                ) : (
+                                    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 flex flex-col items-center justify-center min-h-[200px] text-center shadow-sm">
+                                        <div className="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-3 text-zinc-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
                                         </div>
+                                        <p className="text-zinc-500 dark:text-zinc-500">No active notices.</p>
                                     </div>
-
-                                    <div className="p-5 overflow-hidden">
-                                        <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-full break-words whitespace-pre-wrap">{post.content}</p>
-                                    </div>
-
-                                    {post.image && (
-                                        <div className="relative w-full h-80 bg-zinc-100 dark:bg-zinc-800 mt-2">
-                                            <Image src={post.image} alt="Post attachment" fill className="object-cover" />
-                                        </div>
-                                    )}
-                                </div>
-                            ))
+                                )}
+                            </div>
                         ) : (
-                            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 flex flex-col items-center justify-center min-h-[300px] text-center shadow-sm">
-                                <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 text-zinc-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
-                                </div>
-                                <h3 className="text-xl font-bold text-zinc-700 dark:text-zinc-300 mb-2">No recent posts</h3>
-                                <p className="text-zinc-500 dark:text-zinc-500 max-w-xs">This club hasn't posted anything to their feed yet. Check back later!</p>
+                            <div className="w-full">
+                                <FeedList posts={club.posts} isAdmin={false} />
                             </div>
                         )}
                     </div>

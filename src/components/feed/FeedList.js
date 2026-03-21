@@ -2,23 +2,27 @@
 
 // Feature Domain: Student Experience & Public Content
 
+import { useState } from "react";
 import Image from "next/image";
+import ExpandableCaption from "./ExpandableCaption";
+import ImageModal from "./ImageModal";
 
 export default function FeedList({ posts, isLoading, error, isAdmin, onDelete }) {
+    const [selectedImage, setSelectedImage] = useState(null);
     if (isLoading) {
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 w-full pb-10">
-                {[...Array(4)].map((_, i) => (
-                    <div key={i} className="animate-pulse bg-white dark:bg-zinc-900 rounded-2xl border border-[#edf1f7] dark:border-zinc-800 p-5 shadow-sm mt-0 h-full flex flex-col">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 rounded-full bg-zinc-200 dark:bg-zinc-800 shrink-0"></div>
+            <div className="flex flex-col items-center gap-5 w-full max-w-[750px] mx-auto pb-10">
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse bg-white dark:bg-zinc-900 rounded-2xl border border-[#edf1f7] dark:border-zinc-800 shadow-sm w-full">
+                        <div className="flex items-center gap-3 p-4">
+                            <div className="w-11 h-11 rounded-full bg-zinc-200 dark:bg-zinc-800 shrink-0"></div>
                             <div className="space-y-2 flex-grow">
-                                <div className="w-full max-w-[120px] h-4 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                                <div className="w-32 h-4 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
                                 <div className="w-20 h-3 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
                             </div>
                         </div>
-                        <div className="w-full h-16 bg-zinc-200 dark:bg-zinc-800 rounded mb-4"></div>
-                        <div className="w-full flex-grow mt-auto bg-zinc-200 dark:bg-zinc-800 rounded-xl min-h-[200px]"></div>
+                        <div className="px-4 pb-3"><div className="w-full h-5 bg-zinc-200 dark:bg-zinc-800 rounded"></div></div>
+                        <div className="w-full bg-zinc-200 dark:bg-zinc-800 aspect-[4/3]"></div>
                     </div>
                 ))}
             </div>
@@ -43,11 +47,12 @@ export default function FeedList({ posts, isLoading, error, isAdmin, onDelete })
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 w-full pb-10">
+        <>
+        <div className="flex flex-col items-center gap-5 w-full max-w-[750px] mx-auto pb-10">
             {posts.map((post) => (
-                <article key={post._id} className="bg-[#fcfdff] dark:bg-zinc-900 rounded-2xl border border-[#edf1f7] dark:border-zinc-800 p-5 shadow-sm hover:shadow-md transition-shadow font-sans flex flex-col h-full">
+                <article key={post._id} className="bg-[#fcfdff] dark:bg-zinc-900 rounded-2xl border border-[#edf1f7] dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow font-sans flex flex-col w-full">
                     {/* Header: Avatar, Name, Handle & Date */}
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start justify-between p-4 pb-0">
                         <div className="flex items-center gap-3">
                             {/* Blue Avatar (mimicking the screenshot's 'A' logo) */}
                             <div className="w-12 h-12 shrink-0 rounded-full bg-[#7C5DFF] text-white flex items-center justify-center font-bold text-xl shadow-inner border-2 border-white dark:border-zinc-900">
@@ -86,28 +91,37 @@ export default function FeedList({ posts, isLoading, error, isAdmin, onDelete })
                         </div>
                     </div>
 
-                    {/* Text Content */}
-                    <div className="mb-3 text-[15px] leading-relaxed text-[#475569] dark:text-zinc-300 font-normal">
-                        {post.content}
+                    {/* Text Content — expandable */}
+                    <div className="px-4 pb-2">
+                        <ExpandableCaption content={post.content} />
                     </div>
 
-                    {/* Image section  */}
+                    {/* Image section — clickable for full view */}
                     {post.image && (
-                        <div className="w-full relative rounded-[14px] overflow-hidden border border-[#edf1f7] dark:border-zinc-800 bg-[#7C5DFF]/10 mt-2">
+                        <div
+                            className="w-full relative overflow-hidden border-t border-[#edf1f7] dark:border-zinc-800 bg-[#7C5DFF]/10 cursor-zoom-in"
+                            onClick={() => setSelectedImage({ src: post.image, alt: `Post by ${post.clubName}` })}
+                        >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={post.image}
                                 alt={`Post by ${post.clubName}`}
-                                className="w-full h-auto max-h-[600px] object-cover"
-                                style={{
-                                    // Make images gracefully handle missing source if something breaks
-                                    minHeight: '200px'
-                                }}
+                                className="w-full h-auto object-cover"
                             />
                         </div>
                     )}
                 </article>
             ))}
         </div>
+
+        {/* Fullscreen Image Modal */}
+        {selectedImage && (
+            <ImageModal
+                src={selectedImage.src}
+                alt={selectedImage.alt}
+                onClose={() => setSelectedImage(null)}
+            />
+        )}
+        </>
     );
 }
