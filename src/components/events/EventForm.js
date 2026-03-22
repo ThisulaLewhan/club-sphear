@@ -280,10 +280,7 @@ export default function EventForm() {
 
     return (
         <div className="w-full max-w-4xl mx-auto p-8 sm:p-10 bg-white dark:bg-zinc-950 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800/80">
-            <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold mb-2 text-zinc-900 dark:text-white">Craft an Event</h2>
-                <p className="text-zinc-500 dark:text-zinc-400">Fill in the details below. We'll verify venue and time slots for conflicts instantly.</p>
-            </div>
+            
 
             {message.text && (
                 <div className={`p-4 mb-8 rounded-xl font-medium flex items-center gap-3 ${message.type === "success" ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400 border border-green-200 dark:border-green-500/20" : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/20"}`}>

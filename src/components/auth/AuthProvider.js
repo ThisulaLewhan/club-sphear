@@ -23,6 +23,9 @@ export function AuthProvider({ children }) {
         setUser(data.user);
       } else {
         setUser(null);
+        if (res.status === 401 || res.status === 404) {
+          await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+        }
       }
     } catch (error) {
       setUser(null);

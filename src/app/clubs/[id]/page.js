@@ -6,15 +6,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { use, useState, useEffect } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import Modal from "@/components/common/Modal";
 import JoinClubForm from "@/components/club/JoinClubForm";
 import FeedList from "@/components/feed/FeedList";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useToast } from "@/components/ui/ToastProvider";
 
 export default function ClubDetailsPage({ params }) {
     // Unwrap params using React.use() as per Next.js 15+ warnings for dynamic route params
     const resolvedParams = use(params);
     const clubId = resolvedParams.id;
+    const router = useRouter();
+    const { user } = useAuth();
+    const toast = useToast();
 
     const [club, setClub] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -118,8 +123,17 @@ export default function ClubDetailsPage({ params }) {
                                     </div>
                                 </div>
 
+                                {/* Join Action */}
                                 <button
-                                    onClick={() => setIsModalOpen(true)}
+                                    onClick={() => {
+                                        if (!user) {
+                                            router.push(`/auth/login?redirect=/clubs/${clubId}`);
+                                        } else if (user.role !== "student") {
+                                            toast.error("Only student accounts can join clubs.");
+                                        } else {
+                                            setIsModalOpen(true);
+                                        }
+                                    }}
                                     className="w-full sm:w-auto px-8 py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-600/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>

@@ -1,147 +1,241 @@
 "use client";
 
+// Feature Domain: Student Experience & Public Content
+
 import { useState } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
 
-export default function ContactPage() {
-  const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
-  const [submitted, setSubmitted] = useState(false);
+export default function ContactUsPage() {
+    const toast = useToast();
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+    });
+    const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // In a real app this would send an email or save to DB
-    setSubmitted(true);
-  };
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-  return (
-    <div className="w-full max-w-screen-2xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="text-center mb-14">
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-zinc-900 mb-4">
-          Contact <span className="text-indigo-600">Us</span>
-        </h1>
-        <p className="text-lg text-zinc-500 max-w-xl mx-auto">
-          Have a question, suggestion, or need support? We&apos;d love to hear from you.
-        </p>
-      </div>
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-      <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 p-8 sm:p-12 max-w-5xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
-          {/* Contact Info */}
-          <div>
-            <h2 className="text-xl font-bold text-zinc-900 mb-6">Get in Touch</h2>
-            <div className="space-y-6">
-              {[
-                {
-                  icon: (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                  ),
-                  label: "Phone",
-                  value: "+94 11 234 5678",
-                },
-                {
-                  icon: (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                  ),
-                  label: "Email",
-                  value: "support@clubsphear.com",
-                },
-                {
-                  icon: (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                  ),
-                  label: "Address",
-                  value: "SLIIT Malabe Campus, New Kandy Road, Malabe",
-                },
-              ].map((item, i) => (
-                <div key={i} className="flex items-start gap-4">
-                  <div className="text-indigo-600 shrink-0 mt-0.5">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-zinc-900">{item.label}</div>
-                    <div className="text-sm text-zinc-500">{item.value}</div>
-                  </div>
+        if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+            toast.error("All fields are required.");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            toast.error("Please enter a valid email address.");
+            return;
+        }
+
+        if (formData.message.length < 10) {
+            toast.error("Message must be at least 10 characters long.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const res = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await res.json();
+            
+            if (data.success) {
+                toast.success(data.message || "Message sent successfully!");
+                setFormData({ name: "", email: "", subject: "", message: "" });
+            } else {
+                toast.error(data.error || "Failed to send message.");
+            }
+        } catch (error) {
+            console.error("Contact submit error:", error);
+            toast.error("A network error occurred. Please try again later.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-white font-sans text-zinc-900 pb-20">
+            {/* Header Area */}
+            <div className="w-full bg-zinc-50 border-b border-zinc-100 py-16 sm:py-24 relative overflow-hidden">
+                {/* Decorative blob */}
+                <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div className="max-w-screen-xl mx-auto px-6 relative z-10 text-center">
+                    <span className="inline-block py-1 px-3 rounded-full bg-indigo-50 text-indigo-600 text-sm font-bold tracking-wide mb-4">
+                        Get In Touch
+                    </span>
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-6">
+                        Contact Us
+                    </h1>
+                    <p className="text-lg sm:text-xl text-zinc-500 max-w-2xl mx-auto">
+                        Have a question, feedback, or need support? Drop us a message below and our team will get back to you as soon as possible.
+                    </p>
                 </div>
-              ))}
             </div>
 
-            {/* Hours */}
-            <div className="mt-10 p-6 rounded-2xl bg-zinc-50/50 border border-zinc-100">
-              <h3 className="font-bold text-zinc-900 mb-3">Office Hours</h3>
-              <div className="space-y-1 text-sm text-zinc-600">
-                <div className="flex justify-between"><span>Monday – Friday</span><span className="font-medium">8:30 AM – 4:30 PM</span></div>
-                <div className="flex justify-between"><span>Saturday</span><span className="font-medium">9:00 AM – 12:00 PM</span></div>
-                <div className="flex justify-between"><span>Sunday</span><span className="font-medium text-red-500">Closed</span></div>
-              </div>
-            </div>
-          </div>
+            <main className="max-w-screen-xl mx-auto px-6 py-16 -mt-10 relative z-20">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-8">
+                    
+                    {/* Contact Info Widget */}
+                    <div className="lg:col-span-2 flex flex-col gap-6">
+                        <div className="bg-zinc-900 rounded-[2rem] p-8 sm:p-10 text-white shadow-xl h-full flex flex-col justify-between relative overflow-hidden">
+                            {/* Decorative pattern inside dark card */}
+                            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
+                            <div className="absolute bottom-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/3"></div>
+                            
+                            <div className="relative z-10">
+                                <h3 className="text-3xl font-bold mb-2">Reach Out directly</h3>
+                                <p className="text-zinc-400 mb-10 leading-relaxed">
+                                    Prefer direct communication? Use our contact info or fill out the form. We're here to help!
+                                </p>
 
-          {/* Contact Form */}
-          <div>
-            {submitted ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-10 rounded-2xl bg-green-50 border border-green-200">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-600 mb-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                <h3 className="text-xl font-bold text-green-800 mb-2">Message Sent!</h3>
-                <p className="text-green-700 text-sm">Thank you for reaching out. We&apos;ll get back to you shortly.</p>
-                <button onClick={() => { setSubmitted(false); setFormData({ name: "", email: "", subject: "", message: "" }); }} className="mt-4 text-sm font-semibold text-green-700 underline">Send another message</button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm transition-colors"
-                    placeholder="Your name"
-                  />
+                                <div className="space-y-8">
+                                    {/* Info Item */}
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                            <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-1">Email Us</p>
+                                            <p className="text-lg font-medium">support@clubsphear.com</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Info Item */}
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                            <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-1">Campus Office</p>
+                                            <p className="text-lg font-medium leading-tight">Student Union Bldg,<br/> Room 302</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Info Item */}
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                            <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-1">Call Us</p>
+                                            <p className="text-lg font-medium">+1 (800) 123-4567</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Contact Form */}
+                    <div className="lg:col-span-3">
+                        <div className="bg-white rounded-[2rem] border border-zinc-200 p-8 sm:p-10 shadow-xl shadow-zinc-200/50">
+                            <h2 className="text-2xl font-bold mb-8 text-zinc-900">Send a Message</h2>
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    {/* Name */}
+                                    <div>
+                                        <label htmlFor="name" className="block text-sm font-bold text-zinc-700 mb-2">Your Name</label>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            placeholder="Amila Perera"
+                                            className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                            required
+                                        />
+                                    </div>
+                                    {/* Email */}
+                                    <div>
+                                        <label htmlFor="email" className="block text-sm font-bold text-zinc-700 mb-2">Email Address</label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            placeholder="name@example.com"
+                                            className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Subject */}
+                                <div>
+                                    <label htmlFor="subject" className="block text-sm font-bold text-zinc-700 mb-2">Subject</label>
+                                    <input
+                                        type="text"
+                                        id="subject"
+                                        name="subject"
+                                        value={formData.subject}
+                                        onChange={handleChange}
+                                        placeholder="How can we help you?"
+                                        className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Message */}
+                                <div>
+                                    <label htmlFor="message" className="block text-sm font-bold text-zinc-700 mb-2">Message</label>
+                                    <textarea
+                                        id="message"
+                                        name="message"
+                                        value={formData.message}
+                                        onChange={handleChange}
+                                        placeholder="Write your message here..."
+                                        rows={6}
+                                        className="w-full px-5 py-3.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none"
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                {/* Submit Button */}
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full sm:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Sending...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Send Message
+                                            <svg className="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                        </>
+                                    )}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm transition-colors"
-                    placeholder="you@university.edu"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Subject</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm transition-colors"
-                    placeholder="What is this about?"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Message</label>
-                  <textarea
-                    required
-                    rows={5}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm resize-none transition-colors"
-                    placeholder="Write your message here..."
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition-colors shadow-sm"
-                >
-                  Send Message
-                </button>
-              </form>
-            )}
-          </div>
+            </main>
         </div>
-      </div>
-    </div>
-  );
+    );
 }
