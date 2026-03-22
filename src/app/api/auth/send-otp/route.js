@@ -46,6 +46,9 @@ async function sendOtpEmail({ to, otp }) {
     port: config.port,
     secure: config.secure,
     auth: config.auth,
+    tls: {
+      rejectUnauthorized: false
+    }
   });
 
   await transporter.sendMail({
