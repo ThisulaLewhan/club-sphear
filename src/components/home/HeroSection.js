@@ -14,11 +14,6 @@ export default function HeroSection() {
                 
                 {/* Left: Text Content */}
                 <div className="flex-1 text-center lg:text-left opacity-0-init animate-fade-in-up">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 mb-6">
-                        <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-                        <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">SLIIT Club Management</span>
-                    </div>
-
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-zinc-900 leading-[1.1] mb-5">
                         Welcome to{" "}
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-500">

@@ -30,32 +30,12 @@ export default function Navbar() {
     }, [pathname]);
 
     const getNavLinks = () => {
-        const baseLinks = [
+        return [
             { name: "Home", href: "/" },
             { name: "Clubs & Societies", href: "/clubs" },
             { name: "About Us", href: "/about" },
             { name: "Contact Us", href: "/contact" },
         ];
-
-        if (!mounted || !user) return baseLinks;
-
-        switch (user.role) {
-            case "admin":
-            case "mainAdmin":
-                return [
-                    ...baseLinks,
-                ];
-            case "club":
-                return [
-                    ...baseLinks,
-                ];
-            case "student":
-            default:
-                return [
-                    ...baseLinks,
-                    { name: "My Profile", href: "/student-profile" },
-                ];
-        }
     };
 
     const navLinks = getNavLinks();

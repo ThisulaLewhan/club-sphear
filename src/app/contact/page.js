@@ -70,9 +70,6 @@ export default function ContactUsPage() {
                 <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
                 
                 <div className="max-w-screen-xl mx-auto px-6 relative z-10 text-center">
-                    <span className="inline-block py-1 px-3 rounded-full bg-indigo-50 text-indigo-600 text-sm font-bold tracking-wide mb-4">
-                        Get In Touch
-                    </span>
                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-6">
                         Contact Us
                     </h1>
@@ -122,7 +119,7 @@ export default function ContactUsPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-1">Campus Office</p>
-                                            <p className="text-lg font-medium leading-tight">Student Union Bldg,<br/> Room 302</p>
+                                            <p className="text-lg font-medium leading-tight">Main Building,<br/> First Floor</p>
                                         </div>
                                     </div>
 
@@ -135,7 +132,7 @@ export default function ContactUsPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-1">Call Us</p>
-                                            <p className="text-lg font-medium">+1 (800) 123-4567</p>
+                                            <p className="text-lg font-medium">+94 70 234 5678</p>
                                         </div>
                                     </div>
                                 </div>
