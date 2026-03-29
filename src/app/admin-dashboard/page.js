@@ -72,52 +72,38 @@ export default function AdminDashboardOverview() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {user?.role === "mainAdmin" && (
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" x2="19" y1="8" y2="14" /><line x1="22" x2="16" y1="11" y2="11" /></svg>
+          <>
+            <Link href="/admin-dashboard/admins" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-slate-300 hover:shadow-sm transition-all flex items-center gap-4">
+              <div className="w-12 h-12 shrink-0 rounded-xl bg-slate-50 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-700"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" x2="19" y1="8" y2="14" /><line x1="22" x2="16" y1="11" y2="11" /></svg>
               </div>
-              <div>
-                <h3 className="font-bold text-slate-900">Account Management</h3>
-                <p className="text-sm text-slate-500">Create new administrator or club accounts</p>
+              <h3 className="font-bold text-slate-800 text-lg">Admins</h3>
+            </Link>
+
+            <Link href="/admin-dashboard/clubs" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-slate-300 hover:shadow-sm transition-all flex items-center gap-4">
+              <div className="w-12 h-12 shrink-0 rounded-xl bg-blue-50 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" /></svg>
               </div>
-            </div>
-            <div className="flex gap-3">
-              <Link
-                href="/admin-dashboard/admins"
-                className="flex-1 text-center text-sm bg-slate-900 text-white px-4 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-colors"
-              >
-                Create Admin
-              </Link>
-              <Link
-                href="/admin-dashboard/clubs"
-                className="flex-1 text-center text-sm bg-white text-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
-              >
-                Create Club
-              </Link>
-            </div>
-          </div>
+              <h3 className="font-bold text-slate-800 text-lg">Clubs</h3>
+            </Link>
+          </>
         )}
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900">My Profile</h3>
-              <p className="text-sm text-slate-500">View and manage your account settings</p>
-            </div>
+        <Link href="/admin-dashboard/messages" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-slate-300 hover:shadow-sm transition-all flex items-center gap-4">
+          <div className="w-12 h-12 shrink-0 rounded-xl bg-rose-50 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-600"><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5h11C20 5 22 7 22 9.5Z" /><polyline points="6 12 10 16 18 8" /></svg>
           </div>
-          <Link
-            href="/admin-dashboard/profile"
-            className="block text-center text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2.5 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-sm"
-          >
-            View Profile
-          </Link>
-        </div>
+          <h3 className="font-bold text-slate-800 text-lg">Messages</h3>
+        </Link>
+
+        <Link href="/admin-dashboard/profile" className="group bg-white rounded-xl border border-slate-200 p-4 hover:border-slate-300 hover:shadow-sm transition-all flex items-center gap-4">
+          <div className="w-12 h-12 shrink-0 rounded-xl bg-purple-50 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+          </div>
+          <h3 className="font-bold text-slate-800 text-lg">My Profile</h3>
+        </Link>
       </div>
     </div>
   );
