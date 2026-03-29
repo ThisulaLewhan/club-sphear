@@ -34,6 +34,14 @@ export async function POST(request) {
         { status: 401 }
       );
     }
+    
+    // Check if account is banned
+    if (user.isBanned) {
+      return Response.json(
+        { success: false, message: "Your account has been suspended by an administrator." },
+        { status: 403 }
+      );
+    }
 
     // Compare password with hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);

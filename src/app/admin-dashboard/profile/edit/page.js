@@ -90,9 +90,9 @@ export default function AdminProfileEditPage() {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-8">
+        <div className="bg-slate-900 px-8 py-8">
           <h2 className="text-2xl font-bold text-white">Update Information</h2>
-          <p className="text-indigo-100 mt-1 text-sm">Change your name or set a new password</p>
+          <p className="text-slate-300 mt-1 text-sm">Change your name or set a new password</p>
         </div>
 
         <div className="p-8">
@@ -147,7 +147,7 @@ export default function AdminProfileEditPage() {
               <button 
                 type="submit" 
                 disabled={loading}
-                className={`flex-1 py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/20 active:scale-[0.98] ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
+                className={`flex-1 py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm active:scale-[0.98] ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
               >
                 {loading ? "Saving..." : "Save Changes"}
               </button>

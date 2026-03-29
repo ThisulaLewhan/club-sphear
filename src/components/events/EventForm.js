@@ -279,7 +279,7 @@ export default function EventForm() {
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto p-8 sm:p-10 bg-white dark:bg-zinc-950 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800/80">
+        <div className="w-full p-8 sm:p-10 bg-white dark:bg-zinc-950 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800/80">
             
 
             {message.text && (

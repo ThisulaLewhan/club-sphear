@@ -42,8 +42,8 @@ export default function AdminDashboardOverview() {
   const statCards = [
     { label: "Pending Events", value: stats.pendingEvents, color: "from-amber-500 to-orange-500", href: "/admin-dashboard/pending-events" },
     ...(user?.role === "mainAdmin" ? [
-      { label: "Active Clubs", value: stats.activeClubs, color: "from-emerald-500 to-teal-500", href: "/admin-dashboard/manage-clubs" },
-      { label: "Total Members", value: stats.totalMembers, color: "from-blue-500 to-indigo-500", href: "#" },
+      { label: "Active Clubs", value: stats.activeClubs, color: "from-emerald-500 to-teal-500", href: "/admin-dashboard/clubs" },
+      { label: "Total Members", value: stats.totalMembers, color: "from-blue-500 to-indigo-500", href: "/admin-dashboard/members" },
     ] : []),
   ];
 
@@ -86,13 +86,13 @@ export default function AdminDashboardOverview() {
             </div>
             <div className="flex gap-3">
               <Link
-                href="/admin-dashboard/create-admin"
+                href="/admin-dashboard/admins"
                 className="flex-1 text-center text-sm bg-slate-900 text-white px-4 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition-colors"
               >
                 Create Admin
               </Link>
               <Link
-                href="/admin-dashboard/create-club"
+                href="/admin-dashboard/clubs"
                 className="flex-1 text-center text-sm bg-white text-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
               >
                 Create Club

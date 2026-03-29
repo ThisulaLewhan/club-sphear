@@ -13,7 +13,8 @@ const UserSchema = new mongoose.Schema({
   university: { type: String, default: "" },
   studentId: { type: String, default: "" },
   bio: { type: String, default: "" },
-  clubId: { type: mongoose.Schema.Types.ObjectId, ref: "Club" }
+  clubId: { type: mongoose.Schema.Types.ObjectId, ref: "Club" },
+  isBanned: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
