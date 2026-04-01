@@ -49,6 +49,7 @@ export async function POST(req) {
             endTime: formData.get("endTime"),
             venue: formData.get("venue"),
             registrationLink: formData.get("registrationLink"),
+            image: formData.get("image"),
         };
 
         // Perform comprehensive validation

@@ -185,6 +185,17 @@ export function validateEvent(data) {
     }
   }
 
+  // Cover Image: Required
+  if (data.image === null || data.image === undefined || data.image === "") {
+    errors.image = "Event cover image is required";
+  } else if (!(data.image instanceof Blob) && typeof data.image !== "object") {
+    errors.image = `Invalid formatted image object detected. Received: ${typeof data.image}`;
+  } else if (data.image.size && data.image.size > 5 * 1024 * 1024) {
+    errors.image = "Image must be less than 5MB";
+  } else if (data.image.type && !data.image.type.startsWith('image/')) {
+    errors.image = "File must be an image";
+  }
+
   return {
     valid: Object.keys(errors).length === 0,
     errors,

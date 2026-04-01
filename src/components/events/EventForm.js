@@ -207,6 +207,7 @@ function CustomDatePicker({ name, value, onChange, label, required }) {
     );
 }
 
+const _globalImageStore = new Map();
 
 export default function EventForm() {
     const [formData, setFormData] = useState({
@@ -217,32 +218,48 @@ export default function EventForm() {
         endTime: "",
         venue: "",
         registrationLink: "",
-        image: null,
     });
     const [imagePreview, setImagePreview] = useState(null);
 
     const [message, setMessage] = useState({ type: "", text: "" });
+    const [formErrors, setFormErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
-        if (e.target.name === "image" && e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setFormData({ ...formData, image: file });
-            setImagePreview(URL.createObjectURL(file));
+        if (e.target.name === "image") {
+            if (e.target.files && e.target.files.length > 0) {
+                const file = e.target.files[0];
+                _globalImageStore.set("currentEventImage", file);
+                setImagePreview(URL.createObjectURL(file));
+                setFormErrors(prev => ({ ...prev, image: undefined }));
+            }
+            // If the user cancels the file dialog, do nothing. Keep the existing image.
         } else {
-            setFormData({ ...formData, [e.target.name]: e.target.value });
+            const { name, value } = e.target;
+            setFormData(prev => ({ ...prev, [name]: value }));
+            setFormErrors(prev => ({ ...prev, [name]: undefined }));
         }
+    };
+
+    const handleRemoveImage = () => {
+        _globalImageStore.delete("currentEventImage");
+        setImagePreview(null);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage({ type: "", text: "" });
+        setFormErrors({});
+
+        // Bypass React state-merging internally
+        const activeImageFile = _globalImageStore.get("currentEventImage") || null;
 
         // Comprehensive Frontend Validation
-        const validation = validateEvent(formData);
+        const payloadToValidate = { ...formData, image: activeImageFile };
+        const validation = validateEvent(payloadToValidate);
         if (!validation.valid) {
-            const firstError = Object.values(validation.errors)[0];
-            setMessage({ type: "error", text: firstError });
+            setFormErrors(validation.errors);
+            setMessage({ type: "error", text: `Please fill all the fields below.` });
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
@@ -256,6 +273,9 @@ export default function EventForm() {
                     submitData.append(key, value);
                 }
             });
+            if (activeImageFile) {
+                submitData.append("image", activeImageFile);
+            }
 
             const response = await fetch("/api/events", {
                 method: "POST",
@@ -266,7 +286,8 @@ export default function EventForm() {
 
             if (response.ok) {
                 setMessage({ type: "success", text: "Event submitted successfully and is pending approval!" });
-                setFormData({ title: "", description: "", date: "", startTime: "", endTime: "", venue: "", registrationLink: "", image: null });
+                setFormData({ title: "", description: "", date: "", startTime: "", endTime: "", venue: "", registrationLink: "" });
+                _globalImageStore.delete("currentEventImage");
                 setImagePreview(null);
             } else {
                 setMessage({ type: "error", text: result.error || "Failed to submit event." });
@@ -280,7 +301,7 @@ export default function EventForm() {
 
     return (
         <div className="w-full p-8 sm:p-10 bg-white dark:bg-zinc-950 rounded-[2rem] shadow-xl border border-zinc-100 dark:border-zinc-800/80">
-            
+
 
             {message.text && (
                 <div className={`p-4 mb-8 rounded-xl font-medium flex items-center gap-3 ${message.type === "success" ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400 border border-green-200 dark:border-green-500/20" : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/20"}`}>
@@ -296,29 +317,42 @@ export default function EventForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Image Upload Area */}
                         <div className="flex flex-col gap-1.5 md:col-span-2">
-                            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Event Cover Image (Optional)</label>
-                            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-zinc-300 dark:border-zinc-700 border-dashed rounded-xl cursor-pointer bg-zinc-50 dark:bg-black hover:bg-zinc-100 dark:hover:bg-zinc-900 overflow-hidden relative transition-colors group">
-                                {imagePreview ? (
-                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover group-hover:opacity-50 transition-opacity" />
-                                ) : (
+                            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Event Cover Image *</label>
+
+                            {imagePreview ? (
+                                <div className={`relative w-full h-48 rounded-xl overflow-hidden group border ${formErrors.image ? "border-red-500" : "border-zinc-200 dark:border-zinc-800"}`}>
+                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-40" />
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 gap-3 backdrop-blur-sm">
+                                        <label className="bg-white text-black px-4 py-2 rounded-lg font-bold text-sm cursor-pointer hover:bg-zinc-100 transition-colors shadow-sm">
+                                            Replace Image
+                                            <input type="file" name="image" accept="image/*" className="hidden" onChange={handleChange} />
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveImage}
+                                            className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-600 transition-colors shadow-sm cursor-pointer"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <label className={`flex flex-col items-center justify-center w-full h-48 border-2 ${formErrors.image ? "border-red-400 dark:border-red-500/50 bg-red-50/50 dark:bg-red-950/20" : "border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-black"} border-dashed rounded-xl cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors group`}>
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <svg className="w-8 h-8 mb-4 text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        <svg className={`w-8 h-8 mb-4 ${formErrors.image ? "text-red-400" : "text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500"} transition-colors`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                         <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400"><span className="font-semibold text-blue-600 dark:text-blue-400">Click to upload</span> or drag and drop</p>
                                         <p className="text-xs text-zinc-500 dark:text-zinc-400">SVG, PNG, JPG or GIF (MAX. 5MB)</p>
                                     </div>
-                                )}
-                                {imagePreview && (
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="bg-black/70 text-white px-4 py-2 rounded-lg font-medium text-sm">Replace Image</span>
-                                    </div>
-                                )}
-                                <input type="file" name="image" accept="image/*" className="hidden" onChange={handleChange} />
-                            </label>
+                                    <input type="file" name="image" accept="image/*" className="hidden" onChange={handleChange} />
+                                </label>
+                            )}
+                            {formErrors.image && <p className="text-sm font-medium text-red-500 mt-1">{formErrors.image}</p>}
                         </div>
 
                         <div className="flex flex-col gap-1.5 md:col-span-2">
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Event Title *</label>
-                            <input required type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Annual Tech Symposium" className="w-full px-4 py-3 bg-zinc-50/50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-zinc-900 transition-all" />
+                            <input required type="text" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. Annual Tech Symposium" className={`w-full px-4 py-3 bg-zinc-50/50 dark:bg-black border ${formErrors.title ? "border-red-500 focus:ring-red-500" : "border-zinc-200 dark:border-zinc-800 focus:ring-blue-500"} rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:bg-white dark:focus:bg-zinc-900 transition-all`} />
+                            {formErrors.title && <p className="text-sm font-medium text-red-500 mt-1">{formErrors.title}</p>}
                         </div>
                         <div className="flex flex-col gap-1.5 md:col-span-2">
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Description</label>
