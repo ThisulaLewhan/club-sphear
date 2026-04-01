@@ -39,7 +39,6 @@ function CreateAdminTab() {
 
     return (
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <p className="text-gray-600 mb-6">Create a new administrator with platform-wide managing capabilities.</p>
             {status.type === "success" && (
                 <div className="p-4 mb-6 rounded-lg bg-green-50 text-green-800 border-l-4 border-green-500">{status.message}</div>
             )}
