@@ -3,9 +3,11 @@
 // Feature Domain: Student Experience & Public Content
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export default function JoinClubForm({ club, onSuccess, onCancel }) {
+    const { user } = useAuth();
     const [formData, setFormData] = useState({
         studentName: "",
         studentId: "",
@@ -18,6 +20,27 @@ export default function JoinClubForm({ club, onSuccess, onCancel }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [error, setError] = useState("");
+
+    // Auto-fill student details from logged-in user
+    useEffect(() => {
+        if (user) {
+            // Extract student ID from email prefix as fallback (e.g. it23308916@my.sliit.lk → IT23308916)
+            let derivedStudentId = user.studentId || "";
+            if (!derivedStudentId && user.email) {
+                const emailPrefix = user.email.split("@")[0];
+                if (emailPrefix) {
+                    derivedStudentId = emailPrefix.toUpperCase();
+                }
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                studentName: user.name || "",
+                studentId: derivedStudentId,
+                email: user.email || "",
+            }));
+        }
+    }, [user]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -69,7 +92,7 @@ export default function JoinClubForm({ club, onSuccess, onCancel }) {
             )}
             <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/30 mb-2">
                 <p className="text-sm text-indigo-800 dark:text-indigo-300">
-                    You are applying to join <strong className="font-bold">{club.name}</strong>. Please provide your student details to proceed.
+                    You are applying to join <strong className="font-bold">{club.name}</strong>. Your student details have been auto-filled from your profile.
                 </p>
             </div>
 
@@ -85,7 +108,8 @@ export default function JoinClubForm({ club, onSuccess, onCancel }) {
                         value={formData.studentName}
                         onChange={handleChange}
                         required
-                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm"
+                        readOnly={!!user?.name}
+                        className={`w-full border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm ${user?.name ? 'bg-zinc-100 dark:bg-zinc-800 cursor-not-allowed' : 'bg-zinc-50 dark:bg-zinc-800/50'}`}
                         placeholder="e.g. John Doe"
                     />
                 </div>
@@ -101,7 +125,8 @@ export default function JoinClubForm({ club, onSuccess, onCancel }) {
                         value={formData.studentId}
                         onChange={handleChange}
                         required
-                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm"
+                        readOnly={!!formData.studentId}
+                        className={`w-full border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm ${formData.studentId ? 'bg-zinc-100 dark:bg-zinc-800 cursor-not-allowed' : 'bg-zinc-50 dark:bg-zinc-800/50'}`}
                         placeholder="e.g. IT21000000"
                     />
                 </div>
@@ -119,7 +144,8 @@ export default function JoinClubForm({ club, onSuccess, onCancel }) {
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm"
+                        readOnly={!!user?.email}
+                        className={`w-full border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm ${user?.email ? 'bg-zinc-100 dark:bg-zinc-800 cursor-not-allowed' : 'bg-zinc-50 dark:bg-zinc-800/50'}`}
                         placeholder="john@my.sliit.lk"
                     />
                 </div>

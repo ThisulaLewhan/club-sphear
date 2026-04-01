@@ -17,7 +17,13 @@ const ClubSchema = new mongoose.Schema({
   },
   description: String,
   logo: String,
+  coverImage: String,
+  executiveBoard: [{
+    name: { type: String, required: true },
+    role: { type: String, required: true }
+  }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 }, { timestamps: true });
 
+delete mongoose.models.Club;
 export default mongoose.models.Club || mongoose.model("Club", ClubSchema);

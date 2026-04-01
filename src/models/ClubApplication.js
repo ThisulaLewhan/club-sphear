@@ -1,8 +1,13 @@
 import mongoose from 'mongoose';
 
 const ClubApplicationSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
     clubId: {
-        type: String, // E.g. 'ieee', 'rotaract'
+        type: String,
         required: true,
     },
     clubName: {

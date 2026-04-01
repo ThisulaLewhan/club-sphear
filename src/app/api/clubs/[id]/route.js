@@ -40,7 +40,8 @@ export async function GET(req, context) {
                 category: club.category || "Uncategorized",
                 description: club.description || "",
                 logo: club.logo || null,
-                cover: "bg-gradient-to-tr from-indigo-500 to-purple-600", // Default gradient if none
+                coverImage: club.coverImage || null,
+                executiveBoard: club.executiveBoard || [],
                 posts: posts.map(post => ({
                     _id: post._id.toString(),
                     clubName: post.clubName,

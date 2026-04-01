@@ -25,6 +25,18 @@ export async function PUT(request) {
             return NextResponse.json({ success: false, error: "New password must be at least 6 characters." }, { status: 400 });
         }
 
+        if (!/[A-Z]/.test(newPassword)) {
+            return NextResponse.json({ success: false, error: "Password must contain at least one uppercase letter." }, { status: 400 });
+        }
+
+        if (!/[a-z]/.test(newPassword)) {
+            return NextResponse.json({ success: false, error: "Password must contain at least one lowercase letter." }, { status: 400 });
+        }
+
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(newPassword)) {
+            return NextResponse.json({ success: false, error: "Password must contain at least one special character." }, { status: 400 });
+        }
+
         if (newPassword !== confirmPassword) {
             return NextResponse.json({ success: false, error: "New passwords do not match." }, { status: 400 });
         }

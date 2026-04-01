@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Notice from '@/models/Notice';
 import Club from '@/models/Club';
+import Notification from "@/models/Notification";
+import User from "@/models/User";
 import { getCurrentUser } from '@/lib/auth';
 
 export async function GET() {
@@ -63,6 +65,30 @@ export async function POST(request) {
         };
 
         const newNotice = await Notice.create(doc);
+
+        // Trigger Notifications for all active users
+        try {
+            const users = await User.find({ role: { $in: ["student", "club"] } }).select("_id");
+            console.log(`[DEBUG] Found ${users.length} users for notice notifications.`);
+            if (users.length > 0) {
+                const notifications = users
+                    .map(u => ({
+                        userId: u._id,
+                        title: `New Notice: ${body.title}`,
+                        message: `Important update from ${club.name}`,
+                        type: "notice",
+                        link: `/clubs/${caller.clubId}`,
+                        clubName: club.name
+                    }));
+                if (notifications.length > 0) {
+                    const result = await Notification.insertMany(notifications);
+                    console.log(`[DEBUG] Successfully inserted ${result.length} notifications.`);
+                }
+            }
+        } catch (notifyError) {
+            console.error("Failed to trigger notice notifications:", notifyError);
+        }
+
         return NextResponse.json(newNotice, { status: 201 });
     } catch (error) {
         console.error('Error creating notice:', error);

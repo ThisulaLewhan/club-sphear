@@ -101,10 +101,19 @@ export default function ClubsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredClubs.map((club) => (
                         <Link href={`/clubs/${club.id}`} key={club.id} className="relative bg-white rounded-2xl border border-zinc-200 hover:shadow-lg transition-all group cursor-pointer flex flex-col">
-                            <div className={`h-32 w-full rounded-t-2xl ${CATEGORY_COLORS[club.category] || "bg-gradient-to-tr from-slate-500 to-slate-700"} opacity-80 group-hover:opacity-100 transition-opacity`}></div>
+                            {club.coverImage ? (
+                                <img src={club.coverImage} alt={`${club.name} cover`} className="h-32 w-full object-cover rounded-t-2xl opacity-80 group-hover:opacity-100 transition-opacity" />
+                            ) : (
+                                <div className={`h-32 w-full rounded-t-2xl ${CATEGORY_COLORS[club.category] || "bg-gradient-to-tr from-slate-500 to-slate-700"} opacity-80 group-hover:opacity-100 transition-opacity`}></div>
+                            )}
+                            
                             {/* Profile icon — positioned absolutely so it overlaps the banner */}
-                            <div className="absolute right-5 top-[104px] w-14 h-14 rounded-full border-4 border-white bg-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.1)] z-10">
-                                <span className="text-indigo-500 text-lg font-extrabold">{club.name.charAt(0)}</span>
+                            <div className="absolute right-5 top-[104px] w-14 h-14 rounded-full border-4 border-white bg-white flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.1)] z-10 overflow-hidden">
+                                {club.logo ? (
+                                    <img src={club.logo} alt={`${club.name} logo`} className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-indigo-500 text-lg font-extrabold">{club.name.charAt(0)}</span>
+                                )}
                             </div>
                             <div className="p-6 pt-4 flex flex-col flex-1">
                                 <div className="mb-4">

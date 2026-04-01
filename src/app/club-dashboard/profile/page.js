@@ -21,7 +21,14 @@ export default function ClubProfilePage() {
     const toast = useToast();
 
     // Profile state
-    const [profile, setProfile] = useState({ clubName: "", category: "", description: "" });
+    const [profile, setProfile] = useState({ 
+        clubName: "", 
+        category: "", 
+        description: "", 
+        logo: "", 
+        coverImage: "", 
+        executiveBoard: [] 
+    });
     const [originalProfile, setOriginalProfile] = useState(null);
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [savingProfile, setSavingProfile] = useState(false);
@@ -43,7 +50,14 @@ export default function ClubProfilePage() {
                 const res = await fetch("/api/club-dashboard/profile");
                 const data = await res.json();
                 if (data.success) {
-                    const p = { clubName: data.data.clubName, category: data.data.category, description: data.data.description };
+                    const p = { 
+                        clubName: data.data.clubName, 
+                        category: data.data.category, 
+                        description: data.data.description,
+                        logo: data.data.logo || "",
+                        coverImage: data.data.coverImage || "",
+                        executiveBoard: data.data.executiveBoard || []
+                    };
                     setProfile(p);
                     setOriginalProfile(p);
                 }
@@ -55,6 +69,122 @@ export default function ClubProfilePage() {
         };
         fetchProfile();
     }, []);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image must be less than 5MB");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                let width = img.width;
+                let height = img.height;
+                const maxWidth = 1080;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+                setProfile(prev => ({ ...prev, logo: compressedBase64 }));
+
+                const saveImage = async () => {
+                    try {
+                        const res = await fetch("/api/club-dashboard/profile", {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ ...profile, logo: compressedBase64 }),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            toast.success("Profile picture updated!");
+                            setOriginalProfile(prev => ({ ...prev, logo: data.data.logo }));
+                            setProfile(prev => ({ ...prev, logo: data.data.logo }));
+                        } else {
+                            toast.error(data.error || "Failed to update profile picture.");
+                        }
+                    } catch (err) {
+                        toast.error("An error occurred while saving the picture.");
+                    }
+                };
+                saveImage();
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleCoverImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image must be less than 5MB");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                let width = img.width;
+                let height = img.height;
+                const maxWidth = 1920;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+                setProfile(prev => ({ ...prev, coverImage: compressedBase64 }));
+
+                const saveImage = async () => {
+                    try {
+                        const res = await fetch("/api/club-dashboard/profile", {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ ...profile, coverImage: compressedBase64 }),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            toast.success("Cover picture updated!");
+                            setOriginalProfile(prev => ({ ...prev, coverImage: data.data.coverImage }));
+                            setProfile(prev => ({ ...prev, coverImage: data.data.coverImage }));
+                        } else {
+                            toast.error(data.error || "Failed to update cover picture.");
+                        }
+                    } catch (err) {
+                        toast.error("An error occurred while saving the picture.");
+                    }
+                };
+                saveImage();
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    };
 
     const handleProfileSave = async () => {
         if (!profile.clubName || profile.clubName.trim().length < 2) {
@@ -89,6 +219,36 @@ export default function ClubProfilePage() {
         setIsEditing(false);
     };
 
+    const addBoardMember = () => {
+        setProfile(prev => ({
+            ...prev,
+            executiveBoard: [...prev.executiveBoard, { name: "", role: "" }]
+        }));
+    };
+
+    const removeBoardMember = (index) => {
+        setProfile(prev => ({
+            ...prev,
+            executiveBoard: prev.executiveBoard.filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateBoardMember = (index, field, value) => {
+        const updatedBoard = [...profile.executiveBoard];
+        updatedBoard[index][field] = value;
+        setProfile(prev => ({ ...prev, executiveBoard: updatedBoard }));
+    };
+
+    // Password strength rules
+    const passwordRules = [
+        { label: "At least 6 characters", test: (pw) => pw.length >= 6 },
+        { label: "One uppercase letter (A-Z)", test: (pw) => /[A-Z]/.test(pw) },
+        { label: "One lowercase letter (a-z)", test: (pw) => /[a-z]/.test(pw) },
+        { label: "One special character (!@#$...)", test: (pw) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pw) },
+    ];
+
+    const allRulesPassed = passwords.newPassword && passwordRules.every(rule => rule.test(passwords.newPassword));
+
     const handlePasswordChange = async () => {
         const { currentPassword, newPassword, confirmPassword } = passwords;
 
@@ -96,10 +256,15 @@ export default function ClubProfilePage() {
             toast.error("All password fields are required.");
             return;
         }
-        if (newPassword.length < 6) {
-            toast.error("New password must be at least 6 characters.");
-            return;
+
+        // Validate each rule
+        for (const rule of passwordRules) {
+            if (!rule.test(newPassword)) {
+                toast.error(rule.label + " is required.");
+                return;
+            }
         }
+
         if (newPassword !== confirmPassword) {
             toast.error("New passwords do not match.");
             return;
@@ -133,12 +298,39 @@ export default function ClubProfilePage() {
             {/* Profile Card */}
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden mb-8">
                 {/* Header Banner */}
-                <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-10 text-center">
-                    <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-white/20 backdrop-blur text-white text-3xl font-bold shadow-xl ring-4 ring-white/20 mb-4">
-                        {initials}
+                <div className={`relative px-8 py-10 text-center ${profile.coverImage ? '' : 'bg-gradient-to-r from-emerald-500 to-teal-600'}`}>
+                    {profile.coverImage && (
+                        <div className="absolute inset-0 z-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={profile.coverImage} className="w-full h-full object-cover" alt="Cover" />
+                            <div className="absolute inset-0 bg-black/40"></div>
+                        </div>
+                    )}
+                    
+                    {/* Cover Image Upload Button */}
+                    <label className="absolute top-4 right-4 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-3 py-2 rounded-xl cursor-pointer shadow-lg border border-white/30 transition-colors flex items-center gap-2" title="Change Cover Picture">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                        <span className="text-xs font-semibold tracking-wide">Change Cover</span>
+                        <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleCoverImageChange} />
+                    </label>
+
+                    <div className="relative z-10 w-full flex flex-col items-center">
+                        <div className="relative inline-flex mb-4">
+                            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-white/20 backdrop-blur text-white text-3xl font-bold shadow-xl ring-4 ring-white/20 overflow-hidden">
+                                {profile.logo ? (
+                                    <img src={profile.logo} alt="Club Logo" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span>{initials}</span>
+                                )}
+                            </div>
+                            <label className="absolute bottom-0 right-0 bg-white text-emerald-600 hover:bg-emerald-50 p-1.5 rounded-full cursor-pointer shadow-lg ring-2 ring-emerald-500 transition-colors z-10" title="Change Profile Picture">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleImageChange} />
+                            </label>
+                        </div>
+                        <h2 className="text-2xl font-bold text-white shadow-black/10 text-shadow">{profile.clubName || user?.name || "Club"}</h2>
+                        <p className="text-emerald-100 mt-1 text-sm font-medium">Club Account</p>
                     </div>
-                    <h2 className="text-2xl font-bold text-white">{profile.clubName || user?.name || "Club"}</h2>
-                    <p className="text-emerald-100 mt-1 text-sm">Club Account</p>
                 </div>
 
                 {/* Profile Details */}
@@ -212,6 +404,71 @@ export default function ClubProfilePage() {
                                 )}
                             </div>
 
+                            {/* Executive Board */}
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Executive Board</label>
+                                    {isEditing && (
+                                        <button
+                                            onClick={addBoardMember}
+                                            className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-lg"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                            Add Member
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="space-y-3">
+                                    {profile.executiveBoard.length > 0 ? (
+                                        profile.executiveBoard.map((member, index) => (
+                                            <div key={index} className="flex flex-col sm:flex-row gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 relative group">
+                                                {isEditing ? (
+                                                    <>
+                                                        <div className="flex-1">
+                                                            <input
+                                                                type="text"
+                                                                value={member.name}
+                                                                onChange={(e) => updateBoardMember(index, "name", e.target.value)}
+                                                                placeholder="Member Name"
+                                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <input
+                                                                type="text"
+                                                                value={member.role}
+                                                                onChange={(e) => updateBoardMember(index, "role", e.target.value)}
+                                                                placeholder="Position (e.g. President)"
+                                                                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                            />
+                                                        </div>
+                                                        <button
+                                                            onClick={() => removeBoardMember(index)}
+                                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg h-fit self-end sm:self-center"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">
+                                                            {member.name.charAt(0) || "EX"}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-slate-800">{member.name}</p>
+                                                            <p className="text-xs text-slate-500">{member.role}</p>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-slate-400 italic py-2">No board members added.</p>
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-2 italic">* These members will be displayed on your public club profile.</p>
+                            </div>
+
                             {/* Action Buttons */}
                             <div className="flex items-center gap-3 pt-2">
                                 {isEditing ? (
@@ -270,8 +527,14 @@ export default function ClubProfilePage() {
                                 type={showPasswords ? "text" : "password"}
                                 value={passwords.newPassword}
                                 onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                                placeholder="At least 6 characters"
+                                className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-800 focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
+                                    passwords.newPassword
+                                        ? allRulesPassed
+                                            ? 'border-emerald-400 focus:ring-emerald-500'
+                                            : 'border-red-300 focus:ring-red-400'
+                                        : 'border-slate-300 focus:ring-amber-500'
+                                }`}
+                                placeholder="Enter strong password"
                             />
                         </div>
                         <div>
@@ -280,11 +543,42 @@ export default function ClubProfilePage() {
                                 type={showPasswords ? "text" : "password"}
                                 value={passwords.confirmPassword}
                                 onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                                className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-800 focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
+                                    passwords.confirmPassword
+                                        ? passwords.confirmPassword === passwords.newPassword
+                                            ? 'border-emerald-400 focus:ring-emerald-500'
+                                            : 'border-red-300 focus:ring-red-400'
+                                        : 'border-slate-300 focus:ring-amber-500'
+                                }`}
                                 placeholder="Re-enter new password"
                             />
+                            {passwords.confirmPassword && passwords.confirmPassword !== passwords.newPassword && (
+                                <p className="text-xs text-red-500 mt-1.5 font-medium">Passwords do not match</p>
+                            )}
                         </div>
                     </div>
+
+                    {/* Password Strength Rules Checklist */}
+                    {passwords.newPassword && (
+                        <div className="bg-slate-50 rounded-xl border border-slate-100 p-4">
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">Password Requirements</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {passwordRules.map((rule, i) => {
+                                    const passed = rule.test(passwords.newPassword);
+                                    return (
+                                        <div key={i} className={`flex items-center gap-2 text-xs font-medium transition-colors ${passed ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                            {passed ? (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500 shrink-0"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            ) : (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300 shrink-0"><circle cx="12" cy="12" r="10"></circle></svg>
+                                            )}
+                                            {rule.label}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex items-center justify-between pt-2">
                         <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -298,8 +592,8 @@ export default function ClubProfilePage() {
                         </label>
                         <button
                             onClick={handlePasswordChange}
-                            disabled={savingPassword}
-                            className="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                            disabled={savingPassword || !allRulesPassed}
+                            className="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {savingPassword ? "Changing..." : "Change Password"}
                         </button>

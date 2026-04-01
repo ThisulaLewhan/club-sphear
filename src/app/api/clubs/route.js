@@ -20,6 +20,7 @@ export async function GET() {
                 category: club.category || "Uncategorized",
                 description: club.description || "",
                 logo: club.logo || null,
+                coverImage: club.coverImage || null,
             })),
         });
     } catch (error) {

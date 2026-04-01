@@ -26,6 +26,8 @@ export default function ClubDetailsPage({ params }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [activeTab, setActiveTab] = useState("posts");
+    const [applicationStatus, setApplicationStatus] = useState(null); // null | 'pending' | 'approved' | 'rejected'
+    const [statusLoading, setStatusLoading] = useState(false);
 
     useEffect(() => {
         const fetchClubData = async () => {
@@ -51,10 +53,87 @@ export default function ClubDetailsPage({ params }) {
         if (clubId) fetchClubData();
     }, [clubId]);
 
+    // Fetch the current user's application status for this club
+    useEffect(() => {
+        const fetchApplicationStatus = async () => {
+            if (!user || user.role !== "student" || !clubId) return;
+            setStatusLoading(true);
+            try {
+                const res = await fetch(`/api/applications/status?clubId=${clubId}`);
+                const data = await res.json();
+                setApplicationStatus(data.status); // null, 'pending', 'approved', or 'rejected'
+            } catch (error) {
+                console.error("Error checking application status:", error);
+            } finally {
+                setStatusLoading(false);
+            }
+        };
+
+        fetchApplicationStatus();
+    }, [user, clubId]);
+
     const handleJoinSuccess = () => {
         setIsModalOpen(false);
+        setApplicationStatus("pending"); // Immediately update button to "Pending"
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
+    };
+
+    // Render the appropriate join button based on application status
+    const renderJoinButton = () => {
+        if (statusLoading) {
+            return (
+                <button
+                    disabled
+                    className="w-full sm:w-auto px-8 py-3 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-500 font-bold shadow-sm flex items-center justify-center gap-2 cursor-not-allowed"
+                >
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </button>
+            );
+        }
+
+        if (applicationStatus === "approved") {
+            return (
+                <button
+                    disabled
+                    className="w-full sm:w-auto px-8 py-3 rounded-full bg-emerald-500 text-white font-bold shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-default"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Joined
+                </button>
+            );
+        }
+
+        if (applicationStatus === "pending") {
+            return (
+                <button
+                    disabled
+                    className="w-full sm:w-auto px-8 py-3 rounded-full bg-amber-500 text-white font-bold shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-default animate-pulse-subtle"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Pending
+                </button>
+            );
+        }
+
+        // Default: Join Club button (for no application or rejected)
+        return (
+            <button
+                onClick={() => {
+                    if (!user) {
+                        router.push(`/auth/login?redirect=/clubs/${clubId}`);
+                    } else if (user.role !== "student") {
+                        toast.error("Only student accounts can join clubs.");
+                    } else {
+                        setIsModalOpen(true);
+                    }
+                }}
+                className="w-full sm:w-auto px-8 py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-600/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+                Join Club
+            </button>
+        );
     };
 
     if (loading) {
@@ -95,9 +174,15 @@ export default function ClubDetailsPage({ params }) {
                 <div className="w-full bg-white dark:bg-zinc-900 rounded-none sm:rounded-3xl border-y sm:border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm animate-fade-in-up" style={{ animationDelay: '100ms' }}>
 
                     {/* Cover Photo */}
-                    <div className={`h-48 sm:h-64 w-full ${club.cover} relative`}>
+                    <div className={`h-48 sm:h-64 w-full relative ${club.coverImage ? '' : 'bg-gradient-to-tr from-indigo-500 to-purple-600'}`}>
+                        {club.coverImage && (
+                            <img src={club.coverImage} alt={`${club.name} cover`} className="absolute inset-0 w-full h-full object-cover" />
+                        )}
                         {/* Decorative pattern overlay */}
                         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+                        {club.coverImage && (
+                            <div className="absolute inset-0 bg-black/20"></div>
+                        )}
                     </div>
 
                     <div className="px-6 sm:px-10 pb-10 relative flex flex-col">
@@ -106,7 +191,7 @@ export default function ClubDetailsPage({ params }) {
                             {/* Profile Picture */}
                             <div className="w-32 h-32 sm:w-40 sm:h-40 shrink-0 rounded-full border-8 border-white dark:border-zinc-900 bg-white dark:bg-zinc-800 flex items-center justify-center font-black text-5xl text-indigo-500 shadow-lg relative z-10 overflow-hidden">
                                 {club.logo ? (
-                                    <Image src={club.logo} alt={club.name} fill className="object-contain p-4" sizes="160px" />
+                                    <Image src={club.logo} alt={club.name} fill className="object-cover" sizes="160px" />
                                 ) : (
                                     <span className="opacity-80 drop-shadow-sm">{club.name.charAt(0)}</span>
                                 )}
@@ -123,22 +208,8 @@ export default function ClubDetailsPage({ params }) {
                                     </div>
                                 </div>
 
-                                {/* Join Action */}
-                                <button
-                                    onClick={() => {
-                                        if (!user) {
-                                            router.push(`/auth/login?redirect=/clubs/${clubId}`);
-                                        } else if (user.role !== "student") {
-                                            toast.error("Only student accounts can join clubs.");
-                                        } else {
-                                            setIsModalOpen(true);
-                                        }
-                                    }}
-                                    className="w-full sm:w-auto px-8 py-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-600/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
-                                    Join Club
-                                </button>
+                                {/* Dynamic Join Button */}
+                                {renderJoinButton()}
                             </div>
                         </div>
 
@@ -232,24 +303,30 @@ export default function ClubDetailsPage({ params }) {
                     {/* Right Col: widgets */}
                     <div className="md:col-span-1 flex flex-col gap-6">
 
-                        {/* Executive Committee Widget Mockup */}
+                        {/* Executive Board Widget */}
                         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
                             <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-4 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" x2="19" y1="8" y2="14" /><line x1="22" x2="16" y1="11" y2="11" /></svg>
                                 Executive Board
                             </h3>
-                            <div className="flex flex-col gap-3">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
-                                            EX
+                            <div className="flex flex-col gap-4">
+                                {club.executiveBoard && club.executiveBoard.length > 0 ? (
+                                    club.executiveBoard.map((member, i) => (
+                                        <div key={i} className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/20 shrink-0 flex items-center justify-center text-xs font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50">
+                                                {member.name.charAt(0) || "EX"}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-tight">{member.name}</p>
+                                                <p className="text-xs text-zinc-500 font-medium">{member.role}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Member {i}</p>
-                                            <p className="text-xs text-zinc-500">{['President', 'Secretary', 'Treasurer'][i - 1]}</p>
-                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <p className="text-sm text-zinc-400 italic">No board members listed.</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
                     </div>

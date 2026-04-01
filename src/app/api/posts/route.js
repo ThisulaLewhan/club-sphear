@@ -3,6 +3,8 @@
 import connectDB from "@/lib/mongodb";
 import Post from "@/models/Post";
 import Club from "@/models/Club";
+import Notification from "@/models/Notification";
+import User from "@/models/User";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { promises as fs } from "fs";
@@ -84,6 +86,30 @@ export async function POST(req) {
             clubName,
             image: imageUrl
         });
+
+        // Trigger Notifications for all active users
+        try {
+            const users = await User.find({ role: { $in: ["student", "club"] } }).select("_id");
+            console.log(`[DEBUG] Found ${users.length} users for post notifications.`);
+            if (users.length > 0) {
+                const notifications = users
+                    .map(u => ({
+                        userId: u._id,
+                        title: `New Post from ${clubName}`,
+                        message: content.length > 50 ? content.substring(0, 47) + "..." : content,
+                        type: "post",
+                        link: `/clubs/${caller.clubId}`,
+                        clubName: clubName
+                    }));
+                if (notifications.length > 0) {
+                    const result = await Notification.insertMany(notifications);
+                    console.log(`[DEBUG] Successfully inserted ${result.length} notifications.`);
+                }
+            }
+        } catch (notifyError) {
+            console.error("Failed to trigger post notifications:", notifyError);
+            // Don't fail the post creation if notifications fail
+        }
 
         return NextResponse.json(newPost);
     } catch (error) {
