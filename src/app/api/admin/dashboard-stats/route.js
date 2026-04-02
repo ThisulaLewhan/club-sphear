@@ -15,7 +15,12 @@ export async function GET(req) {
     await connectDB();
 
     const [pendingEvents, activeClubs, totalMembers] = await Promise.all([
-      Event.countDocuments({ status: "pending" }),
+      Event.countDocuments({
+        $or: [
+          { status: "pending" },
+          { pendingEdit: { $ne: null } }
+        ]
+      }),
       Club.countDocuments(),
       User.countDocuments({ role: "student" }),
     ]);

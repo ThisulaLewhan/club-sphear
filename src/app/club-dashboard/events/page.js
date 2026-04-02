@@ -17,7 +17,7 @@ function CreateEventTab() {
 }
 
 // ── Manage Events Tab ─────────────────────────────────────────────────────────
-function ManageEventsTab() {
+function ManageEventsTab({ onEdit }) {
     const toast = useToast();
     const confirm = useConfirm();
     const [events, setEvents] = useState([]);
@@ -91,12 +91,30 @@ function ManageEventsTab() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-sm font-medium">
-                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-xs font-bold capitalize ${getStatusStyle(event.status)}`}>{event.status}</span>
+                                    <div className="flex flex-col items-start gap-1">
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-xs font-bold capitalize ${getStatusStyle(event.status)}`}>{event.status}</span>
+                                        {event.pendingEdit && (
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200">
+                                                Edit Pending
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <button onClick={() => handleDelete(event.id, event.title)} disabled={deletingId === event.id} className={`text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${deletingId === event.id ? "text-slate-400 bg-slate-100 cursor-not-allowed" : "text-red-600 hover:text-white hover:bg-red-600 border border-transparent hover:border-red-600"}`}>
-                                        {deletingId === event.id ? "Deleting..." : "Delete"}
-                                    </button>
+                                    <div className="flex items-center justify-end gap-2">
+                                        {event.status === "approved" && (
+                                            <button 
+                                                onClick={() => onEdit(event)}
+                                                disabled={!!event.pendingEdit}
+                                                className={`text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${event.pendingEdit ? "text-slate-400 bg-slate-50 cursor-not-allowed" : "text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200"}`}
+                                            >
+                                                Edit
+                                            </button>
+                                        )}
+                                        <button onClick={() => handleDelete(event.id, event.title)} disabled={deletingId === event.id} className={`text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${deletingId === event.id ? "text-slate-400 bg-slate-100 cursor-not-allowed" : "text-red-600 hover:text-white hover:bg-red-600 border border-transparent hover:border-red-600"}`}>
+                                            {deletingId === event.id ? "Deleting..." : "Delete"}
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -110,6 +128,12 @@ function ManageEventsTab() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function EventsPage() {
     const [tab, setTab] = useState("create");
+    const [editEventData, setEditEventData] = useState(null);
+
+    const handleEditClick = (event) => {
+        setEditEventData(event);
+        setTab("edit");
+    };
 
     return (
         <div className="w-full">
@@ -132,9 +156,42 @@ export default function EventsPage() {
                 >
                     Manage Events
                 </button>
+                {tab === "edit" && (
+                    <button
+                        className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-white text-blue-600 shadow-sm transition-all duration-200"
+                    >
+                        Edit Event
+                    </button>
+                )}
             </div>
 
-            {tab === "create" ? <CreateEventTab /> : <ManageEventsTab />}
+            {tab === "create" && <CreateEventTab />}
+            {tab === "manage" && <ManageEventsTab onEdit={handleEditClick} />}
+            {tab === "edit" && editEventData && (
+                <div className="w-full">
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-xl font-bold text-slate-800">Editing: {editEventData.title}</h2>
+                        <button 
+                            onClick={() => {
+                                setTab("manage");
+                                setEditEventData(null);
+                            }}
+                            className="text-sm text-slate-500 hover:text-slate-700 underline"
+                        >
+                            Cancel Edit
+                        </button>
+                    </div>
+                    <EventForm 
+                        editMode={true} 
+                        initialData={editEventData} 
+                        eventId={editEventData.id} 
+                        onSuccess={() => {
+                            setTab("manage");
+                            setEditEventData(null);
+                        }} 
+                    />
+                </div>
+            )}
         </div>
     );
 }

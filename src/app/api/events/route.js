@@ -17,7 +17,16 @@ export async function GET(req) {
 
         let query = {};
         if (status && status !== "all") {
-            query.status = status;
+            if (status === "pending") {
+                query = {
+                    $or: [
+                        { status: "pending" },
+                        { pendingEdit: { $ne: null } }
+                    ]
+                };
+            } else {
+                query.status = status;
+            }
         }
 
         // Sort by date ascending (closest events first)

@@ -209,17 +209,17 @@ function CustomDatePicker({ name, value, onChange, label, required }) {
 
 const _globalImageStore = new Map();
 
-export default function EventForm() {
+export default function EventForm({ editMode = false, initialData = null, eventId = null, onSuccess = null }) {
     const [formData, setFormData] = useState({
-        title: "",
-        description: "",
-        date: "",
-        startTime: "",
-        endTime: "",
-        venue: "",
-        registrationLink: "",
+        title: initialData?.title || "",
+        description: initialData?.description || "",
+        date: initialData?.date ? initialData.date.split('T')[0] : "",
+        startTime: initialData?.startTime || "",
+        endTime: initialData?.endTime || "",
+        venue: initialData?.venue || "",
+        registrationLink: initialData?.registrationLink || "",
     });
-    const [imagePreview, setImagePreview] = useState(null);
+    const [imagePreview, setImagePreview] = useState(initialData?.imageUrl || null);
 
     const [message, setMessage] = useState({ type: "", text: "" });
     const [formErrors, setFormErrors] = useState({});
@@ -255,9 +255,11 @@ export default function EventForm() {
         const activeImageFile = _globalImageStore.get("currentEventImage") || null;
 
         // Comprehensive Frontend Validation
-        const payloadToValidate = { ...formData, image: activeImageFile };
+        // Image is required for new events; optional for edits (as existing image remains unless changed)
+        const payloadToValidate = editMode ? { ...formData, image: { size: 1, type: "image/jpeg" } } : { ...formData, image: activeImageFile };
         const validation = validateEvent(payloadToValidate);
         if (!validation.valid) {
+            // For edits, we only care about fields other than image since image is optional
             setFormErrors(validation.errors);
             setMessage({ type: "error", text: `Please fill all the fields below.` });
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -277,18 +279,24 @@ export default function EventForm() {
                 submitData.append("image", activeImageFile);
             }
 
-            const response = await fetch("/api/events", {
-                method: "POST",
+            const endpoint = editMode ? `/api/club-dashboard/manage-events/${eventId}` : "/api/events";
+            const method = editMode ? "PUT" : "POST";
+
+            const response = await fetch(endpoint, {
+                method: method,
                 body: submitData,
             });
 
             const result = await response.json();
 
             if (response.ok) {
-                setMessage({ type: "success", text: "Event submitted successfully and is pending approval!" });
-                setFormData({ title: "", description: "", date: "", startTime: "", endTime: "", venue: "", registrationLink: "" });
-                _globalImageStore.delete("currentEventImage");
-                setImagePreview(null);
+                setMessage({ type: "success", text: editMode ? "Edit submitted successfully and is pending approval!" : "Event submitted successfully and is pending approval!" });
+                if (!editMode) {
+                    setFormData({ title: "", description: "", date: "", startTime: "", endTime: "", venue: "", registrationLink: "" });
+                    _globalImageStore.delete("currentEventImage");
+                    setImagePreview(null);
+                }
+                if (onSuccess) onSuccess();
             } else {
                 setMessage({ type: "error", text: result.error || "Failed to submit event." });
             }
@@ -385,7 +393,7 @@ export default function EventForm() {
 
                 <div className="pt-6">
                     <button disabled={loading} type="submit" className="group w-full md:w-auto md:ml-auto md:px-12 flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold py-4 rounded-xl transition-all hover:bg-blue-700 active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-blue-600/20">
-                        {loading ? "Processing..." : "Submit Event for Approval"}
+                        {loading ? "Processing..." : editMode ? "Submit Edit for Approval" : "Submit Event for Approval"}
                         {!loading && <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>}
                     </button>
                 </div>

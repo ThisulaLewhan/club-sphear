@@ -27,11 +27,15 @@ export async function GET() {
         const formattedEvents = events.map((event) => ({
             id: event._id.toString(),
             title: event.title,
+            description: event.description || "",
             date: event.date,
             startTime: event.startTime,
             endTime: event.endTime,
             venue: event.venue,
+            registrationLink: event.registrationLink || "",
+            imageUrl: event.imageUrl || null,
             status: event.status,
+            pendingEdit: event.pendingEdit || null,
             createdAt: event.createdAt,
         }));
 

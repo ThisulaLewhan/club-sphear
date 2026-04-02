@@ -19,7 +19,21 @@ const EventSchema = new mongoose.Schema({
     default: "pending"
   },
   registrationLink: String,
-  clubId: { type: mongoose.Schema.Types.ObjectId, ref: "Club" }
+  clubId: { type: mongoose.Schema.Types.ObjectId, ref: "Club" },
+  pendingEdit: {
+    type: {
+      title: String,
+      description: String,
+      date: Date,
+      startTime: String,
+      endTime: String,
+      venue: String,
+      registrationLink: String,
+      imageUrl: String,
+      submittedAt: { type: Date, default: Date.now }
+    },
+    default: null
+  }
 }, { timestamps: true });
 
 export default mongoose.models.Event || mongoose.model("Event", EventSchema);
