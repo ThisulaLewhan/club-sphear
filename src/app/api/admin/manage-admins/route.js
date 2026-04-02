@@ -16,13 +16,14 @@ export async function GET() {
 
         await connectDB();
 
-        // Find all sub-admins
-        const admins = await User.find({ role: "admin" }).sort({ createdAt: -1 }).lean();
+        // Find all admins (sub-admins and mainAdmins)
+        const admins = await User.find({ role: { $in: ["admin", "mainAdmin"] } }).sort({ createdAt: -1 }).lean();
 
         const formattedAdmins = admins.map((admin) => ({
             id: admin._id.toString(),
             name: admin.name,
             email: admin.email,
+            role: admin.role,
             createdAt: admin.createdAt,
         }));
 

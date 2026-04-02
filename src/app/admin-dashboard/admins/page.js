@@ -75,6 +75,7 @@ function ManageAdminsTab() {
     const [admins, setAdmins] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
+    const [togglingId, setTogglingId] = useState(null);
 
     useEffect(() => {
         if (!authLoading && user && user.role !== "mainAdmin") router.push("/admin-dashboard");
@@ -91,6 +92,33 @@ function ManageAdminsTab() {
         try { setDeletingId(adminId); const res = await fetch(`/api/admin/manage-admins/${adminId}`, { method: "DELETE" }); const data = await res.json(); if (data.success) { setAdmins(admins.filter(a => a.id !== adminId)); toast.success(`Sub-admin "${adminName}" deleted.`); } else { toast.error(data.error || "Failed to delete admin"); } } catch { toast.error("An error occurred."); } finally { setDeletingId(null); }
     };
 
+    const handleToggleRole = async (admin) => {
+        const action = admin.role === "admin" ? "promote" : "demote";
+        const label = action === "promote" ? "Main Admin" : "Sub Admin";
+        const confirmed = await confirm(
+            `Are you sure you want to ${action} "${admin.name}" to ${label}?`,
+            { title: `${action === "promote" ? "Promote" : "Demote"} Admin?`, confirmText: action === "promote" ? "Promote" : "Demote", variant: action === "promote" ? "primary" : "warning" }
+        );
+        if (!confirmed) return;
+        try {
+            setTogglingId(admin.id);
+            const res = await fetch(`/api/admin/manage-admins/${admin.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setAdmins(admins.map(a => a.id === admin.id ? { ...a, role: data.data.role } : a));
+                toast.success(data.message);
+            } else {
+                toast.error(data.error || "Failed to update role");
+            }
+        } catch { toast.error("An error occurred."); } finally { setTogglingId(null); }
+    };
+
+    const isSelf = (adminId) => user && user.id === adminId;
+
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -99,29 +127,59 @@ function ManageAdminsTab() {
                         <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                             <th className="px-6 py-4">Admin Name</th>
                             <th className="px-6 py-4">Email Address</th>
+                            <th className="px-6 py-4 hidden sm:table-cell">Role</th>
                             <th className="px-6 py-4 hidden sm:table-cell">Created</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                         {loading ? (
-                            <tr><td colSpan="4" className="px-6 py-12 text-center text-slate-400"><div className="animate-pulse">Loading admins...</div></td></tr>
+                            <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-400"><div className="animate-pulse">Loading admins...</div></td></tr>
                         ) : admins.length === 0 ? (
-                            <tr><td colSpan="4" className="px-6 py-12 text-center text-slate-400 font-medium">No sub-admins found.</td></tr>
+                            <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-400 font-medium">No admins found.</td></tr>
                         ) : admins.map((admin) => (
                             <tr key={admin.id} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm">{admin.name.charAt(0)}</div>
-                                        <span className="font-semibold text-slate-800">{admin.name}</span>
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${admin.role === "mainAdmin" ? "bg-indigo-100 text-indigo-600" : "bg-emerald-100 text-emerald-600"}`}>{admin.name.charAt(0)}</div>
+                                        <span className="font-semibold text-slate-800">
+                                            {admin.name}
+                                            {isSelf(admin.id) && <span className="ml-1.5 text-xs text-slate-400 font-normal">(You)</span>}
+                                        </span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-sm text-slate-600 font-medium">{admin.email}</td>
+                                <td className="px-6 py-4 hidden sm:table-cell">
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${admin.role === "mainAdmin" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"}`}>
+                                        {admin.role === "mainAdmin" ? "Main" : "Sub"}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4 hidden sm:table-cell text-sm text-slate-500">{admin.createdAt ? new Date(admin.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "Unknown"}</td>
                                 <td className="px-6 py-4 text-right">
-                                    <button onClick={() => handleDelete(admin.id, admin.name)} disabled={deletingId === admin.id} className={`text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${deletingId === admin.id ? "text-slate-400 bg-slate-100 cursor-not-allowed" : "text-red-600 hover:text-red-700 hover:bg-red-50"}`}>
-                                        {deletingId === admin.id ? "Deleting..." : "Delete"}
-                                    </button>
+                                    <div className="flex items-center justify-end gap-1">
+                                        {/* Promote / Demote button */}
+                                        {!isSelf(admin.id) && (
+                                            <button
+                                                onClick={() => handleToggleRole(admin)}
+                                                disabled={togglingId === admin.id}
+                                                className={`text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${togglingId === admin.id
+                                                    ? "text-slate-400 bg-slate-100 cursor-not-allowed"
+                                                    : admin.role === "admin"
+                                                        ? "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                                                        : "text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                                    }`}
+                                            >
+                                                {togglingId === admin.id ? "Updating..." : admin.role === "admin" ? "Promote" : "Demote"}
+                                            </button>
+                                        )}
+                                        {/* Delete button — only for sub-admins, not self */}
+                                        {admin.role === "admin" && !isSelf(admin.id) && (
+                                            <button onClick={() => handleDelete(admin.id, admin.name)} disabled={deletingId === admin.id} className={`text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${deletingId === admin.id ? "text-slate-400 bg-slate-100 cursor-not-allowed" : "text-red-600 hover:text-red-700 hover:bg-red-50"}`}>
+                                                {deletingId === admin.id ? "Deleting..." : "Delete"}
+                                            </button>
+                                        )}
+                                        {isSelf(admin.id) && <span className="text-xs text-slate-400 italic">Current user</span>}
+                                    </div>
                                 </td>
                             </tr>
                         ))}
