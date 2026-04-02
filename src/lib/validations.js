@@ -27,6 +27,13 @@ export function isValidStudentEmail(email) {
   return emailRegex.test(normalizedEmail);
 }
 
+// checks if it matches student ID format
+export function isValidStudentId(id) {
+  if (!id || String(id).trim() === '') return true;
+  const regex = new RegExp(`^${escapeRegex(STUDENT_EMAIL_PREFIX)}\\d{${STUDENT_EMAIL_DIGITS}}$`, 'i');
+  return regex.test(String(id).trim());
+}
+
 // checks if the password meets security requirements
 export function validatePassword(password) {
   if (!password || password.length < 6) {
@@ -109,8 +116,10 @@ export function validateProfileUpdate(data) {
     errors.bio = "Bio must be under 500 characters";
   }
 
-  if (data.studentId !== undefined && data.studentId.length > 20) {
-    errors.studentId = "Student ID must be under 20 characters";
+  if (data.studentId !== undefined && data.studentId.trim() !== '') {
+    if (!isValidStudentId(data.studentId)) {
+      errors.studentId = `Student ID must be in format ${STUDENT_EMAIL_PREFIX.toUpperCase()}${"1".repeat(STUDENT_EMAIL_DIGITS)}`;
+    }
   }
 
   // cant change role
@@ -202,3 +211,24 @@ export function validateEvent(data) {
   };
 }
 
+// validate chat message
+export function validateChatMessage(data) {
+  const errors = {};
+
+  if (!data.content || data.content.trim().length === 0) {
+    if (!data.image) {
+      errors.content = "Message cannot be empty";
+    }
+  } else if (data.content.length > 200) {
+    errors.content = "Message cannot exceed 200 characters";
+  }
+
+  if (!data.conversationId) {
+    errors.conversationId = "Missing conversation reference";
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
+}

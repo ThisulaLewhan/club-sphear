@@ -102,6 +102,13 @@ export default function LoginForm() {
             {errors.password && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.password}</p>}
           </div>
 
+          {/* Forgot password */}
+          <div className="flex justify-end -mt-1">
+            <Link href="/auth/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors">
+              Forgot password?
+            </Link>
+          </div>
+
           {/* Submit */}
           <button type="submit" disabled={loading} className={btnPrimary}>
             {loading ? (
