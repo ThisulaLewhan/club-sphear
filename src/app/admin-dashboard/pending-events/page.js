@@ -3,8 +3,9 @@
 // Feature Domain: The Global Admin System
 
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
+import EventCalendar from "@/components/events/EventCalendar";
 
 export default function AdminPendingEventsPage() {
     const toast = useToast();
@@ -12,6 +13,12 @@ export default function AdminPendingEventsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [actionLoading, setActionLoading] = useState(null);
+
+    // --- Preview Panel State ---
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewEvent, setPreviewEvent] = useState(null);
+    const [sameDayEvents, setSameDayEvents] = useState([]);
+    const [previewLoading, setPreviewLoading] = useState(false);
 
     const fetchPendingEvents = async () => {
         try {
@@ -46,6 +53,11 @@ export default function AdminPendingEventsPage() {
 
             if (res.ok && json.success) {
                 setEvents(prev => prev.filter(e => e._id !== id));
+                // Close panel if the previewed event was just actioned
+                if (previewEvent && previewEvent._id === id) {
+                    setPreviewOpen(false);
+                    setPreviewEvent(null);
+                }
                 toast.success(`Event ${status} successfully.`);
             } else {
                 toast.error(`Failed to ${status} event`);
@@ -57,12 +69,55 @@ export default function AdminPendingEventsPage() {
         }
     };
 
+    // --- View Current Listings Logic ---
+    const viewCurrentListings = useCallback(async (event) => {
+        setPreviewEvent(event);
+        setPreviewOpen(true);
+        setPreviewLoading(true);
+        setSameDayEvents([]);
+
+        try {
+            // Determine the relevant date for this pending event
+            const targetDate = event.pendingEdit ? event.pendingEdit.date : event.date;
+            const targetDay = new Date(targetDate).toDateString();
+
+            const res = await fetch("/api/events?status=approved");
+            const json = await res.json();
+
+            if (json.success) {
+                // Filter to approved events on the same calendar day
+                const filtered = json.data.filter(e => {
+                    return new Date(e.date).toDateString() === targetDay;
+                });
+                // Sort by start time
+                filtered.sort((a, b) => a.startTime.localeCompare(b.startTime));
+                setSameDayEvents(filtered);
+            } else {
+                toast.error("Could not load current listings.");
+            }
+        } catch {
+            toast.error("Network error loading listings.");
+        } finally {
+            setPreviewLoading(false);
+        }
+    }, [toast]);
+
     const formatDate = (dateString, startTime) => {
         try {
             const date = new Date(dateString);
             return `${date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} at ${startTime}`;
         } catch {
             return `${dateString} ${startTime}`;
+        }
+    };
+
+    const formatDateOnly = (dateString) => {
+        try {
+            return new Date(dateString).toLocaleDateString(undefined, {
+                weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+            });
+        } catch {
+            return dateString;
         }
     };
 
@@ -186,6 +241,12 @@ export default function AdminPendingEventsPage() {
                                             <svg className="w-5 h-5 mr-3 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                             <span className="font-semibold text-slate-700">{event.venue}</span>
                                         </div>
+                                        {event.clubId?.name && (
+                                            <div className="flex items-center text-slate-600 text-sm">
+                                                <svg className="w-5 h-5 mr-3 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                                <span className="font-semibold text-slate-700">{event.clubId.name}</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {event.description && (
@@ -196,7 +257,16 @@ export default function AdminPendingEventsPage() {
                                 </div>
                             )}
 
-                            <div className="flex sm:flex-row flex-col gap-3 pt-6 border-t border-slate-100">
+                            {/* View Current Listings Button */}
+                            <button
+                                onClick={() => viewCurrentListings(event)}
+                                className="w-full mb-4 py-2.5 px-4 flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/60 text-indigo-700 font-semibold rounded-xl transition-colors text-sm"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                View Current Listings for This Date
+                            </button>
+
+                            <div className="flex sm:flex-row flex-col gap-3 pt-4 border-t border-slate-100">
                                 <button
                                     disabled={actionLoading === event._id}
                                     onClick={() => handleAction(event._id, "rejected")}
@@ -216,6 +286,150 @@ export default function AdminPendingEventsPage() {
                     ))}
                 </div>
             )}
+
+            {/* ====== APPROVED EVENTS CALENDAR ====== */}
+            <div className="mt-12">
+                <div className="flex items-center gap-3 mb-5 pb-5 border-b border-slate-200">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Approved Events Calendar</h2>
+                        <p className="text-sm text-slate-500">Currently approved events, click any event for details</p>
+                    </div>
+                </div>
+                <EventCalendar />
+            </div>
+
+            {/* ====== SLIDE-OVER SIDE PANEL ====== */}
+            {/* Backdrop */}
+            <div
+                className={`fixed top-16 inset-x-0 bottom-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-300 ${previewOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+                onClick={() => setPreviewOpen(false)}
+            />
+
+            {/* Panel */}
+            <div className={`fixed top-16 right-0 h-[calc(100vh-4rem)] w-full max-w-[480px] bg-white shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${previewOpen ? "translate-x-0" : "translate-x-full"}`}>
+                {/* Panel Header */}
+                <div className="flex items-start justify-between p-6 border-b border-slate-100 bg-slate-50/80">
+                    <div>
+                        <h2 className="text-lg font-bold text-slate-900 tracking-tight">Current Calendar Listings</h2>
+                        {previewEvent && (
+                            <p className="text-sm text-slate-500 mt-0.5">
+                                {formatDateOnly(previewEvent.pendingEdit ? previewEvent.pendingEdit.date : previewEvent.date)}
+                            </p>
+                        )}
+                    </div>
+                    <button
+                        onClick={() => setPreviewOpen(false)}
+                        className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors mt-0.5"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                {/* Pending Event Summary — prominent card */}
+                {previewEvent && (
+                    <div className="px-6 py-5 bg-indigo-50 border-b border-indigo-100">
+                        <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3">Selected Pending Event</p>
+                        <div className="bg-white rounded-xl border border-indigo-200/60 p-4 shadow-sm">
+                            <div className="flex items-start justify-between gap-2 mb-3">
+                                <h3 className="font-black text-slate-900 text-base leading-tight">
+                                    {previewEvent.pendingEdit ? previewEvent.pendingEdit.title : previewEvent.title}
+                                </h3>
+                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex-shrink-0 ${
+                                    previewEvent.pendingEdit
+                                        ? "bg-blue-50 border border-blue-200/50 text-blue-700"
+                                        : "bg-amber-50 border border-amber-200/50 text-amber-700"
+                                }`}>
+                                    {previewEvent.pendingEdit ? "Edit" : "Pending"}
+                                </span>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm text-slate-600">
+                                    <svg className="w-4 h-4 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <span className="font-semibold">
+                                        {previewEvent.pendingEdit ? `${previewEvent.pendingEdit.startTime} – ${previewEvent.pendingEdit.endTime}` : `${previewEvent.startTime} – ${previewEvent.endTime}`}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-slate-600">
+                                    <svg className="w-4 h-4 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    <span>{previewEvent.pendingEdit ? previewEvent.pendingEdit.venue : previewEvent.venue}</span>
+                                </div>
+                                {previewEvent.clubId?.name && (
+                                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                                        <svg className="w-4 h-4 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                        <span>{previewEvent.clubId.name}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Listings Body */}
+                <div className="flex-1 overflow-y-auto p-6">
+                    {previewLoading ? (
+                        <div className="flex flex-col gap-4">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="animate-pulse bg-slate-50 border border-slate-100 rounded-xl p-4">
+                                    <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                                    <div className="h-3 bg-slate-200 rounded w-1/2 mb-1"></div>
+                                    <div className="h-3 bg-slate-200 rounded w-1/3"></div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : sameDayEvents.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center py-16">
+                            <div className="w-16 h-16 bg-green-50 border border-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </div>
+                            <h3 className="font-bold text-slate-800 text-lg mb-1">Date is Clear!</h3>
+                            <p className="text-slate-500 text-sm max-w-[220px]">No approved events are currently scheduled for this date.</p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-3">
+                            <p className="text-sm font-semibold text-slate-500 mb-1">
+                                {sameDayEvents.length} approved event{sameDayEvents.length > 1 ? "s" : ""} on this date
+                            </p>
+                            {sameDayEvents.map((e) => (
+                                <div key={e._id} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                        <h4 className="font-bold text-slate-900 text-sm leading-tight">{e.title}</h4>
+                                        <span className="px-2 py-0.5 bg-green-50 border border-green-200/50 text-green-700 rounded-full text-xs font-bold uppercase tracking-wide flex-shrink-0">Approved</span>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-center gap-2 text-xs text-slate-600">
+                                            <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            <span className="font-semibold">{e.startTime} – {e.endTime}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs text-slate-600">
+                                            <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                            <span>{e.venue}</span>
+                                        </div>
+                                        {e.clubId?.name && (
+                                            <div className="flex items-center gap-2 text-xs text-slate-600">
+                                                <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                                <span>{e.clubId.name}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Panel Footer */}
+                <div className="p-5 border-t border-slate-100 bg-slate-50/80">
+                    <button
+                        onClick={() => setPreviewOpen(false)}
+                        className="w-full py-2.5 px-4 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors text-sm"
+                    >
+                        Close Panel
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

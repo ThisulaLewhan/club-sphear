@@ -109,7 +109,7 @@ export default function NoticeBoard({ newNotice, searchQuery = "" }) {
                 {sortedNotices.map((notice) => (
                     <div
                         key={notice._id}
-                        className={`relative w-full border p-6 transition-all hover:shadow-lg hover:-translate-y-0.5 duration-200 rounded-r-2xl rounded-l-md border-l-[8px]
+                        className={`relative w-full border p-6 shadow-[0_20px_50px_rgba(79,70,229,0.24)] transition-all hover:shadow-[0_40px_80px_rgba(79,70,229,0.35)] hover:-translate-y-1 duration-300 rounded-r-2xl rounded-l-md border-l-[8px]
                             ${notice.priority === 'urgent'
                                 ? 'bg-gradient-to-r from-red-50 to-white dark:from-red-950/30 dark:to-zinc-900 border-red-200 dark:border-red-900/50 border-l-red-500'
                                 : 'bg-gradient-to-r from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-zinc-900 border-zinc-200 dark:border-zinc-800 border-l-indigo-500'

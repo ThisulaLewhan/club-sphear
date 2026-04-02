@@ -266,6 +266,27 @@ export default function EventForm({ editMode = false, initialData = null, eventI
             return;
         }
 
+        if (editMode) {
+            const initialDate = initialData?.date ? initialData.date.split('T')[0] : "";
+            const hasChanges = (
+                formData.title !== (initialData?.title || "") ||
+                formData.description !== (initialData?.description || "") ||
+                formData.date !== initialDate ||
+                formData.startTime !== (initialData?.startTime || "") ||
+                formData.endTime !== (initialData?.endTime || "") ||
+                formData.venue !== (initialData?.venue || "") ||
+                formData.registrationLink !== (initialData?.registrationLink || "") ||
+                activeImageFile !== null ||
+                (!activeImageFile && imagePreview !== (initialData?.imageUrl || null))
+            );
+
+            if (!hasChanges) {
+                setMessage({ type: "error", text: "No changes detected. Please modify the event details or image before submitting." });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {

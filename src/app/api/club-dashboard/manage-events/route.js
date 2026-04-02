@@ -36,6 +36,7 @@ export async function GET() {
             imageUrl: event.imageUrl || null,
             status: event.status,
             pendingEdit: event.pendingEdit || null,
+            editRejected: event.editRejected || false,
             createdAt: event.createdAt,
         }));
 

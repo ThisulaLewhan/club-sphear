@@ -161,6 +161,7 @@ export async function PUT(req, context) {
             imageUrl: editImageUrl,
             submittedAt: new Date(),
         };
+        targetEvent.editRejected = false;
 
         await targetEvent.save();
 

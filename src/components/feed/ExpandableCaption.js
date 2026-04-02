@@ -19,7 +19,7 @@ export default function ExpandableCaption({ content }) {
     <div className="mb-3">
       <div
         ref={textRef}
-        className={`text-[15px] leading-relaxed text-[#475569] dark:text-zinc-300 font-normal ${
+        className={`text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-300 font-normal ${
           isExpanded ? "" : "line-clamp-3"
         }`}
       >
@@ -28,7 +28,7 @@ export default function ExpandableCaption({ content }) {
       {isClamped && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-[13px] font-semibold text-[#0ea5e9] hover:text-[#0284c7] mt-1 transition-colors"
+          className="text-[13px] font-semibold text-indigo-600 hover:text-indigo-700 mt-1 transition-colors"
         >
           {isExpanded ? "Show less" : "Read more"}
         </button>

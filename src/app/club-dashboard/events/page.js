@@ -98,6 +98,11 @@ function ManageEventsTab({ onEdit }) {
                                                 Edit Pending
                                             </span>
                                         )}
+                                        {!event.pendingEdit && event.editRejected && (
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-600 border border-red-200">
+                                                Edit Rejected
+                                            </span>
+                                        )}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-right">

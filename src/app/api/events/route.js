@@ -30,7 +30,7 @@ export async function GET(req) {
         }
 
         // Sort by date ascending (closest events first)
-        const events = await Event.find(query).sort({ date: 1, startTime: 1 });
+        const events = await Event.find(query).populate("clubId", "name category").sort({ date: 1, startTime: 1 });
         return NextResponse.json({ success: true, data: events }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });

@@ -11,6 +11,44 @@ export default function EventCalendar() {
     // Calendar state
     const [currentDate, setCurrentDate] = useState(new Date());
 
+    // Filter state
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("All Categories");
+
+    const categories = [
+        "All Categories",
+        "Technology & Innovation",
+        "Academic & Professional",
+        "Arts & Humanities",
+        "Business & Leadership",
+        "Community & Social",
+        "Media & Communications",
+        "Recreation & Esports",
+    ];
+
+    // Auto-navigate to matched event month during search
+    useEffect(() => {
+        if (!searchQuery.trim()) return;
+        
+        const query = searchQuery.toLowerCase();
+        const firstMatch = events.find(evt => {
+            if (selectedCategory !== "All Categories" && evt.clubId?.category !== selectedCategory) {
+                return false;
+            }
+            const titleMatch = evt.title.toLowerCase().includes(query);
+            const clubMatch = evt.clubId?.name?.toLowerCase().includes(query);
+            return titleMatch || clubMatch;
+        });
+
+        if (firstMatch) {
+            const evtDate = new Date(firstMatch.date);
+            // Update calendar view only if it's a different month to prevent jittering
+            if (currentDate.getFullYear() !== evtDate.getFullYear() || currentDate.getMonth() !== evtDate.getMonth()) {
+                setCurrentDate(new Date(evtDate.getFullYear(), evtDate.getMonth(), 1));
+            }
+        }
+    }, [searchQuery, events, selectedCategory]);
+
     useEffect(() => {
         const fetchEvents = async () => {
             try {
@@ -124,9 +162,28 @@ export default function EventCalendar() {
     const getEventsForDay = (date) => {
         return events.filter(evt => {
             const evtDate = new Date(evt.date);
-            return evtDate.getFullYear() === date.getFullYear() &&
-                evtDate.getMonth() === date.getMonth() &&
-                evtDate.getDate() === date.getDate();
+            if (evtDate.getFullYear() !== date.getFullYear() ||
+                evtDate.getMonth() !== date.getMonth() ||
+                evtDate.getDate() !== date.getDate()) {
+                return false;
+            }
+
+            // Filter by category
+            if (selectedCategory !== "All Categories" && evt.clubId?.category !== selectedCategory) {
+                return false;
+            }
+
+            // Filter by search query (event name or club name)
+            if (searchQuery.trim()) {
+                const query = searchQuery.toLowerCase();
+                const titleMatch = evt.title.toLowerCase().includes(query);
+                const clubMatch = evt.clubId?.name?.toLowerCase().includes(query);
+                if (!titleMatch && !clubMatch) {
+                    return false;
+                }
+            }
+
+            return true;
         }).sort((a, b) => a.startTime.localeCompare(b.startTime));
     };
 
@@ -176,73 +233,121 @@ export default function EventCalendar() {
 
     return (
         <div className="flex flex-col flex-1 min-h-[800px] w-full bg-white dark:bg-black text-zinc-900 dark:text-zinc-50">
-            {/* Header Area */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex-wrap gap-4 relative z-30">
-                <div className="flex items-center gap-2">
-                    {/* Month Dropdown */}
-                    <div className="relative" ref={monthDropdownRef}>
-                        <button
-                            type="button"
-                            onClick={() => { setShowMonthDropdown(!showMonthDropdown); setShowYearDropdown(false); }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xl sm:text-2xl font-bold tracking-tight rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            {monthNames[currentDate.getMonth()]}
-                            <svg className={`w-5 h-5 text-zinc-400 transition-transform ${showMonthDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
+            {/* Unified Header & Filter Area */}
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 gap-4 relative z-30">
+                
+                {/* Left: Date Selectors & Navigation Controls */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full xl:w-auto">
+                    
+                    {/* Month and Year */}
+                    <div className="flex items-center gap-2">
+                        <div className="relative" ref={monthDropdownRef}>
+                            <button
+                                type="button"
+                                onClick={() => { setShowMonthDropdown(!showMonthDropdown); setShowYearDropdown(false); }}
+                                className="flex items-center justify-between w-[130px] sm:w-[170px] px-3 py-1.5 text-xl sm:text-2xl font-bold tracking-tight rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <span className="truncate">{monthNames[currentDate.getMonth()]}</span>
+                                <svg className={`w-5 h-5 flex-shrink-0 text-zinc-400 transition-transform ${showMonthDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
 
-                        {showMonthDropdown && (
-                            <div className="absolute top-full left-0 mt-1 max-h-64 overflow-y-auto w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl py-2 z-[60]">
-                                {monthNames.map((month, index) => (
-                                    <button
-                                        key={month}
-                                        type="button"
-                                        onClick={() => handleMonthSelect(index)}
-                                        className={`w-full text-left px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-sm font-medium ${currentDate.getMonth() === index ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                                    >
-                                        {month}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                            {showMonthDropdown && (
+                                <div className="absolute top-full left-0 mt-1 max-h-64 overflow-y-auto w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl py-2 z-[60]">
+                                    {monthNames.map((month, index) => (
+                                        <button
+                                            key={month}
+                                            type="button"
+                                            onClick={() => handleMonthSelect(index)}
+                                            className={`w-full text-left px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-sm font-medium ${currentDate.getMonth() === index ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                                        >
+                                            {month}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="relative" ref={yearDropdownRef}>
+                            <button
+                                type="button"
+                                onClick={() => { setShowYearDropdown(!showYearDropdown); setShowMonthDropdown(false); }}
+                                className="flex items-center justify-between w-[90px] sm:w-[110px] px-2 sm:px-3 py-1.5 text-xl sm:text-2xl font-bold tracking-tight rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <span>{currentDate.getFullYear()}</span>
+                                <svg className={`w-5 h-5 flex-shrink-0 text-zinc-400 transition-transform ${showYearDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+
+                            {showYearDropdown && (
+                                <div className="absolute top-full left-0 mt-1 max-h-64 overflow-y-auto w-32 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl py-2 z-[60]">
+                                    {years.map((year) => (
+                                        <button
+                                            key={year}
+                                            type="button"
+                                            onClick={() => handleYearSelect(year)}
+                                            className={`w-full text-left px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-sm font-medium ${currentDate.getFullYear() === year ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                                        >
+                                            {year}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Year Dropdown */}
-                    <div className="relative" ref={yearDropdownRef}>
-                        <button
-                            type="button"
-                            onClick={() => { setShowYearDropdown(!showYearDropdown); setShowMonthDropdown(false); }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xl sm:text-2xl font-bold tracking-tight rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            {currentDate.getFullYear()}
-                            <svg className={`w-5 h-5 text-zinc-400 transition-transform ${showYearDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    {/* Navigation Arrows */}
+                    <div className="flex items-center gap-3">
+                        <button onClick={handleToday} className="px-4 py-1.5 text-sm font-semibold rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
+                            Today
                         </button>
-
-                        {showYearDropdown && (
-                            <div className="absolute top-full left-0 mt-1 max-h-64 overflow-y-auto w-32 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl py-2 z-[60]">
-                                {years.map((year) => (
-                                    <button
-                                        key={year}
-                                        type="button"
-                                        onClick={() => handleYearSelect(year)}
-                                        className={`w-full text-left px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-sm font-medium ${currentDate.getFullYear() === year ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                                    >
-                                        {year}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                        <div className="flex items-center gap-1 border border-zinc-200 dark:border-zinc-800 rounded-md p-1">
+                            <button onClick={handlePrevMonth} className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors" aria-label="Previous month">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <button onClick={handleNextMonth} className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors" aria-label="Next month">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={handleToday} className="px-4 py-1.5 text-sm font-semibold rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
-                        Today
-                    </button>
-                    <div className="flex items-center gap-1 border border-zinc-200 dark:border-zinc-800 rounded-md p-1">
-                        <button onClick={handlePrevMonth} className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors" aria-label="Previous month">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-                        </button>
-                        <button onClick={handleNextMonth} className="p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors" aria-label="Next month">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+
+                {/* Right: Filters */}
+                <div className="flex flex-col sm:flex-row gap-3 items-center w-full xl:w-auto xl:max-w-2xl justify-end flex-shrink-0">
+                    <div className="relative w-full sm:min-w-[280px] transition-all duration-200">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg className="h-4 w-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search by event or club..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="block w-full pl-10 pr-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg leading-5 bg-white dark:bg-zinc-800 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
+                        />
+                    </div>
+                    
+                    <div className="w-full sm:w-auto flex gap-2">
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="block w-full sm:w-auto pl-3 pr-8 py-2 text-sm border border-zinc-300 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 transition-colors cursor-pointer"
+                        >
+                            {categories.map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+
+                        <button 
+                            onClick={() => { setSearchQuery(""); setSelectedCategory("All Categories"); }}
+                            disabled={!searchQuery.trim() && selectedCategory === "All Categories"}
+                            className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors border whitespace-nowrap flex-shrink-0 ${
+                                searchQuery.trim() || selectedCategory !== "All Categories"
+                                    ? "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 border-red-200 dark:border-red-800/50"
+                                    : "bg-zinc-100 text-zinc-400 border-transparent dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed"
+                            }`}
+                        >
+                            Clear
                         </button>
                     </div>
                 </div>
@@ -321,8 +426,8 @@ export default function EventCalendar() {
 
             {/* Detail Modal */}
             {selectedEvent && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedEvent(null)}>
-                    <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl max-w-sm w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed top-16 inset-x-0 bottom-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedEvent(null)}>
+                    <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-6 rounded-3xl max-w-sm w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[calc(100vh-5rem)]" onClick={(e) => e.stopPropagation()}>
                         <button className="absolute top-4 right-4 z-10 bg-black/20 hover:bg-black/40 dark:bg-white/10 dark:hover:bg-white/20 backdrop-blur-md text-white dark:text-zinc-200 p-2 rounded-full transition-colors" onClick={() => setSelectedEvent(null)}>
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
@@ -345,6 +450,11 @@ export default function EventCalendar() {
                                 <p className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
                                     <strong className="w-16">Venue:</strong> {selectedEvent.venue}
                                 </p>
+                                {selectedEvent.clubId && selectedEvent.clubId.name && (
+                                    <p className="flex text-sm items-center gap-2 text-zinc-700 dark:text-zinc-300 pt-1">
+                                        <strong>Organized by:</strong> {selectedEvent.clubId.name}
+                                    </p>
+                                )}
                             </div>
                             {selectedEvent.description && (
                                 <div className="mb-6">

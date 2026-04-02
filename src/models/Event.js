@@ -33,7 +33,8 @@ const EventSchema = new mongoose.Schema({
       submittedAt: { type: Date, default: Date.now }
     },
     default: null
-  }
+  },
+  editRejected: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export default mongoose.models.Event || mongoose.model("Event", EventSchema);

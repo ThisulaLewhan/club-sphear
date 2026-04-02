@@ -45,6 +45,9 @@ export async function PATCH(req, { params }) {
                 if (event.pendingEdit.imageUrl) {
                     event.imageUrl = event.pendingEdit.imageUrl;
                 }
+                event.editRejected = false;
+            } else if (status === "rejected") {
+                event.editRejected = true;
             }
             // For both approval and rejection of edits, we clear the pendingEdit block
             event.pendingEdit = undefined;
