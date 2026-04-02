@@ -21,7 +21,7 @@ function DashboardOverview() {
 
                 {/* Quick Actions */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Link href="/clubs" className="group bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-lg hover:shadow-indigo-500/5 transition-all flex flex-col items-center sm:items-start text-center sm:text-left gap-4 relative overflow-hidden">
+                    <Link href="/student-profile/my-clubs" className="group bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-lg hover:shadow-indigo-500/5 transition-all flex flex-col items-center sm:items-start text-center sm:text-left gap-4 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                         </div>
@@ -29,8 +29,8 @@ function DashboardOverview() {
                             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600 dark:text-indigo-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                         </div>
                         <div>
-                            <h3 className="font-bold text-slate-800 dark:text-zinc-100 text-lg">Explore Clubs</h3>
-                            <p className="text-sm text-slate-500 dark:text-zinc-400 mt-2 leading-relaxed">Browse, discover, and join diverse university communities right on campus.</p>
+                            <h3 className="font-bold text-slate-800 dark:text-zinc-100 text-lg">My Clubs</h3>
+                            <p className="text-sm text-slate-500 dark:text-zinc-400 mt-2 leading-relaxed">View and manage the clubs and societies you are a member of.</p>
                         </div>
                     </Link>
 

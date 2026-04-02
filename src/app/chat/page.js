@@ -181,32 +181,25 @@ function ChatApp() {
         }
     };
 
-    const handleSendMessage = async (e) => {
-        e.preventDefault();
-        if ((!newMessage.trim() && !selectedImage) || !activeConversation) return;
+    const sendMessageContent = async (text, image = null, previewUrl = null) => {
+        if ((!text.trim() && !image) || !activeConversation) return;
 
         const optimisticId = "temp-" + Date.now();
         const optimisticMessage = {
             _id: optimisticId,
-            sender: user.id || user._id, 
-            content: newMessage,
-            imageUrl: imagePreview, // Use preview as temporary URL
+            sender: user.id || user._id,
+            content: text,
+            imageUrl: previewUrl,
             createdAt: new Date().toISOString()
         };
-        
+
         setMessages(prev => [...prev, optimisticMessage]);
-        const contentToSend = newMessage;
-        const imageToSend = selectedImage;
-        setNewMessage("");
-        clearSelectedImage();
 
         try {
             const formData = new FormData();
             formData.append("conversationId", activeConversation._id);
-            formData.append("content", contentToSend);
-            if (imageToSend) {
-                formData.append("image", imageToSend);
-            }
+            formData.append("content", text);
+            if (image) formData.append("image", image);
 
             const res = await fetch("/api/chat/messages", {
                 method: "POST",
@@ -215,31 +208,45 @@ function ChatApp() {
             const data = await res.json();
             if (!data.success) {
                 toast.error("Failed to send message");
-                fetchMessages(activeConversation._id); 
+                fetchMessages(activeConversation._id);
             } else {
-                fetchConversations(); 
+                fetchConversations();
             }
         } catch (error) {
             toast.error("Error sending message");
         }
     };
 
-    const renderMessageContent = (content) => {
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        if ((!newMessage.trim() && !selectedImage) || !activeConversation) return;
+
+        const contentToSend = newMessage;
+        const imageToSend = selectedImage;
+        const previewToSend = imagePreview;
+        setNewMessage("");
+        clearSelectedImage();
+
+        await sendMessageContent(contentToSend, imageToSend, previewToSend);
+    };
+
+    const handleSendSuggestion = async (text) => {
+        await sendMessageContent(text);
+    };
+
+    const renderMessageContent = (content, isMe = false) => {
         if (!content) return null;
-        
-        // WhatsApp-like URL detection regex
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         const parts = content.split(urlRegex);
-        
         return parts.map((part, i) => {
             if (part.match(urlRegex)) {
                 return (
-                    <a 
-                        key={i} 
-                        href={part} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-indigo-600 hover:underline break-all"
+                    <a
+                        key={i}
+                        href={part}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`underline break-all ${isMe ? 'text-indigo-200 hover:text-white' : 'text-indigo-600 hover:text-indigo-800'}`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {part}
@@ -253,6 +260,25 @@ function ChatApp() {
     const getPartner = (conv) => {
         if (!conv || !conv.participants) return null;
         return conv.participants.find(p => p._id !== (user.id || user._id)) || conv.participants[0];
+    };
+
+    const getAvatarColor = (name) => {
+        const palettes = [
+            'bg-indigo-500', 'bg-purple-500', 'bg-pink-500',
+            'bg-blue-500', 'bg-teal-500', 'bg-violet-500', 'bg-cyan-500',
+        ];
+        const idx = (name?.charCodeAt(0) || 0) % palettes.length;
+        return palettes[idx];
+    };
+
+    const formatMessageDate = (dateStr) => {
+        const d = new Date(dateStr);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (d.toDateString() === today.toDateString()) return 'Today';
+        if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+        return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: d.getFullYear() !== today.getFullYear() ? 'numeric' : undefined });
     };
 
     const handleContextMenu = (e, msg) => {
@@ -305,30 +331,33 @@ function ChatApp() {
     return (
         <div className="h-[100dvh] w-full flex bg-slate-100 overflow-hidden font-sans">
             {/* Sidebar */}
-            <div className={`w-full sm:w-1/3 max-w-sm bg-white border-r border-slate-200 flex flex-col ${activeConversation ? 'hidden sm:flex' : 'flex'}`}>
+            <div className={`w-full sm:w-80 bg-white border-r border-slate-200 flex flex-col ${activeConversation ? 'hidden sm:flex' : 'flex'}`}>
                 {/* Header */}
-                <div className="h-16 px-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-3">
-                        <Link href="/student-profile" className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold hover:bg-indigo-200 transition-colors shadow-sm cursor-pointer transform hover:scale-105" title="Back to Dashboard">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                        </Link>
-                        <h2 className="font-bold text-slate-800 text-lg">Messages</h2>
-                    </div>
+                <div className="h-16 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center gap-3 shrink-0">
+                    <Link href="/student-profile" className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors shrink-0" title="Back to Dashboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    </Link>
+                    <h2 className="font-bold text-white text-lg">Messages</h2>
                 </div>
 
                 {/* Search */}
                 <div className="p-3 bg-white border-b border-slate-100 shrink-0">
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </span>
                         <input
                             type="text"
                             placeholder="Search clubs to chat..."
-                            className="w-full pl-9 pr-4 py-2 bg-slate-100 border-transparent rounded-xl text-sm focus:bg-white focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-colors"
+                            className="w-full pl-9 pr-4 py-2.5 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all outline-none"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery("")} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -336,21 +365,24 @@ function ChatApp() {
                 <div className="flex-1 overflow-y-auto">
                     {isSearching ? (
                         <div>
-                            <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border-b border-slate-100">Search Results</div>
+                            <div className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50 border-b border-slate-100">Clubs</div>
                             {searchResults.length > 0 ? (
                                 searchResults.map(club => (
-                                    <div key={club._id} onClick={() => handleStartNewChat(club)} className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 transition-colors border-b border-slate-50">
-                                        <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-500 font-bold text-lg">
+                                    <div key={club._id} onClick={() => handleStartNewChat(club)} className="px-4 py-3 hover:bg-indigo-50/50 cursor-pointer flex items-center gap-3 transition-colors border-b border-slate-50 group">
+                                        <div className={`w-11 h-11 rounded-full ${getAvatarColor(club.name)} overflow-hidden shrink-0 flex items-center justify-center text-white font-bold text-base shadow-sm`}>
                                             {club.logo ? <img src={club.logo} alt={club.name} className="w-full h-full object-cover" /> : club.name.charAt(0)}
                                         </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-800">{club.name}</h3>
-                                            <p className="text-sm text-indigo-600 font-medium">Start new chat</p>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-semibold text-slate-800 truncate">{club.name}</h3>
+                                            <p className="text-xs text-indigo-500 font-medium flex items-center gap-1 mt-0.5">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                                Start new chat
+                                            </p>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div className="p-8 text-center text-slate-400 text-sm">No clubs matching "{searchQuery}" found.</div>
+                                <div className="p-8 text-center text-slate-400 text-sm">No clubs found for &quot;{searchQuery}&quot;</div>
                             )}
                         </div>
                     ) : (
@@ -359,20 +391,29 @@ function ChatApp() {
                                 conversations.map(conv => {
                                     const partner = getPartner(conv);
                                     const isActive = activeConversation?._id === conv._id;
+                                    const hasUnread = conv.unreadCount > 0 && !isActive;
+                                    const lastMsg = conv.lastMessage;
+                                    const preview = lastMsg
+                                        ? lastMsg.isDeleted
+                                            ? 'This message was deleted'
+                                            : lastMsg.imageUrl && !lastMsg.content
+                                                ? '📷 Photo'
+                                                : lastMsg.content
+                                        : 'Start chatting!';
                                     return (
-                                        <div key={conv._id} onClick={() => handleSelectConversation(conv)} className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-colors ${isActive ? 'bg-indigo-50 border-r-4 border-indigo-500' : 'hover:bg-slate-50 border-b border-slate-100'}`}>
-                                            <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-500 font-bold text-lg">
+                                        <div key={conv._id} onClick={() => handleSelectConversation(conv)} className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-all ${isActive ? 'bg-indigo-50 border-r-[3px] border-indigo-500' : 'hover:bg-slate-50 border-b border-slate-100'}`}>
+                                            <div className={`w-11 h-11 rounded-full ${getAvatarColor(partner?.name)} overflow-hidden shrink-0 flex items-center justify-center text-white font-bold text-base shadow-sm`}>
                                                 {partner?.logo ? <img src={partner.logo} alt={partner?.name} className="w-full h-full object-cover" /> : partner?.name?.charAt(0) || "?"}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-baseline mb-0.5">
-                                                    <h3 className={`font-semibold truncate ${conv.unreadCount > 0 && !isActive ? 'text-slate-900 font-bold' : 'text-slate-800'}`}>{partner?.name || "Unknown"}</h3>
-                                                    {conv.updatedAt && <span className={`text-xs whitespace-nowrap ml-2 ${conv.unreadCount > 0 && !isActive ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>{new Date(conv.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
+                                                    <h3 className={`truncate text-sm ${hasUnread ? 'text-slate-900 font-bold' : 'text-slate-700 font-semibold'}`}>{partner?.name || "Unknown"}</h3>
+                                                    {conv.updatedAt && <span className={`text-[11px] whitespace-nowrap ml-2 shrink-0 ${hasUnread ? 'text-indigo-600 font-semibold' : 'text-slate-400'}`}>{new Date(conv.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
                                                 </div>
-                                                <div className="flex justify-between items-center">
-                                                    <p className={`text-sm truncate pr-2 ${conv.unreadCount > 0 && !isActive ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>{conv.lastMessage ? conv.lastMessage.content : "Start chatting!"}</p>
-                                                    {(conv.unreadCount > 0 && !isActive) && (
-                                                        <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0 shadow-sm animate-pulse">
+                                                <div className="flex justify-between items-center gap-1">
+                                                    <p className={`text-xs truncate ${lastMsg?.isDeleted ? 'italic text-slate-400' : hasUnread ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>{preview}</p>
+                                                    {hasUnread && (
+                                                        <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0 shadow-sm">
                                                             {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
                                                         </span>
                                                     )}
@@ -382,10 +423,14 @@ function ChatApp() {
                                     );
                                 })
                             ) : (
-                                <div className="p-8 text-center text-slate-400 flex flex-col items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mb-4 text-slate-300"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                    <p className="font-medium text-slate-500 mb-1">No chats yet</p>
-                                    <p className="text-sm">Search for a club above to start messaging.</p>
+                                <div className="p-10 text-center flex flex-col items-center gap-3">
+                                    <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-slate-600 mb-1">No conversations yet</p>
+                                        <p className="text-xs text-slate-400">Search for a club above to start messaging.</p>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -394,155 +439,202 @@ function ChatApp() {
             </div>
 
             {/* Main Chat Area */}
-            <div className={`flex-1 flex flex-col bg-[#efeae2] relative ${!activeConversation ? 'hidden sm:flex items-center justify-center' : 'flex'}`}>
-                {/* Desktop Background Pattern */}
-                <div className="absolute inset-0 z-0 opacity-40 mix-blend-multiply pointer-events-none" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%239C92AC\" fill-opacity=\"0.15\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')" }}></div>
+            <div className={`flex-1 flex flex-col bg-slate-50 relative ${!activeConversation ? 'hidden sm:flex items-center justify-center' : 'flex'}`}>
 
                 {!activeConversation ? (
-                    <div className="text-center z-10 p-8">
-                        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <div className="text-center z-10 p-8 flex flex-col items-center justify-center h-full">
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-indigo-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         </div>
-                        <h2 className="text-2xl font-light text-slate-700 mb-2">Club Connect Messenger</h2>
-                        <p className="text-slate-500 max-w-sm mx-auto">Select a conversation or search for a club to start chatting instantly with executives.</p>
+                        <h2 className="text-xl font-semibold text-slate-700 mb-2">Club Connect</h2>
+                        <p className="text-sm text-slate-400 max-w-xs mx-auto leading-relaxed">Select a conversation or search for a club to start chatting with their team.</p>
                     </div>
                 ) : (
                     <>
                         {/* Chat Header */}
                         <div className="h-16 px-4 bg-white border-b border-slate-200 flex items-center justify-between z-10 shrink-0 shadow-sm">
                             <div className="flex items-center gap-3">
-                                <button className="sm:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-full" onClick={() => setActiveConversation(null)}>
+                                <button className="sm:hidden p-1.5 -ml-1 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" onClick={() => setActiveConversation(null)}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                                 </button>
                                 {(() => {
                                     const partner = getPartner(activeConversation);
                                     return (
                                         <>
-                                            <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-slate-500 font-bold shadow-sm border border-slate-100">
+                                            <div className={`w-10 h-10 rounded-full ${getAvatarColor(partner?.name)} overflow-hidden flex items-center justify-center text-white font-bold shadow-sm`}>
                                                 {partner?.logo ? <img src={partner.logo} alt={partner?.name} className="w-full h-full object-cover" /> : partner?.name?.charAt(0) || "?"}
                                             </div>
                                             <div>
-                                                <h2 className="font-semibold text-slate-800 leading-tight">{partner?.name || "Unknown"}</h2>
-                                                <p className="text-xs text-emerald-600 font-medium">Club Verified</p>
+                                                <h2 className="font-semibold text-slate-800 leading-tight text-sm">{partner?.name || "Unknown"}</h2>
+                                                <p className="text-[11px] text-indigo-500 font-medium flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                                                    Verified Club
+                                                </p>
                                             </div>
                                         </>
                                     );
                                 })()}
                             </div>
 
-                            <button 
+                            <button
                                 onClick={() => setShowDeleteConfirm(true)}
-                                className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors flex items-center justify-center"
+                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors flex items-center justify-center"
                                 title="Delete Chat"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                             </button>
                         </div>
 
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-4 sm:p-6 z-10 flex flex-col space-y-3" onClick={closeContextMenu}>
-                            <div className="text-center my-4">
-                                <span className="px-3 py-1 bg-white/70 backdrop-blur rounded-lg shadow-sm text-xs text-slate-500 uppercase tracking-wide">Beginning of encrypted chat</span>
-                            </div>
+                        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 z-10 flex flex-col" onClick={closeContextMenu}>
+
+                            {/* Empty state — avatar + name only */}
+                            {messages.length === 0 && (
+                                <div className="flex flex-col items-center justify-center flex-1 gap-3 py-8">
+                                    {(() => { const partner = getPartner(activeConversation); return (
+                                        <div className={`w-16 h-16 rounded-full ${getAvatarColor(partner?.name)} flex items-center justify-center text-white text-2xl font-bold shadow-md`}>
+                                            {partner?.logo ? <img src={partner.logo} alt={partner?.name} className="w-full h-full object-cover rounded-full" /> : partner?.name?.charAt(0) || "?"}
+                                        </div>
+                                    ); })()}
+                                    <div className="text-center">
+                                        <p className="font-semibold text-slate-700">{getPartner(activeConversation)?.name || "Club"}</p>
+                                        <p className="text-xs text-slate-400 mt-1">Send a message to start the conversation</p>
+                                    </div>
+                                </div>
+                            )}
+
                             {messages.map((msg, index) => {
                                 const isMe = msg.sender === (user.id || user._id);
                                 const isEditing = editingMsg?._id === msg._id;
+                                const prevMsg = messages[index - 1];
+                                const nextMsg = messages[index + 1];
+                                // Group detection — consecutive = same sender, no date break, not deleted
+                                const isConsecutive = prevMsg && prevMsg.sender === msg.sender && !prevMsg.isDeleted && !msg.isDeleted;
+                                const isLastInGroup = !nextMsg || nextMsg.sender !== msg.sender || msg.isDeleted || nextMsg.isDeleted;
+                                const showDateSeparator = !prevMsg || formatMessageDate(msg.createdAt) !== formatMessageDate(prevMsg.createdAt);
+
+                                // Bubble shape: tail only on the FIRST message of a group
+                                const bubbleShape = msg.isDeleted
+                                    ? 'rounded-2xl'
+                                    : isConsecutive
+                                        ? 'rounded-2xl'
+                                        : isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm';
+
+                                const bubbleColor = msg.isDeleted
+                                    ? 'bg-slate-100 border border-slate-200/80 text-slate-400'
+                                    : isMe
+                                        ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200'
+                                        : 'bg-white text-slate-800 border border-slate-100 shadow-sm';
+
                                 return (
-                                    <div key={msg._id || index} className={`flex items-end gap-1 ${isMe ? 'justify-end' : 'justify-start'} group`}>
-                                        {/* ⋮ Menu button — left side for my messages */}
-                                        {isMe && !msg.isDeleted && !isEditing && (
-                                            <div className="relative shrink-0 mb-1">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); setContextMenu(contextMenu?.msgId === msg._id ? null : { msgId: msg._id, x: 0, y: 0, msg, inline: true }); }}
-                                                    className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-black/10 transition-all opacity-0 group-hover:opacity-100 sm:opacity-0 sm:focus:opacity-100 touch-action-manipulation"
-                                                    style={{ opacity: contextMenu?.msgId === msg._id ? 1 : undefined }}
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-                                                </button>
-                                                {contextMenu?.msgId === msg._id && contextMenu?.inline && (
-                                                    <div className="absolute bottom-full right-0 mb-1 z-50 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden w-36" onClick={(e) => e.stopPropagation()}>
-                                                        <button onClick={() => handleStartEdit(contextMenu.msg)} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                                            Edit
-                                                        </button>
-                                                        <div className="border-t border-slate-100"/>
-                                                        <button onClick={() => handleDeleteMsg(contextMenu.msgId)} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                )}
+                                    <div key={msg._id || index}>
+                                        {showDateSeparator && msg.createdAt && (
+                                            <div className="flex items-center gap-3 my-5">
+                                                <div className="flex-1 h-px bg-slate-200"/>
+                                                <span className="text-[11px] text-slate-400 font-medium px-3 py-1 bg-white border border-slate-200 rounded-full whitespace-nowrap shadow-sm">
+                                                    {formatMessageDate(msg.createdAt)}
+                                                </span>
+                                                <div className="flex-1 h-px bg-slate-200"/>
                                             </div>
                                         )}
-                                        <div
-                                            onContextMenu={(e) => handleContextMenu(e, msg)}
-                                            className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2 shadow-sm relative text-[15px] select-none
-                                                ${msg.isDeleted ? 'bg-slate-100 border border-slate-200 text-slate-400 italic' :
-                                                isMe ? 'bg-[#dcf8c6] text-slate-800 rounded-tr-none' : 'bg-white text-slate-800 border border-slate-100 rounded-tl-none'}`}
-                                        >
-                                            {isEditing ? (
-                                                <div className="flex flex-col gap-2 min-w-[180px]">
-                                                    <textarea
-                                                        autoFocus
-                                                        maxLength={200}
-                                                        rows={2}
-                                                        className="w-full bg-white border border-indigo-300 rounded-lg px-2 py-1 text-sm text-slate-800 focus:outline-none resize-none"
-                                                        value={editContent}
-                                                        onChange={(e) => setEditContent(e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSaveEdit(); }
-                                                            if (e.key === 'Escape') { setEditingMsg(null); setEditContent(""); }
-                                                        }}
-                                                    />
-                                                    <div className="flex justify-end gap-2">
-                                                        <button onClick={() => { setEditingMsg(null); setEditContent(""); }} className="text-xs text-slate-500 hover:text-slate-700">Cancel</button>
-                                                        <button onClick={handleSaveEdit} className="text-xs font-semibold text-emerald-600 hover:text-emerald-800">Save</button>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    {msg.isDeleted ? (
-                                                        <p className="flex items-center gap-1.5">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                                                            This message was deleted
-                                                        </p>
-                                                    ) : (
-                                                        <div className="flex flex-col gap-2">
-                                                            {msg.imageUrl && (
-                                                                <div className="rounded-lg overflow-hidden border border-black/5 bg-black/5 max-w-full">
-                                                                    <img 
-                                                                        src={msg.imageUrl} 
-                                                                        alt="Sent in chat" 
-                                                                        className="max-w-full max-h-[300px] object-contain cursor-pointer hover:opacity-95 transition-opacity"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            window.open(msg.imageUrl, '_blank');
-                                                                        }}
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                            {msg.content && <p className="break-words leading-relaxed whitespace-pre-wrap">{renderMessageContent(msg.content)}</p>}
+                                        <div className={`flex items-end gap-1.5 ${isMe ? 'justify-end' : 'justify-start'} group ${isConsecutive ? 'mt-0.5' : 'mt-3'}`}>
+                                            {/* ⋮ Menu — only visible on hover, left of my messages */}
+                                            {isMe && !msg.isDeleted && !isEditing && (
+                                                <div className="relative shrink-0 mb-1">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); setContextMenu(contextMenu?.msgId === msg._id ? null : { msgId: msg._id, x: 0, y: 0, msg, inline: true }); }}
+                                                        className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                        style={{ opacity: contextMenu?.msgId === msg._id ? 1 : undefined }}
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                                                    </button>
+                                                    {contextMenu?.msgId === msg._id && contextMenu?.inline && (
+                                                        <div className="absolute bottom-full right-0 mb-1 z-50 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden w-36" onClick={(e) => e.stopPropagation()}>
+                                                            <button onClick={() => handleStartEdit(contextMenu.msg)} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                                Edit
+                                                            </button>
+                                                            <div className="border-t border-slate-100"/>
+                                                            <button onClick={() => handleDeleteMsg(contextMenu.msgId)} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                                                Delete
+                                                            </button>
                                                         </div>
                                                     )}
-                                                    <div className="flex justify-end items-center mt-1 gap-1">
-                                                        {msg.isEdited && !msg.isDeleted && (
-                                                            <span className="text-[10px] text-slate-400 italic">Edited</span>
-                                                        )}
-                                                        <span className={`text-[10px] ${isMe ? 'text-slate-500' : 'text-slate-400'}`}>
-                                                            {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                                                        </span>
-                                                        {isMe && !msg.isDeleted && (
-                                                            <span className="ml-1 flex items-center">
-                                                                {msg.isRead ? (
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
-                                                                ) : (
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                                                                )}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </>
+                                                </div>
                                             )}
+
+                                            <div
+                                                onContextMenu={(e) => handleContextMenu(e, msg)}
+                                                className={`max-w-[65%] sm:max-w-[55%] px-3.5 py-2 relative text-[14.5px] select-none transition-all ${bubbleShape} ${bubbleColor}`}
+                                            >
+                                                {isEditing ? (
+                                                    <div className="flex flex-col gap-2 min-w-[180px]">
+                                                        <textarea
+                                                            autoFocus
+                                                            maxLength={200}
+                                                            rows={2}
+                                                            className="w-full bg-white border border-indigo-300 rounded-lg px-2 py-1 text-sm text-slate-800 focus:outline-none resize-none"
+                                                            value={editContent}
+                                                            onChange={(e) => setEditContent(e.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSaveEdit(); }
+                                                                if (e.key === 'Escape') { setEditingMsg(null); setEditContent(""); }
+                                                            }}
+                                                        />
+                                                        <div className="flex justify-end gap-2">
+                                                            <button onClick={() => { setEditingMsg(null); setEditContent(""); }} className="text-xs text-slate-500 hover:text-slate-700">Cancel</button>
+                                                            <button onClick={handleSaveEdit} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Save</button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        {msg.isDeleted ? (
+                                                            <p className="flex items-center gap-1.5 text-[13px] italic py-0.5">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                                                This message was deleted
+                                                                {msg.createdAt && <span className="ml-auto pl-2 text-[10px] not-italic opacity-70">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
+                                                            </p>
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex flex-col gap-1.5">
+                                                                    {msg.imageUrl && (
+                                                                        <div className="rounded-xl overflow-hidden -mx-0.5 max-w-full">
+                                                                            <img
+                                                                                src={msg.imageUrl}
+                                                                                alt="Sent in chat"
+                                                                                className="max-w-full max-h-[260px] object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                                                                                onClick={(e) => { e.stopPropagation(); window.open(msg.imageUrl, '_blank'); }}
+                                                                            />
+                                                                        </div>
+                                                                    )}
+                                                                    {msg.content && <p className="break-words leading-relaxed whitespace-pre-wrap">{renderMessageContent(msg.content, isMe)}</p>}
+                                                                </div>
+                                                                {/* Timestamp + tick — only on last message in group */}
+                                                                {(isLastInGroup || msg.isEdited) && (
+                                                                    <div className="flex justify-end items-center mt-1 gap-1">
+                                                                        {msg.isEdited && (
+                                                                            <span className={`text-[10px] italic ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>edited</span>
+                                                                        )}
+                                                                        <span className={`text-[10px] ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
+                                                                            {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                                        </span>
+                                                                        {isMe && (
+                                                                            <span className="flex items-center">
+                                                                                {msg.isRead ? (
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
+                                                                                ) : (
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                                                                )}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -576,7 +668,25 @@ function ChatApp() {
                         )}
 
                         {/* Input Area */}
-                        <div className="p-3 bg-[#f0f2f5] z-10 shrink-0 border-t border-slate-200">
+                        <div className="bg-white z-10 shrink-0 border-t border-slate-200">
+                            {messages.length === 0 && (
+                                <div className="flex flex-wrap gap-2 px-3 pt-3">
+                                    {[
+                                        "How can I join this club?",
+                                        "What activities are coming up?",
+                                        "What are the membership requirements?",
+                                    ].map((text) => (
+                                        <button
+                                            key={text}
+                                            onClick={() => handleSendSuggestion(text)}
+                                            className="px-3 py-1.5 rounded-full border border-indigo-200 bg-indigo-50 text-xs text-indigo-600 hover:bg-indigo-100 hover:border-indigo-400 transition-colors"
+                                        >
+                                            {text}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        <div className="p-3">
                             {imagePreview && (
                                 <div className="max-w-4xl mx-auto mb-2 px-2">
                                     <div className="relative inline-block">
@@ -638,6 +748,7 @@ function ChatApp() {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1 -mt-0.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                                 </button>
                             </form>
+                        </div>
                         </div>
                     </>
                 )}
