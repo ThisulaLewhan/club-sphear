@@ -7,7 +7,6 @@ import nodemailer from "nodemailer";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import PasswordReset from "@/models/PasswordReset";
-import { isValidStudentEmail } from "@/lib/validations";
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -67,16 +66,12 @@ export async function POST(req) {
     if (!email || !email.trim()) {
       return NextResponse.json({ success: false, message: "Email is required." }, { status: 400 });
     }
-    if (!isValidStudentEmail(email.trim())) {
-      return NextResponse.json({ success: false, message: "Only campus emails are allowed (e.g. it12345678@my.sliit.lk)." }, { status: 400 });
-    }
 
     await connectDB();
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
-      // Return success to avoid leaking whether an email is registered
-      return NextResponse.json({ success: true, message: "If this email is registered, a reset code has been sent." });
+      return NextResponse.json({ success: false, message: "Email not found. Please check and try again." }, { status: 400 });
     }
 
     const otp = generateOTP();

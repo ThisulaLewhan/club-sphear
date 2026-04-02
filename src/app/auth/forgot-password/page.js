@@ -2,12 +2,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { EmailIcon } from "@/components/icons";
 import { inputBase, inputOk, inputErr, btnPrimary } from "@/lib/form-styles";
-import { isValidStudentEmail, getStudentEmailFormatMessage } from "@/lib/validations";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -16,10 +15,19 @@ export default function ForgotPasswordPage() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
-  const [otp, setOtp] = useState("");
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [otpError, setOtpError] = useState("");
   const [loading, setLoading] = useState(false);
   const [serverMessage, setServerMessage] = useState("");
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const otpRefs = useRef([]);
+
+  // Resend countdown timer
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCountdown]);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -28,10 +36,6 @@ export default function ForgotPasswordPage() {
 
     if (!email.trim()) {
       setEmailError("Email is required.");
-      return;
-    }
-    if (!isValidStudentEmail(email.trim())) {
-      setEmailError(getStudentEmailFormatMessage());
       return;
     }
 
@@ -45,6 +49,9 @@ export default function ForgotPasswordPage() {
       const data = await res.json();
       if (data.success) {
         setStep(2);
+        setOtpDigits(["", "", "", "", "", ""]);
+        setResendCountdown(60);
+        otpRefs.current[0]?.focus();
       } else {
         setServerMessage(data.message || "Something went wrong.");
       }
@@ -55,17 +62,68 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const handleVerifyOtp = async (e) => {
+  const handleOtpDigitChange = (index, value) => {
+    // Only allow digits
+    if (!/^\d*$/.test(value)) return;
+
+    const newDigits = [...otpDigits];
+    newDigits[index] = value.slice(-1); // Take only last character
+    setOtpDigits(newDigits);
+    setOtpError("");
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+
+    // Auto-submit when all digits filled
+    if (newDigits.every((d) => d !== "")) {
+      handleVerifyOtp(null, newDigits);
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
     e.preventDefault();
+    const pastedText = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+
+    if (pastedText.length > 0) {
+      const newDigits = [...otpDigits];
+      for (let i = 0; i < pastedText.length && i < 6; i++) {
+        newDigits[i] = pastedText[i];
+      }
+      setOtpDigits(newDigits);
+      setOtpError("");
+
+      // Focus last filled input or next empty one
+      const focusIndex = Math.min(pastedText.length, 5);
+      otpRefs.current[focusIndex]?.focus();
+
+      // Auto-submit if all digits filled
+      if (newDigits.every((d) => d !== "")) {
+        handleVerifyOtp(null, newDigits);
+      }
+    }
+  };
+
+  const handleVerifyOtp = async (e, digitsToSubmit) => {
+    if (e) e.preventDefault();
     setOtpError("");
     setServerMessage("");
 
-    if (!otp.trim()) {
-      setOtpError("Please enter the OTP.");
-      return;
-    }
-    if (!/^\d{6}$/.test(otp.trim())) {
-      setOtpError("OTP must be a 6-digit number.");
+    const otpCode = (digitsToSubmit || otpDigits).join("");
+
+    if (!otpCode || otpCode.length !== 6) {
+      setOtpError("Please enter all 6 digits.");
       return;
     }
 
@@ -74,16 +132,19 @@ export default function ForgotPasswordPage() {
       const res = await fetch("/api/auth/verify-reset-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), otp: otp.trim() }),
+        body: JSON.stringify({ email: email.trim(), otp: otpCode }),
       });
       const data = await res.json();
       if (data.success) {
         router.push(`/auth/reset-password?email=${encodeURIComponent(email.trim())}`);
       } else {
         setOtpError(data.message || "Invalid OTP.");
+        setOtpDigits(["", "", "", "", "", ""]);
+        otpRefs.current[0]?.focus();
       }
     } catch {
       setOtpError("Something went wrong. Please try again.");
+      setOtpDigits(["", "", "", "", "", ""]);
     } finally {
       setLoading(false);
     }
@@ -144,7 +205,7 @@ export default function ForgotPasswordPage() {
                     id="email"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
-                    placeholder="it12345678@my.sliit.lk"
+                    placeholder="your-email@example.com"
                     className={`${inputBase} ${emailError ? inputErr : inputOk}`}
                   />
                 </div>
@@ -164,22 +225,51 @@ export default function ForgotPasswordPage() {
 
           {/* Step 2: OTP */}
           {step === 2 && (
-            <form onSubmit={handleVerifyOtp} className="space-y-5">
+            <form onSubmit={handleVerifyOtp} className="space-y-6">
               <div>
-                <label htmlFor="otp" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Reset Code</label>
-                <input
-                  type="text"
-                  id="otp"
-                  value={otp}
-                  onChange={(e) => { setOtp(e.target.value); setOtpError(""); }}
-                  placeholder="Enter 6-digit code"
-                  maxLength={6}
-                  className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-zinc-800/50 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-4 transition-all duration-200 text-center text-xl tracking-[0.5em] font-bold ${otpError ? "border-red-400 focus:ring-red-400/30 focus:border-red-400" : "border-gray-200 dark:border-zinc-700 focus:ring-indigo-500/30 focus:border-indigo-500"}`}
-                />
-                {otpError && <p className="mt-1.5 text-xs text-red-500 font-medium">{otpError}</p>}
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Reset Code</label>
+
+                {/* OTP Digit Boxes */}
+                <div className="flex gap-2.5 justify-center mb-4" onPaste={handleOtpPaste}>
+                  {otpDigits.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => (otpRefs.current[index] = el)}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpDigitChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      placeholder="0"
+                      disabled={loading}
+                      className={`w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 transition-all duration-200 focus:outline-none ${
+                        otpError
+                          ? "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-600"
+                          : digit
+                          ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20 text-gray-900 dark:text-white"
+                          : "border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white"
+                      } focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-zinc-800`}
+                    />
+                  ))}
+                </div>
+
+                {/* Visual feedback */}
+                <div className="text-center mb-4">
+                  {otpDigits.every((d) => d !== "") && (
+                    <p className="text-xs text-green-600 dark:text-green-400 font-medium flex items-center justify-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      All digits entered
+                    </p>
+                  )}
+                </div>
+
+                {otpError && <p className="text-xs text-red-500 font-medium text-center">{otpError}</p>}
               </div>
 
-              <button type="submit" disabled={loading} className={btnPrimary}>
+              <button type="submit" disabled={loading || !otpDigits.every((d) => d !== "")} className={btnPrimary}>
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-r-transparent"></span>
@@ -188,10 +278,28 @@ export default function ForgotPasswordPage() {
                 ) : "Verify Code"}
               </button>
 
+              {/* Resend Code Button */}
+              <div className="pt-2 text-center">
+                {resendCountdown > 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Resend code in <span className="font-semibold text-indigo-600 dark:text-indigo-400">{resendCountdown}s</span>
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={loading}
+                    className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    ↻ Resend Code
+                  </button>
+                )}
+              </div>
+
               <button
                 type="button"
-                onClick={() => { setStep(1); setOtp(""); setOtpError(""); setServerMessage(""); }}
-                className="w-full text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold transition-colors"
+                onClick={() => { setStep(1); setOtpDigits(["", "", "", "", "", ""]); setOtpError(""); setServerMessage(""); setResendCountdown(0); }}
+                className="w-full text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 font-semibold transition-colors"
               >
                 ← Use a different email
               </button>
