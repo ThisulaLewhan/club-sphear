@@ -24,6 +24,10 @@ export default function ClubMessagesPage() {
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
 
+    const [bulkMode, setBulkMode] = useState(false);
+    const [bulkMessage, setBulkMessage] = useState("");
+    const [isSendingBulk, setIsSendingBulk] = useState(false);
+
     const messagesEndRef = useRef(null);
     const contextMenuRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -79,7 +83,45 @@ export default function ClubMessagesPage() {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    const handleSelectConversation = (conv) => setActiveConversation(conv);
+    const handleSelectConversation = (conv) => {
+        if (bulkMode) return;
+        setActiveConversation(conv);
+    };
+
+    const enterBulkMode = () => {
+        setBulkMode(true);
+        setActiveConversation(null);
+    };
+
+    const exitBulkMode = () => {
+        setBulkMode(false);
+        setBulkMessage("");
+    };
+
+    const handleSendBulkMessage = async () => {
+        if (!bulkMessage.trim() || isSendingBulk) return;
+        setIsSendingBulk(true);
+        try {
+            const res = await fetch("/api/chat/bulk-message", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: bulkMessage }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(`Broadcast sent to ${data.sentCount} student${data.sentCount !== 1 ? 's' : ''}`);
+                setBulkMessage("");
+                setBulkMode(false);
+                fetchConversations();
+            } else {
+                toast.error(data.message || "Failed to send broadcast");
+            }
+        } catch {
+            toast.error("Error sending broadcast");
+        } finally {
+            setIsSendingBulk(false);
+        }
+    };
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -213,10 +255,27 @@ export default function ClubMessagesPage() {
         <div className="max-w-6xl mx-auto h-[calc(100vh-6rem)] sm:h-[800px] max-h-[90vh] bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex font-sans">
 
             {/* Sidebar */}
-            <div className={`w-full sm:w-80 bg-white border-r border-slate-200 flex flex-col ${activeConversation ? 'hidden sm:flex' : 'flex'}`}>
+            <div className={`w-full sm:w-80 bg-white border-r border-slate-200 flex flex-col ${activeConversation || bulkMode ? 'hidden sm:flex' : 'flex'}`}>
                 {/* Header */}
-                <div className="h-16 px-5 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center shrink-0">
+                <div className="h-16 px-5 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-between shrink-0">
                     <h2 className="font-bold text-white text-lg">Inbox</h2>
+                    {!bulkMode ? (
+                        <button
+                            onClick={enterBulkMode}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold rounded-lg transition-colors"
+                            title="Send broadcast to all students"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                            Broadcast
+                        </button>
+                    ) : (
+                        <button
+                            onClick={exitBulkMode}
+                            className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold rounded-lg transition-colors"
+                        >
+                            Cancel
+                        </button>
+                    )}
                 </div>
 
                 {/* Filter */}
@@ -239,6 +298,16 @@ export default function ClubMessagesPage() {
                         )}
                     </div>
                 </div>
+
+                {/* Bulk mode banner */}
+                {bulkMode && (
+                    <div className="px-4 py-2.5 bg-indigo-50 border-b border-indigo-100 shrink-0">
+                        <p className="text-xs font-semibold text-indigo-700 flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                            Broadcast mode active
+                        </p>
+                    </div>
+                )}
 
                 {/* Conversation List */}
                 <div className="flex-1 overflow-y-auto">
@@ -290,9 +359,74 @@ export default function ClubMessagesPage() {
             </div>
 
             {/* Main Chat Area */}
-            <div className={`flex-1 flex flex-col bg-slate-50 relative ${!activeConversation ? 'hidden sm:flex items-center justify-center' : 'flex'}`}>
+            <div className={`flex-1 flex flex-col bg-slate-50 relative ${!activeConversation && !bulkMode ? 'hidden sm:flex items-center justify-center' : !activeConversation && bulkMode ? 'flex' : 'flex'}`}>
 
-                {!activeConversation ? (
+                {bulkMode ? (
+                    /* Broadcast compose panel */
+                    <>
+                        <div className="h-16 px-4 bg-white border-b border-slate-200 flex items-center gap-3 z-10 shrink-0 shadow-sm">
+                            <button className="sm:hidden p-1.5 -ml-1 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" onClick={exitBulkMode}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                            </div>
+                            <div>
+                                <h2 className="font-semibold text-slate-800 leading-tight text-sm">Broadcast Message</h2>
+                                <p className="text-[11px] text-slate-400 font-medium">All Students</p>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex items-center justify-center p-8">
+                            <div className="text-center max-w-sm">
+                                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center mx-auto mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-slate-700 mb-2">Send to All Students</h3>
+                                <p className="text-sm text-slate-400 leading-relaxed mb-4">Your message will be sent to every student on the platform. New conversations will be created automatically.</p>
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    <span className="text-xs font-medium text-amber-700">This action cannot be undone</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white z-10 shrink-0 border-t border-slate-200">
+                            <div className="p-3">
+                                <div className="flex flex-col gap-2 max-w-4xl mx-auto">
+                                    <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-end">
+                                        <textarea
+                                            rows={1} maxLength={200}
+                                            className="w-full max-h-32 px-4 py-3 text-[15px] bg-transparent focus:outline-none resize-none hide-scrollbar"
+                                            placeholder="Type your broadcast message..."
+                                            value={bulkMessage}
+                                            disabled={isSendingBulk}
+                                            onChange={(e) => { setBulkMessage(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; }}
+                                            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendBulkMessage(); } }}
+                                        />
+                                        {bulkMessage.length > 150 && (
+                                            <div className="text-[10px] text-slate-400 font-medium px-4 pb-2 text-right">{bulkMessage.length}/200</div>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center justify-end gap-2">
+                                        <button onClick={exitBulkMode} disabled={isSendingBulk}
+                                            className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50">
+                                            Cancel
+                                        </button>
+                                        <button onClick={handleSendBulkMessage} disabled={!bulkMessage.trim() || isSendingBulk}
+                                            className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors disabled:opacity-50 disabled:bg-slate-300 flex items-center gap-2 shadow-sm">
+                                            {isSendingBulk ? (
+                                                <><span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-r-transparent"/><span>Sending...</span></>
+                                            ) : (
+                                                <><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span>Send Broadcast</span></>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                ) : !activeConversation ? (
                     <div className="text-center z-10 p-8 flex flex-col items-center gap-4">
                         <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>

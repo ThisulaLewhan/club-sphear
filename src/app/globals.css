@@ -135,3 +135,64 @@ input:-webkit-autofill:focus {
 .animate-pulse-subtle {
   animation: pulse-subtle 2s ease-in-out infinite;
 }
+
+/* ---- Chat page animations ---- */
+
+@keyframes msg-slide-left {
+  0% { opacity: 0; transform: translateX(16px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes msg-slide-right {
+  0% { opacity: 0; transform: translateX(-16px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes msg-slide-up {
+  0% { opacity: 0; transform: translateY(10px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@keyframes modal-backdrop-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes modal-content-in {
+  0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes lightbox-zoom-in {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes send-press {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.88); }
+  100% { transform: scale(1); }
+}
+
+@keyframes drop-zone-pulse {
+  0%, 100% { border-color: #818cf8; background-color: rgba(129, 140, 248, 0.03); }
+  50% { border-color: #6366f1; background-color: rgba(99, 102, 241, 0.08); }
+}
+
+.animate-msg-slide-left { animation: msg-slide-left 0.2s ease-out both; }
+.animate-msg-slide-right { animation: msg-slide-right 0.2s ease-out both; }
+.animate-msg-slide-up { animation: msg-slide-up 0.25s ease-out both; }
+.animate-modal-backdrop { animation: modal-backdrop-in 0.2s ease-out both; }
+.animate-modal-content { animation: modal-content-in 0.25s ease-out both; }
+.animate-lightbox-zoom { animation: lightbox-zoom-in 0.25s ease-out both; }
+.animate-send-press { animation: send-press 0.2s ease-out; }
+.animate-drop-zone { animation: drop-zone-pulse 1.5s ease-in-out infinite; }
+
+/* Alias for hide-scrollbar (used in chat page) */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

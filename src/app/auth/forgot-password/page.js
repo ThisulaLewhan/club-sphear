@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { EmailIcon } from "@/components/icons";
 import { inputBase, inputOk, inputErr, btnPrimary } from "@/lib/form-styles";
+import { isValidStudentEmail, getStudentEmailFormatMessage } from "@/lib/validations";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -27,6 +28,10 @@ export default function ForgotPasswordPage() {
 
     if (!email.trim()) {
       setEmailError("Email is required.");
+      return;
+    }
+    if (!isValidStudentEmail(email.trim())) {
+      setEmailError(getStudentEmailFormatMessage());
       return;
     }
 
@@ -139,7 +144,7 @@ export default function ForgotPasswordPage() {
                     id="email"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
-                    placeholder="you@university.ac.lk"
+                    placeholder="it12345678@my.sliit.lk"
                     className={`${inputBase} ${emailError ? inputErr : inputOk}`}
                   />
                 </div>

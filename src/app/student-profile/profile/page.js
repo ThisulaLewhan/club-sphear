@@ -6,8 +6,6 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useToast } from "@/components/ui/ToastProvider";
 import AuthGuard from "@/components/auth/AuthGuard";
-import { isValidStudentId } from "@/lib/validations";
-
 function ProfileContent() {
     const { user, updateProfile } = useAuth();
     const toast = useToast();
@@ -15,13 +13,8 @@ function ProfileContent() {
     const [isEditing, setIsEditing] = useState(false);
     const [savingProfile, setSavingProfile] = useState(false);
 
-    // Form state
-    const [formData, setFormData] = useState({
-        name: "",
-        university: "",
-        studentId: "",
-        bio: "",
-    });
+    // Only bio is editable
+    const [bio, setBio] = useState("");
 
     // Change password state
     const [showPasswordSection, setShowPasswordSection] = useState(false);
@@ -42,49 +35,29 @@ function ProfileContent() {
         confirmPassword: "",
     });
 
-    // Populate form data once user is loaded
+    // Populate bio once user is loaded
     useEffect(() => {
         if (user) {
-            setFormData({
-                name: user.name || "",
-                university: user.university || "",
-                studentId: user.studentId || "",
-                bio: user.bio || "",
-            });
+            setBio(user.bio || "");
         }
     }, [user, isEditing]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
     const handleProfileSave = async () => {
-        if (!formData.name || formData.name.trim().length < 2) {
-            toast.error("Name must be at least 2 characters.");
-            return;
-        }
-        if (formData.bio && formData.bio.length > 500) {
+        if (bio.length > 500) {
             toast.error("Bio must be under 500 characters.");
             return;
-        }
-        if (formData.studentId && formData.studentId.trim() !== '') {
-            if (!isValidStudentId(formData.studentId)) {
-                toast.error("Student ID must be in the correct IT12345678 format.");
-                return;
-            }
         }
 
         try {
             setSavingProfile(true);
-            const result = await updateProfile(formData);
+            const result = await updateProfile({ bio });
             if (result.success) {
-                toast.success("Profile updated successfully!");
+                toast.success("Bio updated successfully!");
                 setIsEditing(false);
             } else {
-                toast.error(result.message || "Failed to update profile.");
+                toast.error(result.message || "Failed to update bio.");
             }
-        } catch (err) {
+        } catch {
             toast.error("An error occurred while saving.");
         } finally {
             setSavingProfile(false);
@@ -92,6 +65,7 @@ function ProfileContent() {
     };
 
     const handleCancelEdit = () => {
+        setBio(user?.bio || "");
         setIsEditing(false);
     };
 
@@ -201,88 +175,54 @@ function ProfileContent() {
                                 </div>
                             </div>
 
-                            {/* Full Name */}
+                            {/* Full Name (read-only) */}
                             <div>
                                 <label className="block text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Full Name</label>
-                                {isEditing ? (
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                                        placeholder="Enter your full name"
-                                    />
-                                ) : (
-                                    <div className="px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/50 text-sm font-semibold text-slate-800 dark:text-zinc-200">
-                                        {user?.name || "—"}
-                                    </div>
-                                )}
+                                <div className="px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/50 text-sm font-semibold text-slate-800 dark:text-zinc-200">
+                                    {user?.name || "—"}
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {/* University */}
+                                {/* University (read-only) */}
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">University</label>
-                                    {isEditing ? (
-                                        <input
-                                            type="text"
-                                            name="university"
-                                            value={formData.university}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                                            placeholder="e.g., SLIIT"
-                                        />
-                                    ) : (
-                                        <div className="px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/50 text-sm text-slate-800 dark:text-zinc-200">
-                                            {user?.university || "Not set"}
-                                        </div>
-                                    )}
+                                    <div className="px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/50 text-sm text-slate-800 dark:text-zinc-200">
+                                        {user?.university || "—"}
+                                    </div>
                                 </div>
 
-                                {/* Student ID */}
+                                {/* Student ID (read-only) */}
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Student ID</label>
-                                    {isEditing ? (
-                                        <input
-                                            type="text"
-                                            name="studentId"
-                                            value={formData.studentId}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                                            placeholder="e.g., IT21000000"
-                                        />
-                                    ) : (
-                                        <div className="px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/50 text-sm text-slate-800 dark:text-zinc-200">
-                                            {user?.studentId || "Not set"}
-                                        </div>
-                                    )}
+                                    <div className="px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/50 text-sm text-slate-800 dark:text-zinc-200">
+                                        {user?.studentId || "—"}
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Bio */}
+                            {/* Bio (editable) */}
                             <div>
                                 <label className="block text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">Bio</label>
                                 {isEditing ? (
                                     <>
                                         <textarea
-                                            name="bio"
-                                            value={formData.bio}
-                                            onChange={handleChange}
+                                            value={bio}
+                                            onChange={(e) => setBio(e.target.value)}
                                             rows={3}
                                             maxLength={500}
                                             className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition-colors"
                                             placeholder="Tell us about yourself..."
                                         />
                                         <div className="text-right mt-1">
-                                            <p className={`text-xs font-medium ${formData.bio.length > 450 ? "text-amber-500" : "text-slate-400 dark:text-zinc-500"}`}>
-                                                {formData.bio.length}/500
+                                            <p className={`text-xs font-medium ${bio.length > 450 ? "text-amber-500" : "text-slate-400 dark:text-zinc-500"}`}>
+                                                {bio.length}/500
                                             </p>
                                         </div>
                                     </>
                                 ) : (
                                     <div className="px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800/50 text-sm text-slate-600 dark:text-zinc-400 min-h-[60px]">
-                                        {user?.bio || <span className="italic text-slate-400 dark:text-zinc-500">No bio added yet. Click &quot;Edit Profile&quot; to add one.</span>}
+                                        {user?.bio || <span className="italic text-slate-400 dark:text-zinc-500">No bio added yet. Click &quot;Edit Bio&quot; to add one.</span>}
                                     </div>
                                 )}
                             </div>
@@ -296,7 +236,7 @@ function ProfileContent() {
                                             disabled={savingProfile}
                                             className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
                                         >
-                                            {savingProfile ? "Saving..." : "Save Changes"}
+                                            {savingProfile ? "Saving..." : "Save Bio"}
                                         </button>
                                         <button
                                             onClick={handleCancelEdit}
@@ -310,7 +250,7 @@ function ProfileContent() {
                                         onClick={() => setIsEditing(true)}
                                         className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors shadow-sm"
                                     >
-                                        Edit Profile
+                                        Edit Bio
                                     </button>
                                 )}
                             </div>

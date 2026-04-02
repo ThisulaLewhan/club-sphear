@@ -27,10 +27,10 @@ export async function POST(request) {
     // Connect to database
     await connectDB();
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Verify that email has been OTP verified
-    const emailVerification = await EmailVerification.findOne({
-      email: email.toLowerCase().trim(),
-    });
+    const emailVerification = await EmailVerification.findOne({ email: normalizedEmail });
 
     if (!emailVerification || !emailVerification.verified) {
       return Response.json(
@@ -44,7 +44,7 @@ export async function POST(request) {
     }
 
     // Check if email already exists (additional safety check)
-    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return Response.json(
         { success: false, message: "An account with this email already exists", errors: { email: "Email already in use" } },
@@ -56,16 +56,21 @@ export async function POST(request) {
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Derive student ID from email local part (e.g. it12345678@my.sliit.lk → IT12345678)
+    const derivedStudentId = normalizedEmail.split("@")[0].toUpperCase();
+
     // Create new student user (role forced to "student")
     const newUser = await User.create({
       name: name.trim(),
-      email: email.toLowerCase().trim(),
+      email: normalizedEmail,
       password: hashedPassword,
       role: "student", // Always student — cannot be overridden
+      university: "SLIIT",
+      studentId: derivedStudentId,
     });
 
     // Clean up verification record after successful registration
-    await EmailVerification.deleteOne({ email: email.toLowerCase().trim() });
+    await EmailVerification.deleteOne({ email: normalizedEmail });
 
     // Create JWT and set auth cookie
     const token = createToken(newUser);
