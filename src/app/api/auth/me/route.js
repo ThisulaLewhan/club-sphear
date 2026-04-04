@@ -30,6 +30,22 @@ export async function GET() {
       );
     }
 
+    // Backfill/correct studentId and university from email
+    if (user.role === "student") {
+      const emailLocal = user.email.split("@")[0].toUpperCase();
+      const emailDomain = user.email.split("@")[1]?.toLowerCase();
+      let needsSave = false;
+      if (user.studentId !== emailLocal) {
+        user.studentId = emailLocal;
+        needsSave = true;
+      }
+      if (!user.university && emailDomain?.includes("sliit")) {
+        user.university = "SLIIT";
+        needsSave = true;
+      }
+      if (needsSave) await user.save();
+    }
+
     return Response.json(
       {
         success: true,

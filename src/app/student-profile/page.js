@@ -42,8 +42,8 @@ function DashboardOverview() {
                             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600 dark:text-purple-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         </div>
                         <div>
-                            <h3 className="font-bold text-slate-800 dark:text-zinc-100 text-lg">Q&A</h3>
-                            <p className="text-sm text-slate-500 dark:text-zinc-400 mt-2 leading-relaxed">Connect and ask questions instantly with clubs and societies on campus.</p>
+                            <h3 className="font-bold text-slate-800 dark:text-zinc-100 text-lg">Connect with Clubs</h3>
+                            <p className="text-sm text-slate-500 dark:text-zinc-400 mt-2 leading-relaxed">Chat directly with clubs and societies on campus.</p>
                         </div>
                     </Link>
 

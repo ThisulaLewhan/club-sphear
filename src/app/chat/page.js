@@ -545,10 +545,6 @@ function ChatApp() {
                                             </div>
                                             <div>
                                                 <h2 className="font-bold text-slate-800 text-sm leading-tight">{partner?.name || "Unknown"}</h2>
-                                                <p className="text-[11px] text-indigo-500 font-medium flex items-center gap-1 mt-0.5">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-                                                    Verified Club
-                                                </p>
                                             </div>
                                         </>
                                     );
@@ -702,11 +698,12 @@ function ChatApp() {
                                                                     )}
                                                                     {msg.content && <p className="break-words leading-relaxed whitespace-pre-wrap">{renderMessageContent(msg.content, isMe)}</p>}
                                                                 </div>
-                                                                {(isLastInGroup || msg.isEdited) && (
                                                                     <div className="flex justify-end items-center mt-1.5 gap-1">
                                                                         {msg.isEdited && <span className={`text-[10px] italic ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>edited</span>}
                                                                         <span className={`text-[10px] ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
-                                                                            {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                                            {msg.isEdited && msg.editedAt
+                                                                                ? new Date(msg.editedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                                                : msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                                                         </span>
                                                                         {isMe && (
                                                                             msg.isRead
@@ -714,7 +711,6 @@ function ChatApp() {
                                                                                 : <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                                                                         )}
                                                                     </div>
-                                                                )}
                                                             </>
                                                         )}
                                                     </>

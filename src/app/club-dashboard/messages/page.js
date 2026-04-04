@@ -566,11 +566,12 @@ export default function ClubMessagesPage() {
                                                                     )}
                                                                     {msg.content && <p className="break-words leading-relaxed whitespace-pre-wrap">{renderMessageContent(msg.content, isMe)}</p>}
                                                                 </div>
-                                                                {(isLastInGroup || msg.isEdited) && (
-                                                                    <div className="flex justify-end items-center mt-1 gap-1">
+                                                                <div className="flex justify-end items-center mt-1 gap-1">
                                                                         {msg.isEdited && <span className={`text-[10px] italic ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>edited</span>}
                                                                         <span className={`text-[10px] ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
-                                                                            {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                                            {msg.isEdited && msg.editedAt
+                                                                                ? new Date(msg.editedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                                                : msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                                                         </span>
                                                                         {isMe && (
                                                                             <span className="flex items-center">
@@ -581,7 +582,6 @@ export default function ClubMessagesPage() {
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                )}
                                                             </>
                                                         )}
                                                     </>

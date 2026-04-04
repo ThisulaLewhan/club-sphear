@@ -7,6 +7,7 @@ const MessageSchema = new mongoose.Schema({
   imageUrl: { type: String },
   isRead: { type: Boolean, default: false },
   isEdited: { type: Boolean, default: false },
+  editedAt: { type: Date, default: null },
   isDeleted: { type: Boolean, default: false },
   deletedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 }, { timestamps: true });

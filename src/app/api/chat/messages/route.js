@@ -130,6 +130,7 @@ export async function PUT(request) {
 
     message.content = content;
     message.isEdited = true;
+    message.editedAt = new Date();
     await message.save();
 
     return Response.json({ success: true, message });
