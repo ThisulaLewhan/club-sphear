@@ -30,6 +30,7 @@ function ChatApp() {
     
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
 
     const [lightboxImage, setLightboxImage] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -39,6 +40,7 @@ function ChatApp() {
 
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+    const docInputRef = useRef(null);
 
     const fetchConversations = async () => {
         try {
@@ -175,6 +177,19 @@ function ChatApp() {
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) { toast.error("File must be less than 10MB"); return; }
+            setSelectedFile(file);
+        }
+    };
+
+    const clearSelectedFile = () => {
+        setSelectedFile(null);
+        if (docInputRef.current) docInputRef.current.value = "";
+    };
+
     const handleDeleteConversation = async () => {
         if (!activeConversation || isDeletingChat) return;
         setIsDeletingChat(true);
@@ -199,8 +214,8 @@ function ChatApp() {
         }
     };
 
-    const sendMessageContent = async (text, image = null, previewUrl = null) => {
-        if ((!text.trim() && !image) || !activeConversation) return;
+    const sendMessageContent = async (text, image = null, previewUrl = null, file = null) => {
+        if ((!text.trim() && !image && !file) || !activeConversation) return;
 
         const optimisticId = "temp-" + Date.now();
         const optimisticMessage = {
@@ -208,6 +223,8 @@ function ChatApp() {
             sender: user.id || user._id,
             content: text,
             imageUrl: previewUrl,
+            fileName: file?.name || null,
+            fileType: file?.type || null,
             createdAt: new Date().toISOString()
         };
 
@@ -218,6 +235,7 @@ function ChatApp() {
             formData.append("conversationId", activeConversation._id);
             formData.append("content", text);
             if (image) formData.append("image", image);
+            if (file) formData.append("file", file);
 
             const res = await fetch("/api/chat/messages", {
                 method: "POST",
@@ -237,20 +255,22 @@ function ChatApp() {
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if ((!newMessage.trim() && !selectedImage) || !activeConversation) return;
+        if ((!newMessage.trim() && !selectedImage && !selectedFile) || !activeConversation) return;
 
         const contentToSend = newMessage;
         const imageToSend = selectedImage;
         const previewToSend = imagePreview;
+        const fileToSend = selectedFile;
         setNewMessage("");
         clearSelectedImage();
+        clearSelectedFile();
 
         setIsSending(true);
         setTimeout(() => setIsSending(false), 250);
         setTimeout(() => setShowTyping(true), 800);
         setTimeout(() => setShowTyping(false), 2500);
 
-        await sendMessageContent(contentToSend, imageToSend, previewToSend);
+        await sendMessageContent(contentToSend, imageToSend, previewToSend, fileToSend);
     };
 
     const handleSendSuggestion = async (text) => {
@@ -282,14 +302,18 @@ function ChatApp() {
         setIsDragging(false);
         dragCounter.current = 0;
         const file = e.dataTransfer.files?.[0];
-        if (file && file.type.startsWith('image/')) {
+        if (!file) return;
+        if (file.type.startsWith('image/')) {
             if (file.size > 5 * 1024 * 1024) { toast.error("Image must be less than 5MB"); return; }
             setSelectedImage(file);
             const reader = new FileReader();
             reader.onloadend = () => setImagePreview(reader.result);
             reader.readAsDataURL(file);
-        } else if (file) {
-            toast.error("Only image files are supported");
+        } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf') || file.name.endsWith('.doc') || file.name.endsWith('.docx') || file.name.endsWith('.txt')) {
+            if (file.size > 10 * 1024 * 1024) { toast.error("File must be less than 10MB"); return; }
+            setSelectedFile(file);
+        } else {
+            toast.error("Unsupported file type. Use images, PDFs, or documents.");
         }
     };
 
@@ -511,8 +535,8 @@ function ChatApp() {
                     <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/80 backdrop-blur-sm animate-modal-backdrop">
                         <div className="flex flex-col items-center gap-3 p-8 border-2 border-dashed border-indigo-400 rounded-3xl animate-drop-zone">
                             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            <p className="text-sm font-semibold text-indigo-600">Drop image here</p>
-                            <p className="text-xs text-slate-400">Max 5MB, images only</p>
+                            <p className="text-sm font-semibold text-indigo-600">Drop file here</p>
+                            <p className="text-xs text-slate-400">Images, PDFs & documents</p>
                         </div>
                     </div>
                 )}
@@ -694,7 +718,26 @@ function ChatApp() {
                                                                     {msg.imageUrl && (
                                                                         <div className="rounded-xl overflow-hidden -mx-0.5">
                                                                             <img src={msg.imageUrl} alt="Sent in chat" className="max-w-full max-h-[260px] object-contain cursor-pointer hover:opacity-90 transition-opacity" onClick={(e) => { e.stopPropagation(); setLightboxImage(msg.imageUrl); }} />
+                                                                            <a href={msg.imageUrl} download onClick={(e) => e.stopPropagation()} className={`flex items-center gap-1.5 mt-1 text-[11px] font-medium ${isMe ? 'text-indigo-200 hover:text-white' : 'text-indigo-500 hover:text-indigo-700'} transition-colors`}>
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                                                                Download
+                                                                            </a>
                                                                         </div>
+                                                                    )}
+                                                                    {msg.fileUrl && (
+                                                                        <a href={msg.fileUrl} download={msg.fileName || true} onClick={(e) => e.stopPropagation()}
+                                                                            className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-colors ${isMe ? 'border-indigo-400/30 bg-indigo-500/20 hover:bg-indigo-500/30' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}>
+                                                                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${isMe ? 'bg-white/20' : 'bg-red-50'}`}>
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={isMe ? 'white' : '#ef4444'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                                                            </div>
+                                                                            <div className="flex-1 min-w-0">
+                                                                                <p className={`text-xs font-medium truncate ${isMe ? 'text-white' : 'text-slate-700'}`}>{msg.fileName || 'Document'}</p>
+                                                                                <p className={`text-[10px] ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
+                                                                                    {msg.fileType?.includes('pdf') ? 'PDF' : 'Document'} — Tap to download
+                                                                                </p>
+                                                                            </div>
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isMe ? 'white' : '#6366f1'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                                                        </a>
                                                                     )}
                                                                     {msg.content && <p className="break-words leading-relaxed whitespace-pre-wrap">{renderMessageContent(msg.content, isMe)}</p>}
                                                                 </div>
@@ -762,12 +805,35 @@ function ChatApp() {
                                         </div>
                                     </div>
                                 )}
+                                {selectedFile && (
+                                    <div className="mb-3 px-1">
+                                        <div className="relative inline-flex items-center gap-2 bg-slate-50 rounded-2xl p-2.5 border border-slate-200">
+                                            <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                            </div>
+                                            <div className="flex flex-col gap-0.5 pr-6">
+                                                <p className="text-xs font-medium text-slate-700 truncate max-w-[150px]">{selectedFile.name}</p>
+                                                <p className="text-[10px] text-slate-400">{(selectedFile.size / 1024).toFixed(0)} KB</p>
+                                            </div>
+                                            <button onClick={clearSelectedFile} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors active:scale-90">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                                 <form onSubmit={handleSendMessage} className="flex items-end gap-2">
                                     <button type="button" onClick={() => fileInputRef.current?.click()}
-                                        className={`p-2.5 rounded-2xl transition-all duration-200 shrink-0 active:scale-95 ${selectedImage ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}>
+                                        className={`p-2.5 rounded-2xl transition-all duration-200 shrink-0 active:scale-95 ${selectedImage ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+                                        title="Attach image">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                                     </button>
+                                    <button type="button" onClick={() => docInputRef.current?.click()}
+                                        className={`p-2.5 rounded-2xl transition-all duration-200 shrink-0 active:scale-95 ${selectedFile ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+                                        title="Attach document">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    </button>
                                     <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+                                    <input type="file" ref={docInputRef} onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" className="hidden" />
                                     <div className="flex-1 bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-500/15 transition-all overflow-hidden">
                                         <textarea rows={1} maxLength={200}
                                             className="w-full max-h-32 px-4 py-3 text-[15px] bg-transparent focus:outline-none resize-none hide-scrollbar text-slate-800 placeholder-slate-400"
@@ -794,7 +860,7 @@ function ChatApp() {
                                             </div>
                                         )}
                                     </div>
-                                    <button type="submit" disabled={!newMessage.trim() && !selectedImage}
+                                    <button type="submit" disabled={!newMessage.trim() && !selectedImage && !selectedFile}
                                         className={`w-11 h-11 shrink-0 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center text-white transition-all shadow-md shadow-indigo-200/50 hover:shadow-lg hover:shadow-indigo-200/60 hover:-translate-y-0.5 active:translate-y-0 active:scale-90 disabled:shadow-none ${isSending ? 'animate-send-press' : ''}`}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-0.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                                     </button>

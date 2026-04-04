@@ -216,7 +216,7 @@ export function validateChatMessage(data) {
   const errors = {};
 
   if (!data.content || data.content.trim().length === 0) {
-    if (!data.image) {
+    if (!data.image && !data.file) {
       errors.content = "Message cannot be empty";
     }
   } else if (data.content.length > 200) {
@@ -225,6 +225,10 @@ export function validateChatMessage(data) {
 
   if (!data.conversationId) {
     errors.conversationId = "Missing conversation reference";
+  }
+
+  if (data.file && data.file.size > 10 * 1024 * 1024) {
+    errors.file = "File must be less than 10MB";
   }
 
   return {

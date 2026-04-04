@@ -48,7 +48,9 @@ export function AuthProvider({ children }) {
     const data = await res.json();
 
     if (data.success) {
+      // Set basic user data immediately, then fetch full profile
       setUser(data.user);
+      await fetchUser();
     }
     return data;
   };
@@ -64,6 +66,7 @@ export function AuthProvider({ children }) {
 
     if (data.success) {
       setUser(data.user);
+      await fetchUser();
     }
     return data;
   };

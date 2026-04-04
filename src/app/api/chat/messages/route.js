@@ -39,20 +39,21 @@ export async function POST(request) {
     if (!currentUser) return Response.json({ success: false }, { status: 401 });
 
     const contentType = request.headers.get("content-type") || "";
-    let conversationId, content, imageFile;
+    let conversationId, content, imageFile, docFile;
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await request.formData();
       conversationId = formData.get("conversationId");
       content = formData.get("content");
       imageFile = formData.get("image");
+      docFile = formData.get("file");
     } else {
       const body = await request.json();
       conversationId = body.conversationId;
       content = body.content;
     }
 
-    const validation = validateChatMessage({ conversationId, content, image: imageFile });
+    const validation = validateChatMessage({ conversationId, content, image: imageFile, file: docFile });
     if (!validation.valid) {
       return Response.json(
         { success: false, message: "Validation failed", errors: validation.errors },
@@ -77,11 +78,31 @@ export async function POST(request) {
       }
     }
 
+    let fileUrl = null, fileName = null, fileType = null;
+    if (docFile && docFile.size > 0 && typeof docFile !== "string") {
+      try {
+        const buffer = Buffer.from(await docFile.arrayBuffer());
+        const extension = path.extname(docFile.name) || ".pdf";
+        const savedName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
+        const uploadDir = path.join(process.cwd(), "public/uploads/chat");
+        await fs.mkdir(uploadDir, { recursive: true });
+        await fs.writeFile(path.join(uploadDir, savedName), buffer);
+        fileUrl = `/uploads/chat/${savedName}`;
+        fileName = docFile.name;
+        fileType = docFile.type || "application/octet-stream";
+      } catch (fsError) {
+        console.error("Failed to save chat file:", fsError);
+      }
+    }
+
     const message = new Message({
       conversationId,
       sender: currentUser.userId,
       content: content || "",
       imageUrl,
+      fileUrl,
+      fileName,
+      fileType,
     });
     
     await message.save();
