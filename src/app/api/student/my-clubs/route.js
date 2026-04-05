@@ -48,9 +48,21 @@ export async function GET() {
             };
         };
 
-        const approvedResult  = approvedApplications.map((app) => buildEntry(app, { joinedAt: app.updatedAt }));
-        const rejectedResult  = rejectedApplications.map((app) => buildEntry(app, { rejectedAt: app.updatedAt }));
-        const pendingResult   = pendingApplications.map((app)  => buildEntry(app, { appliedAt: app.createdAt }));
+        // Deduplicate by clubId — keep the most recent entry per club
+        const dedupeByClub = (apps) => {
+            const map = {};
+            apps.forEach((app) => {
+                const existing = map[app.clubId];
+                if (!existing || new Date(app.updatedAt) > new Date(existing.updatedAt)) {
+                    map[app.clubId] = app;
+                }
+            });
+            return Object.values(map);
+        };
+
+        const approvedResult = approvedApplications.map((app) => buildEntry(app, { joinedAt: app.updatedAt }));
+        const rejectedResult = dedupeByClub(rejectedApplications).map((app) => buildEntry(app, { rejectedAt: app.updatedAt }));
+        const pendingResult  = dedupeByClub(pendingApplications).map((app)  => buildEntry(app, { appliedAt: app.createdAt }));
 
         return NextResponse.json({ success: true, data: approvedResult, rejected: rejectedResult, pending: pendingResult });
     } catch (error) {
