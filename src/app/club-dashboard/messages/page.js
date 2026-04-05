@@ -328,7 +328,7 @@ export default function ClubMessagesPage() {
                             className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold rounded-lg transition-colors"
                             title="Send broadcast to all students"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
                             Broadcast
                         </button>
                     ) : (
@@ -345,7 +345,7 @@ export default function ClubMessagesPage() {
                 <div className="p-3 border-b border-slate-100 shrink-0">
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </span>
                         <input
                             type="text"
@@ -356,7 +356,7 @@ export default function ClubMessagesPage() {
                         />
                         {filterQuery && (
                             <button onClick={() => setFilterQuery("")} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                             </button>
                         )}
                     </div>
@@ -366,7 +366,7 @@ export default function ClubMessagesPage() {
                 {bulkMode && (
                     <div className="px-4 py-2.5 bg-indigo-50 border-b border-indigo-100 shrink-0">
                         <p className="text-xs font-semibold text-indigo-700 flex items-center gap-1.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
                             Broadcast mode active
                         </p>
                     </div>
@@ -382,8 +382,8 @@ export default function ClubMessagesPage() {
                             const lastMsg = conv.lastMessage;
                             const preview = lastMsg
                                 ? lastMsg.isDeleted ? 'This message was deleted'
-                                : lastMsg.imageUrl && !lastMsg.content ? '📷 Photo'
-                                : lastMsg.content
+                                    : lastMsg.imageUrl && !lastMsg.content ? '📷 Photo'
+                                        : lastMsg.content
                                 : 'Waiting for message...';
                             return (
                                 <div key={conv._id} onClick={() => handleSelectConversation(conv)} className={`px-4 py-3 cursor-pointer flex items-center gap-3 transition-all ${isActive ? 'bg-indigo-50 border-r-[3px] border-indigo-500' : 'hover:bg-slate-50 border-b border-slate-100'}`}>
@@ -410,7 +410,7 @@ export default function ClubMessagesPage() {
                     ) : (
                         <div className="p-10 text-center flex flex-col items-center gap-3">
                             <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                             </div>
                             <div>
                                 <p className="font-semibold text-slate-600 mb-1">No conversations yet</p>
@@ -423,13 +423,13 @@ export default function ClubMessagesPage() {
 
             {/* Main Chat Area */}
             <div className={`flex-1 flex flex-col bg-slate-50 relative ${!activeConversation && !bulkMode ? 'hidden sm:flex items-center justify-center' : !activeConversation && bulkMode ? 'flex' : 'flex'}`}
-                 onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}>
+                onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}>
 
                 {/* Drag-and-drop overlay */}
                 {isDragging && activeConversation && !bulkMode && (
                     <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/80 backdrop-blur-sm">
                         <div className="flex flex-col items-center gap-3 p-8 border-2 border-dashed border-indigo-400 rounded-3xl">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                             <p className="text-sm font-semibold text-indigo-600">Drop file here</p>
                             <p className="text-xs text-slate-400">Images, PDFs & documents</p>
                         </div>
@@ -441,10 +441,10 @@ export default function ClubMessagesPage() {
                     <>
                         <div className="h-16 px-4 bg-white border-b border-slate-200 flex items-center gap-3 z-10 shrink-0 shadow-sm">
                             <button className="sm:hidden p-1.5 -ml-1 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" onClick={exitBulkMode}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
                             </button>
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
                             </div>
                             <div>
                                 <h2 className="font-semibold text-slate-800 leading-tight text-sm">Broadcast Message</h2>
@@ -455,12 +455,12 @@ export default function ClubMessagesPage() {
                         <div className="flex-1 flex items-center justify-center p-8">
                             <div className="text-center max-w-sm">
                                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center mx-auto mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
                                 </div>
                                 <h3 className="text-lg font-semibold text-slate-700 mb-2">Send to All Students</h3>
                                 <p className="text-sm text-slate-400 leading-relaxed mb-4">Your message will be sent to every student on the platform. New conversations will be created automatically.</p>
                                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                                     <span className="text-xs font-medium text-amber-700">This action cannot be undone</span>
                                 </div>
                             </div>
@@ -491,9 +491,9 @@ export default function ClubMessagesPage() {
                                         <button onClick={handleSendBulkMessage} disabled={!bulkMessage.trim() || isSendingBulk}
                                             className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors disabled:opacity-50 disabled:bg-slate-300 flex items-center gap-2 shadow-sm">
                                             {isSendingBulk ? (
-                                                <><span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-r-transparent"/><span>Sending...</span></>
+                                                <><span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-r-transparent" /><span>Sending...</span></>
                                             ) : (
-                                                <><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span>Send Broadcast</span></>
+                                                <><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg><span>Send Broadcast</span></>
                                             )}
                                         </button>
                                     </div>
@@ -504,7 +504,7 @@ export default function ClubMessagesPage() {
                 ) : !activeConversation ? (
                     <div className="text-center z-10 p-8 flex flex-col items-center gap-4">
                         <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                         </div>
                         <div>
                             <h2 className="text-xl font-semibold text-slate-700 mb-1">Club Inbox</h2>
@@ -517,7 +517,7 @@ export default function ClubMessagesPage() {
                         <div className="h-16 px-4 bg-white border-b border-slate-200 flex items-center justify-between z-10 shrink-0 shadow-sm">
                             <div className="flex items-center gap-3">
                                 <button className="sm:hidden p-1.5 -ml-1 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" onClick={() => setActiveConversation(null)}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
                                 </button>
                                 {(() => {
                                     const partner = getPartner(activeConversation);
@@ -539,7 +539,7 @@ export default function ClubMessagesPage() {
                                 className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                                 title="Delete Chat"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
                             </button>
                         </div>
 
@@ -556,7 +556,7 @@ export default function ClubMessagesPage() {
 
                                 const bubbleShape = msg.isDeleted ? 'rounded-2xl'
                                     : isConsecutive ? 'rounded-2xl'
-                                    : isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm';
+                                        : isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm';
 
                                 const bubbleColor = msg.isDeleted
                                     ? 'bg-slate-100 border border-slate-200/80 text-slate-400'
@@ -568,11 +568,11 @@ export default function ClubMessagesPage() {
                                     <div key={msg._id || index}>
                                         {showDateSeparator && msg.createdAt && (
                                             <div className="flex items-center gap-3 my-5">
-                                                <div className="flex-1 h-px bg-slate-200"/>
+                                                <div className="flex-1 h-px bg-slate-200" />
                                                 <span className="text-[11px] text-slate-400 font-medium px-3 py-1 bg-white border border-slate-200 rounded-full whitespace-nowrap shadow-sm">
                                                     {formatMessageDate(msg.createdAt)}
                                                 </span>
-                                                <div className="flex-1 h-px bg-slate-200"/>
+                                                <div className="flex-1 h-px bg-slate-200" />
                                             </div>
                                         )}
                                         <div className={`flex items-end gap-1.5 ${isMe ? 'justify-end' : 'justify-start'} group ${isConsecutive ? 'mt-0.5' : 'mt-3'}`}>
@@ -584,17 +584,17 @@ export default function ClubMessagesPage() {
                                                         className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
                                                         style={{ opacity: contextMenu?.msgId === msg._id ? 1 : undefined }}
                                                     >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /></svg>
                                                     </button>
                                                     {contextMenu?.msgId === msg._id && contextMenu?.inline && (
                                                         <div className="absolute bottom-full right-0 mb-1 z-50 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden w-36" onClick={(e) => e.stopPropagation()}>
                                                             <button onClick={() => handleStartEdit(contextMenu.msg)} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                                                                 Edit
                                                             </button>
-                                                            <div className="border-t border-slate-100"/>
+                                                            <div className="border-t border-slate-100" />
                                                             <button onClick={() => handleDeleteMsg(contextMenu.msgId)} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
                                                                 Delete
                                                             </button>
                                                         </div>
@@ -620,14 +620,14 @@ export default function ClubMessagesPage() {
                                                         />
                                                         <div className="flex justify-end gap-2">
                                                             <button onClick={() => { setEditingMsg(null); setEditContent(""); }} className="text-xs text-slate-500 hover:text-slate-700">Cancel</button>
-                                                            <button onClick={handleSaveEdit} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Save</button>
+                                                            <button onClick={handleSaveEdit} className="text-xs font-semibold text-white-300 hover:text-white-800">Save</button>
                                                         </div>
                                                     </div>
                                                 ) : (
                                                     <>
                                                         {msg.isDeleted ? (
                                                             <p className="flex items-center gap-1.5 text-[13px] italic py-0.5">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" /></svg>
                                                                 This message was deleted
                                                                 {msg.createdAt && <span className="ml-auto pl-2 text-[10px] not-italic opacity-70">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
                                                             </p>
@@ -638,7 +638,7 @@ export default function ClubMessagesPage() {
                                                                         <div className="rounded-xl overflow-hidden -mx-0.5 max-w-full">
                                                                             <img src={msg.imageUrl} alt="Sent in chat" className="max-w-full max-h-[260px] object-contain cursor-pointer hover:opacity-90 transition-opacity" onClick={(e) => { e.stopPropagation(); window.open(msg.imageUrl, '_blank'); }} />
                                                                             <a href={msg.imageUrl} download onClick={(e) => e.stopPropagation()} className={`flex items-center gap-1.5 mt-1 text-[11px] font-medium ${isMe ? 'text-indigo-200 hover:text-white' : 'text-indigo-500 hover:text-indigo-700'} transition-colors`}>
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                                                                                 Download
                                                                             </a>
                                                                         </div>
@@ -647,7 +647,7 @@ export default function ClubMessagesPage() {
                                                                         <a href={msg.fileUrl} download={msg.fileName || true} onClick={(e) => e.stopPropagation()}
                                                                             className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-colors ${isMe ? 'border-indigo-400/30 bg-indigo-500/20 hover:bg-indigo-500/30' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}>
                                                                             <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${isMe ? 'bg-white/20' : 'bg-red-50'}`}>
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={isMe ? 'white' : '#ef4444'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={isMe ? 'white' : '#ef4444'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
                                                                             </div>
                                                                             <div className="flex-1 min-w-0">
                                                                                 <p className={`text-xs font-medium truncate ${isMe ? 'text-white' : 'text-slate-700'}`}>{msg.fileName || 'Document'}</p>
@@ -655,27 +655,27 @@ export default function ClubMessagesPage() {
                                                                                     {msg.fileType?.includes('pdf') ? 'PDF' : 'Document'} — Tap to download
                                                                                 </p>
                                                                             </div>
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isMe ? 'white' : '#6366f1'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isMe ? 'white' : '#6366f1'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                                                                         </a>
                                                                     )}
                                                                     {msg.content && <p className="break-words leading-relaxed whitespace-pre-wrap">{renderMessageContent(msg.content, isMe)}</p>}
                                                                 </div>
                                                                 <div className="flex justify-end items-center mt-1 gap-1">
-                                                                        {msg.isEdited && <span className={`text-[10px] italic ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>edited</span>}
-                                                                        <span className={`text-[10px] ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
-                                                                            {msg.isEdited && msg.editedAt
-                                                                                ? new Date(msg.editedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                                                                : msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                                    {msg.isEdited && <span className={`text-[10px] italic ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>edited</span>}
+                                                                    <span className={`text-[10px] ${isMe ? 'text-indigo-200' : 'text-slate-400'}`}>
+                                                                        {msg.isEdited && msg.editedAt
+                                                                            ? new Date(msg.editedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                                            : msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                                    </span>
+                                                                    {isMe && (
+                                                                        <span className="flex items-center">
+                                                                            {msg.isRead
+                                                                                ? <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5" /><path d="m22 10-7.5 7.5L13 16" /></svg>
+                                                                                : <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                                                                            }
                                                                         </span>
-                                                                        {isMe && (
-                                                                            <span className="flex items-center">
-                                                                                {msg.isRead
-                                                                                    ? <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
-                                                                                    : <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c7d2fe" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                                                                                }
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
+                                                                    )}
+                                                                </div>
                                                             </>
                                                         )}
                                                     </>
@@ -692,12 +692,12 @@ export default function ClubMessagesPage() {
                         {contextMenu && !contextMenu.inline && (
                             <div ref={contextMenuRef} className="fixed z-50 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden w-40" style={{ top: contextMenu.y, left: contextMenu.x }}>
                                 <button onClick={() => handleStartEdit(contextMenu.msg)} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                                     Edit
                                 </button>
-                                <div className="border-t border-slate-100"/>
+                                <div className="border-t border-slate-100" />
                                 <button onClick={() => handleDeleteMsg(contextMenu.msgId)} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
                                     Delete
                                 </button>
                             </div>
@@ -711,7 +711,7 @@ export default function ClubMessagesPage() {
                                         <div className="relative inline-block">
                                             <img src={imagePreview} className="h-20 w-20 object-cover rounded-lg border-2 border-white shadow-md" />
                                             <button onClick={clearSelectedImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                                             </button>
                                         </div>
                                     </div>
@@ -720,24 +720,24 @@ export default function ClubMessagesPage() {
                                     <div className="max-w-4xl mx-auto mb-2 px-2">
                                         <div className="relative inline-flex items-center gap-2 bg-slate-50 rounded-xl p-2.5 border border-slate-200">
                                             <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                                             </div>
                                             <div className="flex flex-col gap-0.5 pr-6">
                                                 <p className="text-xs font-medium text-slate-700 truncate max-w-[150px]">{selectedFile.name}</p>
                                                 <p className="text-[10px] text-slate-400">{(selectedFile.size / 1024).toFixed(0)} KB</p>
                                             </div>
                                             <button onClick={clearSelectedFile} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                                             </button>
                                         </div>
                                     </div>
                                 )}
                                 <form onSubmit={handleSendMessage} className="flex items-end gap-2 max-w-4xl mx-auto">
                                     <button type="button" onClick={() => fileInputRef.current?.click()} className={`p-2.5 rounded-full transition-all duration-200 ${selectedImage ? 'bg-indigo-100 text-indigo-600' : 'text-slate-500 hover:bg-slate-200'}`} title="Attach image">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
                                     </button>
                                     <button type="button" onClick={() => docInputRef.current?.click()} className={`p-2.5 rounded-full transition-all duration-200 ${selectedFile ? 'bg-indigo-100 text-indigo-600' : 'text-slate-500 hover:bg-slate-200'}`} title="Attach document">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                                     </button>
                                     <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
                                     <input type="file" ref={docInputRef} onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" className="hidden" />
@@ -755,7 +755,7 @@ export default function ClubMessagesPage() {
                                         )}
                                     </div>
                                     <button type="submit" disabled={!newMessage.trim() && !selectedImage && !selectedFile} className="w-12 h-12 shrink-0 rounded-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 flex items-center justify-center text-white transition-colors shadow-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1 -mt-0.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="ml-1 -mt-0.5"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
                                     </button>
                                 </form>
                             </div>

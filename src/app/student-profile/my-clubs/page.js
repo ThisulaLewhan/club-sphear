@@ -44,47 +44,89 @@ function getAvatarGradient(name = "") {
     return gradients[idx];
 }
 
-function ClubCard({ club }) {
+// Status badge config
+const STATUS_CONFIG = {
+    approved: {
+        badge: "bg-emerald-500 text-white",
+        label: "Member",
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m20 6-11 11-5-5"/></svg>,
+        border: "border-slate-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700",
+        cover: "from-slate-100 to-slate-200 dark:from-zinc-800 dark:to-zinc-700",
+        coverOverlay: "from-indigo-50/60 to-purple-50/60 dark:from-indigo-900/20 dark:to-purple-900/20",
+    },
+    pending: {
+        badge: "bg-amber-400 text-white",
+        label: "Pending",
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+        border: "border-amber-100 dark:border-amber-900/30 hover:border-amber-300",
+        cover: "from-amber-50 to-yellow-100 dark:from-amber-950/30 dark:to-yellow-950/20",
+        coverOverlay: "from-amber-50/40 to-transparent",
+    },
+    rejected: {
+        badge: "bg-red-500 text-white",
+        label: "Rejected",
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+        border: "border-red-100 dark:border-red-900/30 hover:border-red-300",
+        cover: "from-red-50 to-rose-100 dark:from-red-950/30 dark:to-rose-950/20",
+        coverOverlay: "from-red-50/40 to-transparent",
+    },
+};
+
+function UnifiedClubCard({ item }) {
+    const status = item.status;
+    const cfg = STATUS_CONFIG[status];
+
+    // Footer date label
+    const dateLabel = status === "approved"
+        ? `Joined ${new Date(item.joinedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`
+        : status === "pending"
+        ? `Applied ${new Date(item.appliedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+        : `Reviewed ${new Date(item.rejectedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+
     return (
         <Link
-            href={`/clubs/${club.clubId}`}
-            className="group bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200 overflow-hidden flex flex-col"
+            href={`/clubs/${item.clubId}`}
+            className={`group bg-white dark:bg-zinc-900 rounded-2xl border ${cfg.border} hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200 overflow-hidden flex flex-col`}
         >
-            {/* Logo / Cover area */}
-            <div className="h-28 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/60 to-purple-50/60 dark:from-indigo-900/20 dark:to-purple-900/20" />
-                {club.logo ? (
-                    <img src={club.logo} alt={club.clubName} className="h-16 w-16 object-contain rounded-xl relative z-10 shadow-md" />
+            {/* Logo / Cover */}
+            <div className={`h-28 bg-gradient-to-br ${cfg.cover} flex items-center justify-center relative overflow-hidden`}>
+                <div className={`absolute inset-0 bg-gradient-to-br ${cfg.coverOverlay}`} />
+                {item.logo ? (
+                    <img
+                        src={item.logo}
+                        alt={item.clubName}
+                        className={`h-16 w-16 object-contain rounded-xl relative z-10 shadow-md ${status !== "approved" ? "opacity-75" : ""}`}
+                    />
                 ) : (
-                    <div className={`h-16 w-16 rounded-xl bg-gradient-to-br ${getAvatarGradient(club.clubName)} flex items-center justify-center text-white text-2xl font-bold shadow-md relative z-10`}>
-                        {getInitials(club.clubName)}
+                    <div className={`h-16 w-16 rounded-xl bg-gradient-to-br ${getAvatarGradient(item.clubName)} flex items-center justify-center text-white text-2xl font-bold shadow-md relative z-10 ${status !== "approved" ? "opacity-60" : ""}`}>
+                        {getInitials(item.clubName)}
                     </div>
                 )}
-                {/* Member badge */}
-                <span className="absolute top-3 right-3 px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500 text-white flex items-center gap-1 shadow-sm z-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m20 6-11 11-5-5"/></svg>
-                    Member
+                {/* Status badge */}
+                <span className={`absolute top-3 right-3 px-2.5 py-1 text-xs font-semibold rounded-full ${cfg.badge} flex items-center gap-1 shadow-sm z-10`}>
+                    {cfg.icon}
+                    {cfg.label}
                 </span>
             </div>
 
             <div className="p-4 flex flex-col gap-2 flex-1">
-                <h3 className="font-bold text-slate-800 dark:text-zinc-100 text-base group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">
-                    {club.clubName}
+                <h3 className={`font-bold text-base leading-tight transition-colors ${status === "approved" ? "text-slate-800 dark:text-zinc-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" : "text-slate-600 dark:text-zinc-300"}`}>
+                    {item.clubName}
                 </h3>
-                {club.category && (
-                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full w-fit ${CATEGORY_COLORS[club.category] || "bg-slate-100 text-slate-600"}`}>
-                        {CATEGORY_ICONS[club.category]} {club.category}
+                {item.category && (
+                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full w-fit ${CATEGORY_COLORS[item.category] || "bg-slate-100 text-slate-600"} ${status !== "approved" ? "opacity-70" : ""}`}>
+                        {CATEGORY_ICONS[item.category]} {item.category}
                     </span>
                 )}
-                {club.description && (
+                {item.description && status === "approved" && (
                     <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed line-clamp-2 mt-0.5">
-                        {club.description}
+                        {item.description}
                     </p>
                 )}
                 <div className="mt-auto pt-3 flex items-center justify-between border-t border-slate-50 dark:border-zinc-800">
                     <span className="text-xs text-slate-400 dark:text-zinc-500 flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                        Joined {new Date(club.joinedAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                        {dateLabel}
                     </span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </div>
@@ -94,7 +136,7 @@ function ClubCard({ club }) {
 }
 
 function MyClubsContent() {
-    const [clubs, setClubs] = useState([]);
+    const [allItems, setAllItems] = useState([]);   // unified list of all clubs/applications
     const [allClubs, setAllClubs] = useState([]);   // all DB clubs for suggestions
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -105,15 +147,21 @@ function MyClubsContent() {
     const searchRef = useRef(null);
     const dropdownRef = useRef(null);
 
-    // Fetch joined clubs + all clubs for suggestions
     useEffect(() => {
         Promise.all([
             fetch("/api/student/my-clubs").then((r) => r.json()),
             fetch("/api/clubs").then((r) => r.json()),
         ])
             .then(([myData, allData]) => {
-                if (myData.success) setClubs(myData.data);
-                else setError(myData.message || "Failed to load clubs.");
+                if (myData.success) {
+                    const approved = (myData.data || []).map((c) => ({ ...c, status: "approved" }));
+                    const pending  = (myData.pending || []).map((c) => ({ ...c, status: "pending" }));
+                    const rejected = (myData.rejected || []).map((c) => ({ ...c, status: "rejected" }));
+                    // Order: approved first, then pending, then rejected
+                    setAllItems([...approved, ...pending, ...rejected]);
+                } else {
+                    setError(myData.message || "Failed to load clubs.");
+                }
                 if (allData.success) setAllClubs(allData.data);
             })
             .catch(() => setError("Something went wrong."))
@@ -134,9 +182,8 @@ function MyClubsContent() {
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
-    const joinedIds = new Set(clubs.map((c) => c.clubId));
+    const joinedIds = new Set(allItems.filter(i => i.status === "approved").map((c) => c.clubId));
 
-    // Suggestions: all DB clubs matching search query
     const suggestions = search.trim().length > 0
         ? allClubs.filter((c) =>
               c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -144,13 +191,14 @@ function MyClubsContent() {
           ).slice(0, 6)
         : [];
 
-    // Filter joined clubs by search text
-    const filteredClubs = clubs.filter((c) =>
+    const filteredItems = allItems.filter((c) =>
         search.trim() === "" ||
         c.clubName.toLowerCase().includes(search.toLowerCase()) ||
         (c.category || "").toLowerCase().includes(search.toLowerCase()) ||
         (c.description || "").toLowerCase().includes(search.toLowerCase())
     );
+
+    const approvedCount = allItems.filter(i => i.status === "approved").length;
 
     const clearSearch = () => {
         setSearch("");
@@ -172,7 +220,7 @@ function MyClubsContent() {
                     <div className="flex-1 min-w-0">
                         <h1 className="text-xl font-bold text-slate-900 dark:text-white">My Clubs</h1>
                         <p className="text-xs text-slate-400 dark:text-zinc-500">
-                            {loading ? "Loading…" : `${clubs.length} club${clubs.length !== 1 ? "s" : ""} joined`}
+                            {loading ? "Loading…" : `${approvedCount} club${approvedCount !== 1 ? "s" : ""} joined`}
                         </p>
                     </div>
                     <Link
@@ -245,7 +293,6 @@ function MyClubsContent() {
                     )}
                 </div>
 
-
                 {/* Loading */}
                 {loading && (
                     <div className="flex flex-col items-center justify-center py-24 gap-3">
@@ -262,8 +309,8 @@ function MyClubsContent() {
                     </div>
                 )}
 
-                {/* No clubs joined at all */}
-                {!loading && !error && clubs.length === 0 && (
+                {/* No clubs at all */}
+                {!loading && !error && allItems.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-24 text-center">
                         <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center mb-5 shadow-inner">
                             <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -280,41 +327,38 @@ function MyClubsContent() {
                     </div>
                 )}
 
-                {/* Search returns no results within joined clubs */}
-                {!loading && clubs.length > 0 && filteredClubs.length === 0 && (
+                {/* Search returns no results */}
+                {!loading && allItems.length > 0 && filteredItems.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
                         <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                         </div>
-                        <p className="text-base font-semibold text-slate-600 dark:text-zinc-300 mb-1">No matches in your clubs</p>
+                        <p className="text-base font-semibold text-slate-600 dark:text-zinc-300 mb-1">No matches found</p>
                         <p className="text-sm text-slate-400 dark:text-zinc-500 mb-4">
-                            {search ? `No club named "${search}" in your memberships.` : `No clubs in this category.`}
+                            {search ? `No club named "${search}" in your history.` : `No clubs in this category.`}
                         </p>
-                        {search && suggestions.length > 0 && (
-                            <p className="text-xs text-indigo-500 dark:text-indigo-400">Check the suggestions above to explore matching clubs.</p>
-                        )}
                         <button
                             onClick={() => setSearch("")}
-                            className="mt-4 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-semibold transition-colors"
+                            className="mt-2 text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-semibold transition-colors"
                         >
                             Clear filters
                         </button>
                     </div>
                 )}
 
-                {/* Club grid */}
-                {!loading && filteredClubs.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filteredClubs.map((club) => (
-                            <ClubCard key={club.clubId} club={club} />
+                {/* Unified club grid */}
+                {!loading && filteredItems.length > 0 && (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
+                        {filteredItems.map((item) => (
+                            <UnifiedClubCard key={`${item.status}-${item.clubId}`} item={item} />
                         ))}
                     </div>
                 )}
 
                 {/* Showing count when search is active */}
-                {!loading && clubs.length > 0 && filteredClubs.length !== clubs.length && (
+                {!loading && allItems.length > 0 && filteredItems.length !== allItems.length && (
                     <p className="text-xs text-slate-400 dark:text-zinc-500 text-right">
-                        Showing {filteredClubs.length} of {clubs.length}
+                        Showing {filteredItems.length} of {allItems.length}
                     </p>
                 )}
             </div>

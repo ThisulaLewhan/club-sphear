@@ -17,31 +17,42 @@ export async function GET() {
 
         await dbConnect();
 
-        const approvedApplications = await ClubApplication.find({
-            userId: currentUser.userId,
-            status: "approved",
-        }).lean();
+        // Fetch approved, rejected, and pending applications in one go
+        const [approvedApplications, rejectedApplications, pendingApplications] = await Promise.all([
+            ClubApplication.find({ userId: currentUser.userId, status: "approved" }).lean(),
+            ClubApplication.find({ userId: currentUser.userId, status: "rejected" }).lean(),
+            ClubApplication.find({ userId: currentUser.userId, status: "pending" }).lean(),
+        ]);
 
-        const clubIds = approvedApplications.map((a) => a.clubId);
+        // Collect all club IDs from all three lists
+        const allClubIds = [
+            ...approvedApplications.map((a) => a.clubId),
+            ...rejectedApplications.map((a) => a.clubId),
+            ...pendingApplications.map((a) => a.clubId),
+        ];
 
-        const clubs = await Club.find({ _id: { $in: clubIds } }).lean();
-
+        const clubs = await Club.find({ _id: { $in: allClubIds } }).lean();
         const clubMap = {};
         clubs.forEach((c) => { clubMap[c._id.toString()] = c; });
 
-        const result = approvedApplications.map((app) => {
+        const buildEntry = (app, extra = {}) => {
             const club = clubMap[app.clubId] || {};
             return {
+                applicationId: app._id,
                 clubId: app.clubId,
                 clubName: app.clubName,
                 category: club.category || "Uncategorized",
                 description: club.description || "",
                 logo: club.logo || null,
-                joinedAt: app.updatedAt,
+                ...extra,
             };
-        });
+        };
 
-        return NextResponse.json({ success: true, data: result });
+        const approvedResult  = approvedApplications.map((app) => buildEntry(app, { joinedAt: app.updatedAt }));
+        const rejectedResult  = rejectedApplications.map((app) => buildEntry(app, { rejectedAt: app.updatedAt }));
+        const pendingResult   = pendingApplications.map((app)  => buildEntry(app, { appliedAt: app.createdAt }));
+
+        return NextResponse.json({ success: true, data: approvedResult, rejected: rejectedResult, pending: pendingResult });
     } catch (error) {
         console.error("my-clubs error:", error);
         return NextResponse.json({ success: false, message: "Failed to fetch clubs" }, { status: 500 });

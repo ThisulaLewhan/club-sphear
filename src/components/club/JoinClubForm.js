@@ -18,8 +18,8 @@ export default function JoinClubForm({ club, onSuccess, onCancel }) {
         reason: ""
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
-
     const [error, setError] = useState("");
+    const [phoneError, setPhoneError] = useState("");
 
     // Auto-fill student details from logged-in user
     useEffect(() => {
@@ -47,10 +47,29 @@ export default function JoinClubForm({ club, onSuccess, onCancel }) {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Phone: strip non-digits, cap at 10, show inline validation
+    const handlePhoneChange = (e) => {
+        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+        setFormData(prev => ({ ...prev, phone: digits }));
+        if (digits.length > 0 && digits.length < 10) {
+            setPhoneError(`${digits.length}/10 digits — must be exactly 10`);
+        } else {
+            setPhoneError("");
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Phone validation — must be exactly 10 digits
+        if (!/^\d{10}$/.test(formData.phone)) {
+            setPhoneError("Contact number must be exactly 10 digits.");
+            return;
+        }
+
         setIsSubmitting(true);
         setError("");
+        setPhoneError("");
 
         try {
             const res = await fetch("/api/applications", {
@@ -159,11 +178,30 @@ export default function JoinClubForm({ club, onSuccess, onCancel }) {
                         id="phone"
                         name="phone"
                         value={formData.phone}
-                        onChange={handleChange}
+                        onChange={handlePhoneChange}
                         required
-                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm"
-                        placeholder="07X XXX XXXX"
+                        maxLength={10}
+                        inputMode="numeric"
+                        className={`w-full bg-zinc-50 dark:bg-zinc-800/50 border rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 transition-all text-sm ${
+                            phoneError
+                                ? "border-red-400 dark:border-red-500 focus:ring-red-400/30 focus:border-red-500"
+                                : "border-zinc-200 dark:border-zinc-700 focus:ring-indigo-500/50 focus:border-indigo-500"
+                        } text-zinc-900 dark:text-zinc-100`}
+                        placeholder="07XXXXXXXX"
                     />
+                    {phoneError ? (
+                        <p className="text-xs text-red-500 flex items-center gap-1 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                            {phoneError}
+                        </p>
+                    ) : formData.phone.length > 0 && formData.phone.length === 10 ? (
+                        <p className="text-xs text-emerald-600 flex items-center gap-1 mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Valid number
+                        </p>
+                    ) : (
+                        <p className="text-xs text-zinc-400 mt-0.5">Enter 10-digit mobile number (digits only)</p>
+                    )}
                 </div>
             </div>
 
