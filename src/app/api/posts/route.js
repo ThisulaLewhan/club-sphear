@@ -90,7 +90,6 @@ export async function POST(req) {
         // Trigger Notifications for all active users
         try {
             const users = await User.find({ role: { $in: ["student", "club"] } }).select("_id");
-            console.log(`[DEBUG] Found ${users.length} users for post notifications.`);
             if (users.length > 0) {
                 const notifications = users
                     .map(u => ({
@@ -102,8 +101,7 @@ export async function POST(req) {
                         clubName: clubName
                     }));
                 if (notifications.length > 0) {
-                    const result = await Notification.insertMany(notifications);
-                    console.log(`[DEBUG] Successfully inserted ${result.length} notifications.`);
+                    await Notification.insertMany(notifications);
                 }
             }
         } catch (notifyError) {

@@ -1,3 +1,0 @@
-DB: test -> Collections: notices, clubs, posts, clubapplications, emailverifications, events, users
-DB: admin -> Collections: 
-DB: local -> Collections: oplog.rs

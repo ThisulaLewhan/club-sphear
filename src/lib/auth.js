@@ -5,7 +5,8 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback-dev-secret-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error("JWT_SECRET environment variable is not set");
 const TOKEN_NAME = "auth_token";
 const TOKEN_EXPIRY = "7d"; // Token valid for 7 days
 

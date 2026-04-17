@@ -7,7 +7,6 @@ import Club from "@/models/Club";
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-    console.log("Fetching clubs...");
     try {
         await connectDB();
         const clubs = await Club.find({}).sort({ createdAt: -1 }).lean();

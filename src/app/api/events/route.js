@@ -106,7 +106,6 @@ export async function POST(req) {
         // Handle Image Upload if present
         let imageUrl = null;
         const imageFile = formData.get("image");
-        console.log("Image File Extracted:", imageFile ? "Exists" : "Null", typeof imageFile, imageFile);
 
         if (imageFile && (imageFile.name || imageFile.size > 0)) {
             try {
