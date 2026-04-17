@@ -6,9 +6,13 @@ import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) throw new Error("JWT_SECRET environment variable is not set");
 const TOKEN_NAME = "auth_token";
 const TOKEN_EXPIRY = "7d"; // Token valid for 7 days
+
+function getSecret() {
+  if (!JWT_SECRET) throw new Error("JWT_SECRET environment variable is not set");
+  return JWT_SECRET;
+}
 
 // create a new token when user logs in or registers
 export function createToken(user) {
@@ -19,7 +23,7 @@ export function createToken(user) {
       role: user.role,
       ...(user.clubId && { clubId: user.clubId.toString() }),
     },
-    JWT_SECRET,
+    getSecret(),
     { expiresIn: TOKEN_EXPIRY }
   );
 }
@@ -27,7 +31,7 @@ export function createToken(user) {
 // check if token is valid
 export function verifyToken(token) {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, getSecret());
   } catch (error) {
     return null;
   }
