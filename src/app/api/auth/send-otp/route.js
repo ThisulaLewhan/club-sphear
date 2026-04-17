@@ -3,56 +3,21 @@
 // sends a 6-digit verification code to the student
 
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import EmailVerification from "@/models/EmailVerification";
 import { getStudentEmailFormatMessage, isValidStudentEmail } from "@/lib/validations";
+import { createMailTransporter } from "@/lib/mailer";
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-function getEmailTransportConfig() {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT || 587);
-  const secure = String(process.env.SMTP_SECURE || "false").toLowerCase() === "true";
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const from = process.env.SMTP_FROM || user;
-
-  if (!host || !user || !pass || !from || Number.isNaN(port)) {
-    return null;
-  }
-
-  return {
-    host,
-    port,
-    secure,
-    auth: { user, pass },
-    from,
-  };
-}
-
 async function sendOtpEmail({ to, otp }) {
-  const config = getEmailTransportConfig();
-
-  if (!config) {
-    throw new Error("Email service is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, SMTP_FROM.");
-  }
-
-  const transporter = nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.secure,
-    auth: config.auth,
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
+  const { transporter, from } = createMailTransporter();
 
   await transporter.sendMail({
-    from: config.from,
+    from,
     to,
     subject: "Club Sphear - Email Verification Code",
     text: `Your Club Sphear verification code is ${otp}. It expires in 10 minutes.`,
