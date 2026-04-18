@@ -3,6 +3,7 @@
 import connectDB from "@/lib/mongodb";
 import Event from "@/models/Event";
 import { NextResponse } from "next/server";
+import Club from "@/models/Club";
 import { getCurrentUser } from "@/lib/auth";
 import { uploadBufferToCloudinary } from "@/lib/cloudinary";
 import { validateEvent } from "@/lib/validations";
