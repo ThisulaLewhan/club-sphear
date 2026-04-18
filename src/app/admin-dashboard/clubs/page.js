@@ -36,6 +36,7 @@ function CreateClubTab() {
         e.preventDefault();
         if (formData.clubName.trim().length < 2) { setStatus({ type: "error", message: "Club name must be at least 2 characters" }); return; }
         if (!isValidEmail(formData.clubEmail)) { setStatus({ type: "error", message: "Please enter a valid email address" }); return; }
+        if (!formData.clubEmail.toLowerCase().endsWith("@gmail.com")) { setStatus({ type: "error", message: "Club email must be a Gmail address (e.g. clubname@gmail.com)" }); return; }
         const pwCheck = validatePassword(formData.password);
         if (!pwCheck.valid) { setStatus({ type: "error", message: pwCheck.message }); return; }
         setIsLoading(true); setStatus({ type: "", message: "" }); setCreatedCredentials(null);
@@ -166,7 +167,11 @@ function ManageClubsTab() {
                             <tr key={club.id} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">{club.name.charAt(0)}</div>
+                                        {club.logo ? (
+                                            <img src={club.logo} alt={club.name} className="w-8 h-8 rounded-full object-cover border border-slate-200" />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">{club.name.charAt(0)}</div>
+                                        )}
                                         <span className="font-semibold text-slate-800">{club.name}</span>
                                     </div>
                                 </td>

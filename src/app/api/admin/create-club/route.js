@@ -33,6 +33,9 @@ export async function POST(req) {
     if (!isValidEmail(clubEmail)) {
       return NextResponse.json({ error: "Please enter a valid email address" }, { status: 400 });
     }
+    if (!clubEmail.toLowerCase().endsWith("@gmail.com")) {
+      return NextResponse.json({ error: "Club email must be a Gmail address (e.g. clubname@gmail.com)" }, { status: 400 });
+    }
     const pwCheck = validatePassword(password);
     if (!pwCheck.valid) {
       return NextResponse.json({ error: pwCheck.message }, { status: 400 });

@@ -29,6 +29,7 @@ export async function GET() {
                     name: club.name,
                     category: club.category || "Uncategorized",
                     description: club.description || "",
+                    logo: club.logo || null,
                     email: clubUser ? clubUser.email : "No account found",
                     createdAt: club.createdAt,
                 };
