@@ -5,7 +5,6 @@ import HomeFeed from "@/components/home/HomeFeed";
 import EventCalendar from "@/components/events/EventCalendar";
 
 export const metadata = {
-  title: "Home \u2014 Discover Clubs & Events",
   description: "Browse club posts, upcoming campus events, and notices from your university's clubs and societies.",
 };
 

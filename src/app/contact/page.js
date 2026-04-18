@@ -3,7 +3,6 @@
 import ContactForm from "./ContactForm";
 
 export const metadata = {
-    title: "Contact Us",
     description: "Have a question or feedback? Get in touch with the Club Sphear team.",
 };
 

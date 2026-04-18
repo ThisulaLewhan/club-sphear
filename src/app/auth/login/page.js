@@ -7,7 +7,6 @@ import { Suspense } from "react";
 import LoginForm from "@/components/auth/LoginForm";
 
 export const metadata = {
-  title: "Sign In | Club Sphear",
   description: "Sign in to your Club Sphear account",
 };
 

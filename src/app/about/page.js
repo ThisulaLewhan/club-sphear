@@ -1,5 +1,4 @@
 export const metadata = {
-  title: "About Us | Club Sphear",
   description: "Learn about Club Sphear — the university club management system.",
 };
 
