@@ -160,7 +160,8 @@ export function validateEvent(data) {
   } else {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const eventDate = new Date(data.date);
+    // Append T00:00:00 to parse correctly in local timezone avoiding UTC shift bugs
+    const eventDate = new Date(data.date + "T00:00:00");
     if (isNaN(eventDate.getTime())) {
       errors.date = "Invalid date format";
     } else if (eventDate < today) {

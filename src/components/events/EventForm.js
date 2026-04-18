@@ -385,7 +385,8 @@ export default function EventForm({ editMode = false, initialData = null, eventI
                         </div>
                         <div className="flex flex-col gap-1.5 md:col-span-2">
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Description</label>
-                            <textarea rows={3} name="description" value={formData.description} onChange={handleChange} placeholder="What will this event be about?" className="w-full px-4 py-3 bg-zinc-50/50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-zinc-900 transition-all resize-none" />
+                            <textarea rows={3} name="description" value={formData.description} onChange={handleChange} placeholder="What will this event be about?" className={`w-full px-4 py-3 bg-zinc-50/50 dark:bg-black border ${formErrors.description ? "border-red-500 focus:ring-red-500" : "border-zinc-200 dark:border-zinc-800 focus:ring-blue-500"} rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:bg-white dark:focus:bg-zinc-900 transition-all resize-none`} />
+                            {formErrors.description && <p className="text-sm font-medium text-red-500 mt-1">{formErrors.description}</p>}
                         </div>
                     </div>
                 </div>
@@ -394,9 +395,18 @@ export default function EventForm({ editMode = false, initialData = null, eventI
                 <div className="space-y-6">
                     <h3 className="text-lg font-semibold text-zinc-900 dark:text-white border-b border-zinc-100 dark:border-zinc-800 pb-2">2. Timing & Logistics</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <CustomDatePicker name="date" value={formData.date} onChange={handleChange} label="Date" required />
-                        <CustomTimePicker name="startTime" value={formData.startTime} onChange={handleChange} label="Start Time" required />
-                        <CustomTimePicker name="endTime" value={formData.endTime} onChange={handleChange} label="End Time" required />
+                        <div>
+                            <CustomDatePicker name="date" value={formData.date} onChange={handleChange} label="Date" required />
+                            {formErrors.date && <p className="text-sm font-medium text-red-500 mt-1">{formErrors.date}</p>}
+                        </div>
+                        <div>
+                            <CustomTimePicker name="startTime" value={formData.startTime} onChange={handleChange} label="Start Time" required />
+                            {formErrors.startTime && <p className="text-sm font-medium text-red-500 mt-1">{formErrors.startTime}</p>}
+                        </div>
+                        <div>
+                            <CustomTimePicker name="endTime" value={formData.endTime} onChange={handleChange} label="End Time" required />
+                            {formErrors.endTime && <p className="text-sm font-medium text-red-500 mt-1">{formErrors.endTime}</p>}
+                        </div>
                     </div>
                 </div>
 
@@ -404,10 +414,14 @@ export default function EventForm({ editMode = false, initialData = null, eventI
                 <div className="space-y-6">
                     <h3 className="text-lg font-semibold text-zinc-900 dark:text-white border-b border-zinc-100 dark:border-zinc-800 pb-2">3. Location</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <CustomVenuePicker name="venue" value={formData.venue} onChange={handleChange} label="Venue" required />
+                        <div>
+                            <CustomVenuePicker name="venue" value={formData.venue} onChange={handleChange} label="Venue" required />
+                            {formErrors.venue && <p className="text-sm font-medium text-red-500 mt-1">{formErrors.venue}</p>}
+                        </div>
                         <div className="flex flex-col gap-1.5">
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Registration Link (Optional)</label>
-                            <input type="url" name="registrationLink" value={formData.registrationLink} onChange={handleChange} placeholder="https://..." className="w-full px-4 py-3 bg-zinc-50/50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-zinc-900 transition-all" />
+                            <input type="url" name="registrationLink" value={formData.registrationLink} onChange={handleChange} placeholder="https://..." className={`w-full px-4 py-3 bg-zinc-50/50 dark:bg-black border ${formErrors.registrationLink ? "border-red-500 focus:ring-red-500" : "border-zinc-200 dark:border-zinc-800 focus:ring-blue-500"} rounded-xl dark:text-white focus:outline-none focus:ring-2 focus:bg-white dark:focus:bg-zinc-900 transition-all`} />
+                            {formErrors.registrationLink && <p className="text-sm font-medium text-red-500 mt-1">{formErrors.registrationLink}</p>}
                         </div>
                     </div>
                 </div>
