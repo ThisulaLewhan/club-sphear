@@ -322,7 +322,7 @@ export default function EventForm({ editMode = false, initialData = null, eventI
                 setMessage({ type: "error", text: result.error || "Failed to submit event." });
             }
         } catch (error) {
-            setMessage({ type: "error", text: "Network error occurred." });
+            setMessage({ type: "error", text: `Network error or server crash: ${error.message}` });
         } finally {
             setLoading(false);
         }
