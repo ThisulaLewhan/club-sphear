@@ -316,7 +316,7 @@ function MyClubsContent() {
                             <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         </div>
                         <h3 className="text-lg font-bold text-slate-700 dark:text-zinc-200 mb-2">No clubs yet</h3>
-                        <p className="text-sm text-slate-500 dark:text-zinc-400 mb-6 max-w-xs leading-relaxed">You haven't joined any clubs yet. Browse and apply to become a member.</p>
+                        <p className="text-sm text-slate-500 dark:text-zinc-400 mb-6 max-w-xs leading-relaxed">You haven&apos;t joined any clubs yet. Browse and apply to become a member.</p>
                         <Link
                             href="/clubs"
                             className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"

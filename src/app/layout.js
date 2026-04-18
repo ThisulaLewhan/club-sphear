@@ -19,8 +19,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Club Sphear",
-  description: "Club Sphear — University Club Management System",
+  title: {
+    default: "Club Sphear — University Club Portal",
+    template: "%s | Club Sphear",
+  },
+  description: "Club Sphear is the official university club and society management portal. Discover clubs, explore events, and stay connected with campus life.",
+  keywords: ["university clubs", "campus societies", "events", "student portal", "club management"],
+  openGraph: {
+    title: "Club Sphear — University Club Portal",
+    description: "Discover clubs, explore events, and stay connected with campus life.",
+    type: "website",
+    locale: "en_US",
+  },
 };
 
 export default function RootLayout({ children }) {

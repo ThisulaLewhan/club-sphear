@@ -14,9 +14,8 @@ export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname();
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    // Runs after hydration — avoids SSR mismatch for auth-dependent UI
+    useEffect(() => { setMounted(true); }, []);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 10);

@@ -4,6 +4,11 @@ import HeroSection from "@/components/home/HeroSection";
 import HomeFeed from "@/components/home/HomeFeed";
 import EventCalendar from "@/components/events/EventCalendar";
 
+export const metadata = {
+  title: "Home \u2014 Discover Clubs & Events",
+  description: "Browse club posts, upcoming campus events, and notices from your university's clubs and societies.",
+};
+
 export default function Home() {
   return (
     <div className="w-full flex flex-col">

@@ -5,14 +5,12 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   // check if user is already logged in
   const fetchUser = useCallback(async () => {
@@ -76,9 +74,14 @@ export function AuthProvider({ children }) {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       setUser(null);
-      router.push("/auth/login");
+      // Use a full page navigation (not router.push) so the browser sends a fresh
+      // request without the old auth cookie. router.push() is client-side only and
+      // the proxy would still see the cached cookie and redirect away from /auth/login.
+      window.location.href = "/auth/login";
     } catch (error) {
       console.error("Logout failed:", error);
+      // Fallback: force reload even on error
+      window.location.href = "/auth/login";
     }
   };
 
