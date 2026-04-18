@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev":          "next dev",
-    "build":        "next build",
-    "start":        "next start",
-    "lint":         "eslint",
-    "test":         "jest --config jest.config.js --runInBand",
-    "test:auth":    "jest tests/auth.test.js --verbose",
-    "test:events":  "jest tests/events.test.js --verbose",
-    "test:admin":   "jest tests/admin.test.js --verbose",
-    "test:feed":    "jest tests/feed.test.js --verbose"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "jest --config jest.config.js --runInBand",
+    "test:auth": "jest tests/auth.test.js --verbose",
+    "test:events": "jest tests/events.test.js --verbose",
+    "test:admin": "jest tests/admin.test.js --verbose",
+    "test:feed": "jest tests/feed.test.js --verbose"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
