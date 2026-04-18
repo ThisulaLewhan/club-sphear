@@ -200,8 +200,8 @@ export function validateEvent(data) {
     errors.image = "Event cover image is required";
   } else if (!(data.image instanceof Blob) && typeof data.image !== "object") {
     errors.image = `Invalid formatted image object detected. Received: ${typeof data.image}`;
-  } else if (data.image.size && data.image.size > 5 * 1024 * 1024) {
-    errors.image = "Image must be less than 5MB";
+  } else if (data.image.size && data.image.size > 4 * 1024 * 1024) {
+    errors.image = "Image must be less than 4MB";
   } else if (data.image.type && !data.image.type.startsWith('image/')) {
     errors.image = "File must be an image";
   }
@@ -228,8 +228,8 @@ export function validateChatMessage(data) {
     errors.conversationId = "Missing conversation reference";
   }
 
-  if (data.file && data.file.size > 10 * 1024 * 1024) {
-    errors.file = "File must be less than 10MB";
+  if (data.file && data.file.size > 4 * 1024 * 1024) {
+    errors.file = "File must be less than 4MB";
   }
 
   return {
