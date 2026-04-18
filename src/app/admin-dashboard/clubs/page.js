@@ -166,7 +166,11 @@ function ManageClubsTab() {
                             <tr key={club.id} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">{club.name.charAt(0)}</div>
+                                        {club.logo ? (
+                                            <img src={club.logo} alt={club.name} className="w-8 h-8 rounded-full object-cover border border-slate-200" />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">{club.name.charAt(0)}</div>
+                                        )}
                                         <span className="font-semibold text-slate-800">{club.name}</span>
                                     </div>
                                 </td>
