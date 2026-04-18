@@ -11,8 +11,17 @@ import { getCurrentUser } from '@/lib/auth';
 export async function GET() {
     try {
         await connectDB();
-        const notices = await Notice.find({ expiresAt: { $gt: new Date() } }).sort({ createdAt: -1 });
-        return NextResponse.json(notices);
+        const notices = await Notice.find({ expiresAt: { $gt: new Date() } }).sort({ createdAt: -1 }).lean();
+
+        // Attach the club's logo to each notice for avatar display
+        const enriched = await Promise.all(
+            notices.map(async (notice) => {
+                const club = await Club.findOne({ name: notice.club }).select("logo").lean();
+                return { ...notice, clubLogo: club?.logo || null };
+            })
+        );
+
+        return NextResponse.json(enriched);
     } catch (error) {
         console.error('Error fetching notices:', error);
         return NextResponse.json({ error: 'Failed to fetch notices' }, { status: 500 });

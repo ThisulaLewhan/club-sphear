@@ -3,8 +3,7 @@ import connectDB from "@/lib/mongodb";
 import Post from "@/models/Post";
 import Club from "@/models/Club";
 import { getCurrentUser } from "@/lib/auth";
-import { promises as fs } from "fs";
-import path from "path";
+import { uploadBufferToCloudinary } from "@/lib/cloudinary";
 
 // UPDATE post — only the owning club
 export async function PUT(req, context) {
@@ -40,27 +39,20 @@ export async function PUT(req, context) {
 
         // Handle image removal or replacement
         if (removeImage === "true" || (newImage && newImage.size > 0)) {
-            // Delete old image file from disk
-            if (post.image && post.image.startsWith('/uploads/posts/')) {
-                try {
-                    const oldPath = path.join(process.cwd(), "public", post.image);
-                    await fs.unlink(oldPath);
-                } catch (err) {
-                    console.error("Could not delete old post image:", err);
-                }
-            }
+            // Logically "delete" the old image, but we don't need to actually call fs.unlink
+            // since production uses Cloudinary and the local FS is read-only.
+            // If the old image was a cloudinary URL, removing the DB reference is enough.
 
             if (newImage && newImage.size > 0) {
-                // Save new image
-                const bytes = await newImage.arrayBuffer();
-                const buffer = Buffer.from(bytes);
-                const ext = newImage.name.split(".").pop();
-                const fileName = `post-${params.id}-${Date.now()}.${ext}`;
-                const uploadDir = path.join(process.cwd(), "public", "uploads", "posts");
-                await fs.mkdir(uploadDir, { recursive: true });
-                const filePath = path.join(uploadDir, fileName);
-                await fs.writeFile(filePath, buffer);
-                post.image = `/uploads/posts/${fileName}`;
+                // Upload new image to Cloudinary via buffer
+                try {
+                    const bytes = await newImage.arrayBuffer();
+                    const buffer = Buffer.from(bytes);
+                    post.image = await uploadBufferToCloudinary(buffer, "club-sphear/posts");
+                } catch (uploadError) {
+                    console.error("Cloudinary upload failed:", uploadError);
+                    return NextResponse.json({ error: "Failed to upload new image." }, { status: 500 });
+                }
             } else {
                 // Image was removed without replacement
                 post.image = "";
@@ -105,15 +97,9 @@ export async function DELETE(req, context) {
             return NextResponse.json({ error: "Not authorized to delete this post" }, { status: 403 });
         }
 
-        // Delete associated image
-        if (post.image && post.image.startsWith('/uploads/posts/')) {
-            try {
-                const filePath = path.join(process.cwd(), "public", post.image);
-                await fs.unlink(filePath);
-            } catch (err) {
-                console.error("Could not delete post image:", err);
-            }
-        }
+        // (Optional) Here we could use Cloudinary's Destroy API to prune the deleted image,
+        // but it's not strictly necessary since the DB reference is gone. Local fs.unlink is removed 
+        // to prevent Vercel EROFS errors.
 
         await Post.findByIdAndDelete(params.id);
         return NextResponse.json({ success: true, message: "Post deleted successfully" });

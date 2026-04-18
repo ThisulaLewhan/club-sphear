@@ -36,12 +36,21 @@ function uploadToCloudinary(base64DataUri) {
     });
 }
 
-// GET all posts
+// GET all posts — enriched with club logo for avatar display
 export async function GET() {
     try {
         await connectDB();
-        const posts = await Post.find().sort({ createdAt: -1 });
-        return NextResponse.json(posts);
+        const posts = await Post.find().sort({ createdAt: -1 }).lean();
+
+        // Attach the club's logo to each post so the frontend can show it as an avatar
+        const enriched = await Promise.all(
+            posts.map(async (post) => {
+                const club = await Club.findOne({ name: post.clubName }).select("logo").lean();
+                return { ...post, clubLogo: club?.logo || null };
+            })
+        );
+
+        return NextResponse.json(enriched);
     } catch (error) {
         console.error("Failed to fetch posts:", error);
         return NextResponse.json({ error: "Failed to connect to database or fetch posts" }, { status: 500 });

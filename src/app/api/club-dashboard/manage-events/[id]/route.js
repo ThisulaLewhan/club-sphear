@@ -4,8 +4,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Event from "@/models/Event";
 import { getCurrentUser } from "@/lib/auth";
-import fs from "fs/promises";
-import path from "path";
+import { uploadBufferToCloudinary } from "@/lib/cloudinary";
 import { validateEvent } from "@/lib/validations";
 
 export async function DELETE(req, context) {
@@ -41,16 +40,9 @@ export async function DELETE(req, context) {
             return NextResponse.json({ error: "Not authorized to delete this event" }, { status: 403 });
         }
 
-        // 2. Delete the associated image from filesystem if it exists
-        if (targetEvent.imageUrl && targetEvent.imageUrl.startsWith('/uploads/events/')) {
-            try {
-                const filePath = path.join(process.cwd(), "public", targetEvent.imageUrl);
-                await fs.unlink(filePath);
-            } catch (err) {
-                // Ignore if file is already missing
-                console.error("Could not delete image file:", err);
-            }
-        }
+        // 2. Remove local filesystem deletion (fs.unlink) as it crashes Vercel (read-only filesystem). 
+        // Images stored in Cloudinary will remain unless deleted via Cloudinary Admin API, 
+        // but DB reference is successfully removed here.
 
         // 3. Delete the event document
         await Event.findByIdAndDelete(eventId);
@@ -117,14 +109,9 @@ export async function PUT(req, context) {
         if (imageFile && typeof imageFile === "object" && imageFile.size > 0) {
             try {
                 const buffer = Buffer.from(await imageFile.arrayBuffer());
-                const extension = path.extname(imageFile.name) || ".jpg";
-                const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
-                const uploadDir = path.join(process.cwd(), "public/uploads/events");
-                await fs.mkdir(uploadDir, { recursive: true });
-                await fs.writeFile(path.join(uploadDir, filename), buffer);
-                editImageUrl = `/uploads/events/${filename}`;
-            } catch (fsError) {
-                console.error("Failed to save edit image:", fsError);
+                editImageUrl = await uploadBufferToCloudinary(buffer, "club-sphear/events");
+            } catch (uploadError) {
+                console.error("Failed to upload edit image to Cloudinary:", uploadError);
                 return NextResponse.json({ error: "Failed to process image upload." }, { status: 500 });
             }
         }

@@ -54,10 +54,18 @@ export default function FeedList({ posts, isLoading, error, isAdmin, onDelete })
                     {/* Header: Avatar, Name, Handle & Date */}
                     <div className="flex items-start justify-between p-5 pb-4">
                         <div className="flex items-center gap-3">
-                            {/* Blue Avatar (mimicking the screenshot's 'A' logo) */}
-                            <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-inner border border-white/20">
-                                {post.clubName.charAt(0).toUpperCase()}
-                            </div>
+                            {/* Club Avatar — real logo if available, letter fallback */}
+                            {post.clubLogo ? (
+                                <img
+                                    src={post.clubLogo}
+                                    alt={`${post.clubName} logo`}
+                                    className="w-11 h-11 shrink-0 rounded-full object-cover shadow-sm border border-white/20"
+                                />
+                            ) : (
+                                <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-inner border border-white/20">
+                                    {post.clubName.charAt(0).toUpperCase()}
+                                </div>
+                            )}
  
                             <div className="flex flex-col leading-tight">
                                 <div className="flex items-center gap-1.5">

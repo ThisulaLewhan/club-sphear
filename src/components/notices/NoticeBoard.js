@@ -124,9 +124,18 @@ export default function NoticeBoard({ newNotice, searchQuery = "" }) {
 
                         <div className="flex justify-between items-center mb-3">
                             <div className="flex items-center gap-2.5 text-sm font-bold tracking-tight">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-white shadow-sm ${notice.priority === 'urgent' ? 'bg-red-500' : 'bg-indigo-600'}`}>
-                                    {notice.club.charAt(0)}
-                                </div>
+                                {/* Club Avatar — real logo if available, letter fallback */}
+                                {notice.clubLogo ? (
+                                    <img
+                                        src={notice.clubLogo}
+                                        alt={`${notice.club} logo`}
+                                        className="w-8 h-8 rounded-lg object-cover shadow-sm"
+                                    />
+                                ) : (
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-white shadow-sm ${notice.priority === 'urgent' ? 'bg-red-500' : 'bg-indigo-600'}`}>
+                                        {notice.club.charAt(0)}
+                                    </div>
+                                )}
                                 <span className={`${notice.priority === 'urgent' ? 'text-red-700 dark:text-red-400' : 'text-zinc-800 dark:text-zinc-200'}`}>
                                     {notice.club}
                                 </span>
