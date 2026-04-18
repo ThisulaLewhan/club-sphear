@@ -1,10 +1,11 @@
 // Feature Domain: Authentication & Access Control
 
 // locks down routes so only logged in users can see them
+// Note: renamed from middleware() to proxy() for Next.js 16+
 
 import { NextResponse } from "next/server";
 
-export function middleware(request) {
+export function proxy(request) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("auth_token")?.value;
 
