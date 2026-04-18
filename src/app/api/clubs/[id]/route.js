@@ -45,6 +45,7 @@ export async function GET(req, context) {
                 posts: posts.map(post => ({
                     _id: post._id.toString(),
                     clubName: post.clubName,
+                    clubLogo: club.logo || null,
                     content: post.content,
                     image: post.image,
                     createdAt: post.createdAt,
