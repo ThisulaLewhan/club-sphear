@@ -7,9 +7,34 @@ import Notification from "@/models/Notification";
 import User from "@/models/User";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { promises as fs } from "fs";
-import path from "path";
-import crypto from "crypto";
+import { v2 as cloudinary } from "cloudinary";
+
+// Configure Cloudinary (runs server-side only)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+/**
+ * Uploads a base64 data URI image to Cloudinary.
+ * Returns the secure URL of the uploaded image.
+ */
+function uploadToCloudinary(base64DataUri) {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload(
+            base64DataUri,
+            {
+                folder: "club-sphear/posts",
+                resource_type: "image",
+            },
+            (error, result) => {
+                if (error) return reject(error);
+                resolve(result.secure_url);
+            }
+        );
+    });
+}
 
 // GET all posts
 export async function GET() {
@@ -42,7 +67,7 @@ export async function POST(req) {
 
         const { content, image } = await req.json();
 
-        // check post content rules
+        // Check post content rules
         if (!content || !content.trim()) {
             return NextResponse.json({ error: "Post content is required." }, { status: 400 });
         }
@@ -52,32 +77,13 @@ export async function POST(req) {
 
         let imageUrl = null;
 
-        // Extract and save Base64 image locally
+        // Upload image to Cloudinary (works on Vercel — no filesystem needed)
         if (image && image.startsWith("data:image")) {
-            const matches = image.match(/^data:image\/([a-zA-Z0-9.+]+);base64,(.+)$/);
-
-            if (matches && matches.length === 3) {
-                const extension = matches[1] === 'jpeg' ? 'jpg' : matches[1];
-                const base64Data = matches[2];
-                const buffer = Buffer.from(base64Data, "base64");
-
-                // Ensure upload directory exists
-                const uploadDir = path.join(process.cwd(), "public", "uploads", "posts");
-                try {
-                    await fs.access(uploadDir);
-                } catch {
-                    await fs.mkdir(uploadDir, { recursive: true });
-                }
-
-                // Generate a unique filename
-                const uniqueFileName = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}.${extension}`;
-                const filePath = path.join(uploadDir, uniqueFileName);
-
-                // Save file
-                await fs.writeFile(filePath, buffer);
-
-                // Store relative public path in database
-                imageUrl = `/uploads/posts/${uniqueFileName}`;
+            try {
+                imageUrl = await uploadToCloudinary(image);
+            } catch (uploadError) {
+                console.error("Cloudinary upload failed:", uploadError);
+                return NextResponse.json({ error: "Image upload failed. Please try again." }, { status: 500 });
             }
         }
 
@@ -114,4 +120,4 @@ export async function POST(req) {
         console.error("Failed to create post:", error);
         return NextResponse.json({ error: error.message || "Failed to create post" }, { status: 500 });
     }
-}
+}
