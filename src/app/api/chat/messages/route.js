@@ -3,8 +3,7 @@ import Message from "@/models/Message";
 import Conversation from "@/models/Conversation";
 import { getCurrentUser } from "@/lib/auth";
 import { validateChatMessage } from "@/lib/validations";
-import fs from "fs/promises";
-import path from "path";
+import { uploadBufferToCloudinary } from "@/lib/cloudinary";
 
 export async function GET(request) {
   try {
@@ -67,14 +66,9 @@ export async function POST(request) {
     if (imageFile && imageFile.size > 0 && typeof imageFile !== "string") {
       try {
         const buffer = Buffer.from(await imageFile.arrayBuffer());
-        const extension = path.extname(imageFile.name) || ".jpg";
-        const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
-        const uploadDir = path.join(process.cwd(), "public/uploads/chat");
-        await fs.mkdir(uploadDir, { recursive: true });
-        await fs.writeFile(path.join(uploadDir, filename), buffer);
-        imageUrl = `/uploads/chat/${filename}`;
-      } catch (fsError) {
-        console.error("Failed to save chat image:", fsError);
+        imageUrl = await uploadBufferToCloudinary(buffer, "club-sphear/chat", "image");
+      } catch (uploadError) {
+        console.error("Failed to upload chat image to Cloudinary:", uploadError);
       }
     }
 
@@ -82,16 +76,12 @@ export async function POST(request) {
     if (docFile && docFile.size > 0 && typeof docFile !== "string") {
       try {
         const buffer = Buffer.from(await docFile.arrayBuffer());
-        const extension = path.extname(docFile.name) || ".pdf";
-        const savedName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
-        const uploadDir = path.join(process.cwd(), "public/uploads/chat");
-        await fs.mkdir(uploadDir, { recursive: true });
-        await fs.writeFile(path.join(uploadDir, savedName), buffer);
-        fileUrl = `/uploads/chat/${savedName}`;
+        // Use "raw" resource type so Cloudinary accepts any file type (pdf, docx, etc.)
+        fileUrl = await uploadBufferToCloudinary(buffer, "club-sphear/chat", "raw");
         fileName = docFile.name;
         fileType = docFile.type || "application/octet-stream";
-      } catch (fsError) {
-        console.error("Failed to save chat file:", fsError);
+      } catch (uploadError) {
+        console.error("Failed to upload chat document to Cloudinary:", uploadError);
       }
     }
 

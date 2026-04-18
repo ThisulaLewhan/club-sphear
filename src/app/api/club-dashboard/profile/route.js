@@ -3,9 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import Club from "@/models/Club";
-import { promises as fs } from "fs";
-import path from "path";
-import crypto from "crypto";
+import { uploadBase64ToCloudinary } from "@/lib/cloudinary";
 
 export const dynamic = 'force-dynamic';
 
@@ -98,47 +96,21 @@ export async function PUT(request) {
 
         // Handle Logo Update
         if (logo && logo.startsWith("data:image")) {
-            const matches = logo.match(/^data:image\/([a-zA-Z0-9.+]+);base64,(.+)$/);
-            if (matches && matches.length === 3) {
-                const extension = matches[1] === 'jpeg' ? 'jpg' : matches[1];
-                const base64Data = matches[2];
-                const buffer = Buffer.from(base64Data, "base64");
-
-                const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
-                try {
-                    await fs.access(uploadDir);
-                } catch {
-                    await fs.mkdir(uploadDir, { recursive: true });
-                }
-
-                const uniqueFileName = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}.${extension}`;
-                const filePath = path.join(uploadDir, uniqueFileName);
-
-                await fs.writeFile(filePath, buffer);
-                club.logo = `/uploads/profiles/${uniqueFileName}`;
+            try {
+                club.logo = await uploadBase64ToCloudinary(logo, "club-sphear/logos");
+            } catch (uploadError) {
+                console.error("Failed to upload club logo to Cloudinary:", uploadError);
+                return NextResponse.json({ success: false, error: "Logo upload failed." }, { status: 500 });
             }
         }
 
         // Handle Cover Image Update
         if (coverImage && coverImage.startsWith("data:image")) {
-            const matches = coverImage.match(/^data:image\/([a-zA-Z0-9.+]+);base64,(.+)$/);
-            if (matches && matches.length === 3) {
-                const extension = matches[1] === 'jpeg' ? 'jpg' : matches[1];
-                const base64Data = matches[2];
-                const buffer = Buffer.from(base64Data, "base64");
-
-                const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
-                try {
-                    await fs.access(uploadDir);
-                } catch {
-                    await fs.mkdir(uploadDir, { recursive: true });
-                }
-
-                const uniqueFileName = `${Date.now()}-cover-${crypto.randomBytes(6).toString("hex")}.${extension}`;
-                const filePath = path.join(uploadDir, uniqueFileName);
-
-                await fs.writeFile(filePath, buffer);
-                club.coverImage = `/uploads/profiles/${uniqueFileName}`;
+            try {
+                club.coverImage = await uploadBase64ToCloudinary(coverImage, "club-sphear/covers");
+            } catch (uploadError) {
+                console.error("Failed to upload cover image to Cloudinary:", uploadError);
+                return NextResponse.json({ success: false, error: "Cover image upload failed." }, { status: 500 });
             }
         }
 

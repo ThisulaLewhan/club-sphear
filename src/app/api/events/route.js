@@ -4,9 +4,7 @@ import connectDB from "@/lib/mongodb";
 import Event from "@/models/Event";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import fs from "fs/promises";
-import path from "path";
-
+import { uploadBufferToCloudinary } from "@/lib/cloudinary";
 import { validateEvent } from "@/lib/validations";
 
 export async function GET(req) {
@@ -110,23 +108,9 @@ export async function POST(req) {
         if (imageFile && (imageFile.name || imageFile.size > 0)) {
             try {
                 const buffer = Buffer.from(await imageFile.arrayBuffer());
-                const extension = path.extname(imageFile.name) || ".jpg"; // fallback if no ext
-                // Generate a safe unique filename to prevent collisions and sanitize
-                const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
-
-                // Construct path to `public/uploads/events` directory relative to the project root
-                const uploadDir = path.join(process.cwd(), "public/uploads/events");
-
-                // Ensure the directory exists
-                await fs.mkdir(uploadDir, { recursive: true });
-
-                // Write the file locally
-                await fs.writeFile(path.join(uploadDir, filename), buffer);
-
-                // Save the relative URL so the frontend can hit it natively via Next.js router
-                imageUrl = `/uploads/events/${filename}`;
-            } catch (fsError) {
-                console.error("Failed to save image to filesystem:", fsError);
+                imageUrl = await uploadBufferToCloudinary(buffer, "club-sphear/events", "image");
+            } catch (uploadError) {
+                console.error("Failed to upload event image to Cloudinary:", uploadError);
                 return NextResponse.json(
                     { success: false, error: "Failed to process image upload on the server." },
                     { status: 500 }
