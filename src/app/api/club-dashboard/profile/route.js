@@ -102,6 +102,8 @@ export async function PUT(request) {
                 console.error("Failed to upload club logo to Cloudinary:", uploadError);
                 return NextResponse.json({ success: false, error: "Logo upload failed." }, { status: 500 });
             }
+        } else if (logo === "") {
+            club.logo = "";
         }
 
         // Handle Cover Image Update
@@ -112,6 +114,8 @@ export async function PUT(request) {
                 console.error("Failed to upload cover image to Cloudinary:", uploadError);
                 return NextResponse.json({ success: false, error: "Cover image upload failed." }, { status: 500 });
             }
+        } else if (coverImage === "") {
+            club.coverImage = "";
         }
 
         // Update Club document

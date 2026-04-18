@@ -128,6 +128,28 @@ export default function ClubProfilePage() {
         reader.readAsDataURL(file);
     };
 
+    const handleRemoveLogo = async () => {
+        if (!confirm("Are you sure you want to remove the club logo?")) return;
+        
+        try {
+            const res = await fetch("/api/club-dashboard/profile", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...profile, logo: "" }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success("Profile picture removed!");
+                setOriginalProfile(prev => ({ ...prev, logo: "" }));
+                setProfile(prev => ({ ...prev, logo: "" }));
+            } else {
+                toast.error(data.error || "Failed to remove profile picture.");
+            }
+        } catch (err) {
+            toast.error("An error occurred while removing the picture.");
+        }
+    };
+
     const handleCoverImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -184,6 +206,28 @@ export default function ClubProfilePage() {
             img.src = reader.result;
         };
         reader.readAsDataURL(file);
+    };
+
+    const handleRemoveCoverImage = async () => {
+        if (!confirm("Are you sure you want to remove the cover image?")) return;
+        
+        try {
+            const res = await fetch("/api/club-dashboard/profile", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...profile, coverImage: "" }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success("Cover picture removed!");
+                setOriginalProfile(prev => ({ ...prev, coverImage: "" }));
+                setProfile(prev => ({ ...prev, coverImage: "" }));
+            } else {
+                toast.error(data.error || "Failed to remove cover picture.");
+            }
+        } catch (err) {
+            toast.error("An error occurred while removing the picture.");
+        }
     };
 
     const handleProfileSave = async () => {
@@ -307,12 +351,23 @@ export default function ClubProfilePage() {
                         </div>
                     )}
                     
-                    {/* Cover Image Upload Button */}
-                    <label className="absolute top-4 right-4 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-3 py-2 rounded-xl cursor-pointer shadow-lg border border-white/30 transition-colors flex items-center gap-2" title="Change Cover Picture">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                        <span className="text-xs font-semibold tracking-wide">Change Cover</span>
-                        <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleCoverImageChange} />
-                    </label>
+                    {/* Cover Image Upload & Remove Buttons */}
+                    <div className="absolute top-4 right-4 z-20 flex gap-2">
+                        {profile.coverImage && (
+                            <button
+                                onClick={handleRemoveCoverImage}
+                                className="bg-red-500/80 hover:bg-red-600 backdrop-blur-md text-white px-3 py-2 rounded-xl cursor-pointer shadow-lg border border-red-500/30 transition-colors flex items-center gap-2"
+                                title="Remove Cover Picture"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            </button>
+                        )}
+                        <label className="bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-3 py-2 rounded-xl cursor-pointer shadow-lg border border-white/30 transition-colors flex items-center gap-2" title="Change Cover Picture">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                            <span className="text-xs font-semibold tracking-wide">Change Cover</span>
+                            <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleCoverImageChange} />
+                        </label>
+                    </div>
 
                     <div className="relative z-10 w-full flex flex-col items-center">
                         <div className="relative inline-flex mb-4">
@@ -323,10 +378,19 @@ export default function ClubProfilePage() {
                                     <span>{initials}</span>
                                 )}
                             </div>
-                            <label className="absolute bottom-0 right-0 bg-white text-emerald-600 hover:bg-emerald-50 p-1.5 rounded-full cursor-pointer shadow-lg ring-2 ring-emerald-500 transition-colors z-10" title="Change Profile Picture">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                                <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleImageChange} />
-                            </label>
+                            <div className="absolute bottom-0 right-0 flex gap-1 z-10 translate-x-2 translate-y-2">
+                                {profile.logo && (
+                                    <button 
+                                        onClick={handleRemoveLogo}
+                                        className="bg-red-500 text-white hover:bg-red-600 p-1.5 rounded-full shadow-lg ring-2 ring-red-500/50 transition-colors inline-flex items-center justify-center cursor-pointer" title="Remove Profile Picture">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
+                                )}
+                                <label className="bg-white text-emerald-600 hover:bg-emerald-50 p-1.5 rounded-full cursor-pointer shadow-lg ring-2 ring-emerald-500 transition-colors inline-flex items-center justify-center" title="Change Profile Picture">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                    <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleImageChange} />
+                                </label>
+                            </div>
                         </div>
                         <h2 className="text-2xl font-bold text-white shadow-black/10 text-shadow">{profile.clubName || user?.name || "Club"}</h2>
                         <p className="text-emerald-100 mt-1 text-sm font-medium">Club Account</p>
