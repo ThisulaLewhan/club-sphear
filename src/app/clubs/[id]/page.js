@@ -4,7 +4,6 @@
 
 
 import Link from "next/link";
-import Image from "next/image";
 import { use, useState, useEffect } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Modal from "@/components/common/Modal";
@@ -191,7 +190,8 @@ export default function ClubDetailsPage({ params }) {
                             {/* Profile Picture */}
                             <div className="w-32 h-32 sm:w-40 sm:h-40 shrink-0 rounded-full border-8 border-white dark:border-zinc-900 bg-white dark:bg-zinc-800 flex items-center justify-center font-black text-5xl text-indigo-500 shadow-lg relative z-10 overflow-hidden">
                                 {club.logo ? (
-                                    <Image src={club.logo} alt={club.name} fill className="object-cover" sizes="160px" />
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={club.logo} alt={`${club.name} logo`} className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="opacity-80 drop-shadow-sm">{club.name.charAt(0)}</span>
                                 )}

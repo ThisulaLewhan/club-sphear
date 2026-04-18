@@ -3,7 +3,6 @@
 // Feature Domain: Club Management & Operations
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useConfirm } from "@/components/ui/ConfirmModal";
 
@@ -174,12 +173,15 @@ function ManagePostsTab() {
                 <div key={post.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="flex flex-col sm:flex-row">
                         {editingId === post.id ? (
-                            <div className="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-slate-100 flex flex-col items-center justify-center">
+                            <div className="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-slate-100 flex flex-col items-center justify-center overflow-hidden">
                                 {getEditPreview() ? (
-                                    <><Image src={getEditPreview()} alt="Post" fill className="object-cover" />
+                                    <>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={getEditPreview()} alt="Post preview" className="w-full h-full object-cover" />
                                         <button type="button" onClick={handleRemoveImage} className="absolute top-2 right-2 z-10 bg-red-500 text-white rounded-full p-1.5 shadow hover:bg-red-600 transition-colors">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                                        </button></>
+                                        </button>
+                                    </>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center h-full w-full p-4 text-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
@@ -187,7 +189,17 @@ function ManagePostsTab() {
                                     </div>
                                 )}
                             </div>
-                        ) : (post.image && <div className="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-slate-100"><Image src={post.image} alt="Post" fill className="object-cover" /></div>)}
+                        ) : (post.image && (
+                            <div className="w-full sm:w-48 h-48 sm:h-auto shrink-0 bg-slate-100 overflow-hidden">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={post.image}
+                                    alt="Post"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                            </div>
+                        ))}
                         <div className="flex-1 p-5 flex flex-col justify-between">
                             <div>
                                 {editingId === post.id ? (
