@@ -1,6 +1,4 @@
-// Feature Domain: Authentication & Access Control
-
-// shared validation logic for inputs
+// variables for student email validation
 
 const STUDENT_EMAIL_DOMAIN = "my.sliit.lk";
 const STUDENT_EMAIL_PREFIX = (process.env.NEXT_PUBLIC_STUDENT_EMAIL_PREFIX || "it").toLowerCase();
@@ -14,27 +12,27 @@ export function getStudentEmailFormatMessage() {
   return `Email must match this format: ${STUDENT_EMAIL_PREFIX}12345678@${STUDENT_EMAIL_DOMAIN}`;
 }
 
-// checks if an email looks mostly valid
+// this function checks if an email looks mostly valid
 export function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-// checks if it matches my.sliit.lk student email format
+// this function checks if it matches my.sliit.lk format
 export function isValidStudentEmail(email) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
   const emailRegex = new RegExp(`^${escapeRegex(STUDENT_EMAIL_PREFIX)}\\d{${STUDENT_EMAIL_DIGITS}}@${escapeRegex(STUDENT_EMAIL_DOMAIN)}$`);
   return emailRegex.test(normalizedEmail);
 }
 
-// checks if it matches student ID format
+// this function checks if it matches student ID format
 export function isValidStudentId(id) {
   if (!id || String(id).trim() === '') return true;
   const regex = new RegExp(`^${escapeRegex(STUDENT_EMAIL_PREFIX)}\\d{${STUDENT_EMAIL_DIGITS}}$`, 'i');
   return regex.test(String(id).trim());
 }
 
-// checks if the password meets security requirements
+// this checks if the password meets security rules
 export function validatePassword(password) {
   if (!password || password.length < 6) {
     return { valid: false, message: "Password must be at least 6 characters long" };
@@ -51,7 +49,7 @@ export function validatePassword(password) {
   return { valid: true, message: "" };
 }
 
-// validate full signup data
+// this is to validate full signup data
 export function validateRegistration(data) {
   const errors = {};
 
@@ -84,7 +82,7 @@ export function validateRegistration(data) {
   };
 }
 
-// validate login attempt
+// this validates login attempt
 export function validateLogin(data) {
   const errors = {};
 
@@ -104,7 +102,7 @@ export function validateLogin(data) {
   };
 }
 
-// make sure profile updates are safe
+// this checks if profile updates are valid
 export function validateProfileUpdate(data) {
   const errors = {};
 
@@ -138,7 +136,7 @@ export function validateProfileUpdate(data) {
   };
 }
 
-// validate event creation/update data
+// this validates event creation and update data
 export function validateEvent(data) {
   const errors = {};
 
@@ -212,7 +210,7 @@ export function validateEvent(data) {
   };
 }
 
-// validate chat message
+// this function validates chat messages
 export function validateChatMessage(data) {
   const errors = {};
 

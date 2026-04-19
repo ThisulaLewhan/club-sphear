@@ -1,7 +1,5 @@
-// Feature Domain: Authentication & Access Control
-
-// multi-step student registration form
-// handles email validation, otp verification, and final account creation
+// frontend student registration form
+// it sends email otp and creates account
 
 "use client";
 
@@ -17,7 +15,7 @@ import {
 import { EyeIcon, EyeSlashIcon, CheckIcon, XIcon, EmailIcon, LockIcon, UserIcon, UserPlusIcon } from "@/components/icons";
 import { inputBase, inputOk, inputErr, btnPrimary } from "@/lib/form-styles";
 
-// top progress indicator
+// top progress bar setup
 function StepIndicator({ currentStep }) {
   const steps = [
     { num: 1, label: "Email" },
@@ -59,7 +57,7 @@ export default function RegisterForm() {
   const { register } = useAuth();
   const router = useRouter();
 
-  // form states
+  // setup states for user inputs
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -72,7 +70,7 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // timer for resending otp
+  // timer for resend otp cooldown
   const [resendTimer, setResendTimer] = useState(0);
   useEffect(() => {
     if (resendTimer <= 0) return;
@@ -80,10 +78,10 @@ export default function RegisterForm() {
     return () => clearInterval(id);
   }, [resendTimer]);
 
-  // references for the 6 digit inputs
+  // to move between 6 digit inputs easily
   const otpRefs = useRef([]);
 
-  // check how strong the password is
+  // check if password is safe and strong
   const pwChecks = {
     length: formData.password.length >= 6,
     uppercase: /[A-Z]/.test(formData.password),
@@ -96,7 +94,7 @@ export default function RegisterForm() {
   const strengthWidth = passedCount === 0 ? "w-0" : passedCount === 1 ? "w-1/4" : passedCount === 2 ? "w-1/2" : passedCount === 3 ? "w-3/4" : "w-full";
   const strengthText = passedCount <= 1 ? "text-red-500" : passedCount <= 3 ? "text-amber-500" : "text-emerald-500";
 
-  // handle first step: send verification code to email
+  // when user clicks send otp button
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setServerError("");
@@ -131,7 +129,7 @@ export default function RegisterForm() {
     }
   };
 
-  // handle second step: verify the code user entered
+  // move to next input boxes when typing otp
   const handleOtpChange = (index, value) => {
     if (!/^\d?$/.test(value)) return;
     const newOtp = [...otp];
@@ -218,7 +216,7 @@ export default function RegisterForm() {
     }
   };
 
-  // handle final step: create the account
+  // save final details to create account
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -255,7 +253,7 @@ export default function RegisterForm() {
     }
   };
 
-  // ui components
+  // HTML for the page UI
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-indigo-500/5 border border-gray-100 dark:border-zinc-800 p-8 sm:p-10">
@@ -288,7 +286,7 @@ export default function RegisterForm() {
           </div>
         )}
 
-        {/* step 1: enter email */}
+        {/* step 1: ask for email */}
         {step === 1 && (
           <form onSubmit={handleSendOTP} className="space-y-5">
             <div>
@@ -314,7 +312,7 @@ export default function RegisterForm() {
           </form>
         )}
 
-        {/* step 2: enter otp */}
+        {/* step 2: type the code */}
         {step === 2 && (
           <form onSubmit={handleVerifyOTP} className="space-y-5">
             <div className="text-center">
@@ -369,7 +367,7 @@ export default function RegisterForm() {
           </form>
         )}
 
-        {/* step 3: account details */}
+        {/* step 3: ask for passwords and name */}
         {step === 3 && (
           <form onSubmit={handleRegister} className="space-y-5">
             {/* Verified email badge */}

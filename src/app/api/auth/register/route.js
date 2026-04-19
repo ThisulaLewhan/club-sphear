@@ -1,6 +1,4 @@
-// Feature Domain: Authentication & Access Control
-
-// api route for student registration
+// backend api for handling student sign up
 
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
@@ -11,11 +9,11 @@ import { validateRegistration } from "@/lib/validations";
 
 export async function POST(request) {
   try {
-    // Parse request body
+    // get the body data from user request
     const body = await request.json();
     const { name, email, password, confirmPassword } = body;
 
-    // Validate all fields
+    // check if details are correct before moving forward
     const validation = validateRegistration({ name, email, password, confirmPassword });
     if (!validation.valid) {
       return Response.json(
@@ -24,12 +22,12 @@ export async function POST(request) {
       );
     }
 
-    // Connect to database
+    // connect to mongodb database
     await connectDB();
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Verify that email has been OTP verified
+    // check if user verified email with otp
     const emailVerification = await EmailVerification.findOne({ email: normalizedEmail });
 
     if (!emailVerification || !emailVerification.verified) {
@@ -43,7 +41,7 @@ export async function POST(request) {
       );
     }
 
-    // Check if email already exists (additional safety check)
+    // make sure this email is not already used
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return Response.json(
@@ -52,31 +50,31 @@ export async function POST(request) {
       );
     }
 
-    // Hash password
+    // encrypt the password for security
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Derive student ID from email local part (e.g. it12345678@my.sliit.lk → IT12345678)
+    // generate student id from email username
     const derivedStudentId = normalizedEmail.split("@")[0].toUpperCase();
 
-    // Create new student user (role forced to "student")
+    // save new student to database
     const newUser = await User.create({
       name: name.trim(),
       email: normalizedEmail,
       password: hashedPassword,
-      role: "student", // Always student — cannot be overridden
+      role: "student", // force role to student for safety
       university: "SLIIT",
       studentId: derivedStudentId,
     });
 
-    // Clean up verification record after successful registration
+    // delete otp record since done
     await EmailVerification.deleteOne({ email: normalizedEmail });
 
-    // Create JWT and set auth cookie
+    // give browser a token to stay logged in
     const token = createToken(newUser);
     await setAuthCookie(token);
 
-    // Return success (never expose password)
+    // send success response back
     return Response.json(
       {
         success: true,

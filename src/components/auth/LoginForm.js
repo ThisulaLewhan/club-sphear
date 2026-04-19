@@ -1,6 +1,4 @@
-// Feature Domain: Authentication & Access Control
-
-// student login component
+// frontend student login page
 
 "use client";
 
@@ -23,6 +21,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // handle user typing in input fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -30,6 +29,7 @@ export default function LoginForm() {
     setServerError("");
   };
 
+  // when user clicks login button
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError("");
@@ -56,7 +56,7 @@ export default function LoginForm() {
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-indigo-500/5 border border-gray-100 dark:border-zinc-800 p-8 sm:p-10">
-        {/* Header */}
+        {/* header section */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white mb-4 shadow-lg shadow-indigo-500/30">
             <KeyIcon />
@@ -75,7 +75,7 @@ export default function LoginForm() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
+          {/* email input box */}
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
             <div className="relative">
@@ -87,7 +87,7 @@ export default function LoginForm() {
             {errors.email && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.email}</p>}
           </div>
 
-          {/* Password */}
+          {/* password input box */}
           <div>
             <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
             <div className="relative">
@@ -102,14 +102,14 @@ export default function LoginForm() {
             {errors.password && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.password}</p>}
           </div>
 
-          {/* Forgot password */}
+          {/* link to reset password */}
           <div className="flex justify-end -mt-1">
             <Link href="/auth/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors">
               Forgot password?
             </Link>
           </div>
 
-          {/* Submit */}
+          {/* login button */}
           <button type="submit" disabled={loading} className={btnPrimary}>
             {loading ? (
               <span className="flex items-center justify-center gap-2">

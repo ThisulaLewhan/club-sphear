@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema({
     enum: ["student", "club", "admin", "mainAdmin"], 
     default: "student" 
   },
-  // Student profile fields (used by auth module)
+  // fields for user profile
   university: { type: String, default: "" },
   studentId: { type: String, default: "" },
   bio: { type: String, default: "" },

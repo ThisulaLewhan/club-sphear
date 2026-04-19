@@ -1,6 +1,4 @@
-// Feature Domain: Authentication & Access Control
-
-// login api route
+// backend api for user login
 
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
@@ -10,11 +8,11 @@ import { validateLogin } from "@/lib/validations";
 
 export async function POST(request) {
   try {
-    // Parse request body
+    // get email and password from request
     const body = await request.json();
     const { email, password } = body;
 
-    // Validate inputs
+    // check if inputs are correct
     const validation = validateLogin({ email, password });
     if (!validation.valid) {
       return Response.json(
@@ -23,10 +21,10 @@ export async function POST(request) {
       );
     }
 
-    // Connect to database
+    // connect to database
     await connectDB();
 
-    // Find user by email
+    // find the user by their email
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       return Response.json(
@@ -35,7 +33,7 @@ export async function POST(request) {
       );
     }
     
-    // Check if account is banned
+    // check if admin banned this user
     if (user.isBanned) {
       return Response.json(
         { success: false, message: "Your account has been suspended by an administrator." },
@@ -43,7 +41,7 @@ export async function POST(request) {
       );
     }
 
-    // Compare password with hashed password
+    // check if the password is correct
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return Response.json(
@@ -52,11 +50,11 @@ export async function POST(request) {
       );
     }
 
-    // Create JWT token and set cookie
+    // create token to keep user logged in
     const token = createToken(user);
     await setAuthCookie(token);
 
-    // Return success with user info (never expose password)
+    // send success response with user basic details
     return Response.json(
       {
         success: true,

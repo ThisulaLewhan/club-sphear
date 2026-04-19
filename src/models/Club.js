@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// define how a club should look in the database
 const ClubSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   category: {

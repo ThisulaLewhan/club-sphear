@@ -1,6 +1,4 @@
-// Feature Domain: Authentication & Access Control
-
-// auth utils for tokens and cookies
+// imports for jwt and next cookies
 
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
@@ -14,7 +12,7 @@ function getSecret() {
   return JWT_SECRET;
 }
 
-// create a new token when user logs in or registers
+// make a new token when user sign in
 export function createToken(user) {
   return jwt.sign(
     {
@@ -28,7 +26,7 @@ export function createToken(user) {
   );
 }
 
-// check if token is valid
+// check if token is good or expired
 export function verifyToken(token) {
   try {
     return jwt.verify(token, getSecret());
@@ -37,7 +35,7 @@ export function verifyToken(token) {
   }
 }
 
-// save token to cookie securely
+// save token to browser cookie securely
 export async function setAuthCookie(token) {
   const cookieStore = await cookies();
   cookieStore.set(TOKEN_NAME, token, {
@@ -49,14 +47,14 @@ export async function setAuthCookie(token) {
   });
 }
 
-// grab the token from cookie
+// read the token from cookies
 export async function getAuthCookie() {
   const cookieStore = await cookies();
   const cookie = cookieStore.get(TOKEN_NAME);
   return cookie?.value || null;
 }
 
-// delete cookie on logout
+// delete cookie when user logout
 export async function removeAuthCookie() {
   const cookieStore = await cookies();
   cookieStore.set(TOKEN_NAME, "", {
@@ -68,14 +66,14 @@ export async function removeAuthCookie() {
   });
 }
 
-// get the currently logged in user info
+// find out who is logged in right now
 export async function getCurrentUser() {
   const token = await getAuthCookie();
   if (!token) return null;
   return verifyToken(token);
 }
 
-// check user role for permissions
+// check if they are admin or student
 export async function hasRole(requiredRoles) {
   const user = await getCurrentUser();
   if (!user) return false;
